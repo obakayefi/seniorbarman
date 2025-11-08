@@ -1,65 +1,81 @@
+import About from "@/components/About";
+import Header from "@/components/ui/Header";
+import BusinessCard, { IBusiness } from "@/components/widgets/BusinessCard";
+import { User } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+
+const BUSINESSES: IBusiness[] = [
+  {
+    id: '3131414',
+    title: 'Eventkng',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/ticketng-logo.png',
+    color: "#E67A00"
+  },
+  {
+    id: '31414',
+    title: 'Toscana Culture',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/toscana-logo.png',
+    color: "#000000"
+  },
+  {
+    id: '99184',
+    title: 'Party Park',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/party-park-logo.png',
+    color: "#FDB902"
+  },
+  {
+    id: '09031',
+    title: 'Bamboo Garden',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/boo-garden-logo.png',
+    color: "#08A877"
+  },
+  {
+    id: '12131',
+    title: 'acetec',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/acetec-logo.png',
+    color: "#00A31E"
+  },
+  {
+    id: '001331',
+    title: 'Connect Humanity',
+    description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed',
+    logo: '/connect-humanity-logo.png',
+    color: "#0095D9"
+  }
+]
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="relative">
+      <section className="absolute right-0 top-0 ">
+        <Link href={"/auth/login"}>
+          <button className="p-4 flex gap-2 hover:opacity-90 duration-200 bg-orange-400 text-white cursor-pointer">
+            Log In <User />
+          </button>
+        </Link>
+      </section>
+      <section className="flex pt-8 flex-col gap-2 items-center">
+        <Image src='/logo.png' alt="logo" width={400} height={100} />
+        <Header />
+      </section>
+      <About />
+      <section className="flex ml-24 flex-col gap-4 mt-42 pb-12">
+        <div>
+          <h4 className="text-[#E67A00] text-4xl">Businesses</h4>
+          <p className="text-[#9F9F9F]">An ecosystem with perfectly aligned services</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <section className="grid grid-cols-3 gap-x-5 gap-y-18 ">
+          {BUSINESSES.map(business => <BusinessCard business={business} key={business.id} />)}
+
+        </section>
+      </section>
     </div>
   );
 }
