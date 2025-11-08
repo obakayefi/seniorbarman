@@ -2,16 +2,15 @@
 import { AlarmClock, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './button';
-import { IEvent } from '@/types/components';
+import { EventType, IEvent } from '@/types/components';
 import { Dialog, DialogTrigger } from './dialog';
 import { BookEventModal } from '../modals/book-event';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CLUBS } from '@/lib/utils';
 
-
-export const EventCard = ({ event }: { event: IEvent }) => {
-    const [matchInformation, setMatchInformation] = useState("")
+export const EventCard = ({ event }: { event: EventType }) => {
+    const [matchInformation, setMatchInformation] = useState<EventType>({} as EventType)
     // export const EventCard = ({ event: { date, time, type, awayLogo, awayTeam, homeLogo, homeTeam, venue, id } }: { event: IEvent }) => {
 
     function formatDate(date: Date) {
@@ -25,7 +24,7 @@ export const EventCard = ({ event }: { event: IEvent }) => {
         };
     }
 
-    function formatEvent(event: IEvent) {
+    function formatEvent(event: EventType) {
         const { day, month, year } = formatDate(event.date)
         const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
         const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
@@ -44,7 +43,7 @@ export const EventCard = ({ event }: { event: IEvent }) => {
     }
 
     useEffect(() => {
-        const _event = formatEvent(event)
+        const _event = formatEvent(event) as EventType
         setMatchInformation(_event)
     }, [event])
 
@@ -103,7 +102,7 @@ export const EventCard = ({ event }: { event: IEvent }) => {
                             <span className='text-red-400 font-bold'>{matchInformation.time}</span>
                         </span>
                     </div>
-                    <BookEventModal eventId={event._id}/>
+                    <BookEventModal eventId={event._id} />
                 </Dialog>
             </div>
 

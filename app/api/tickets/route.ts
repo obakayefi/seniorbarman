@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { cookies } from "next/headers";
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { Resend } from 'resend'
 import QRCode from 'qrcode'
 import axios from "axios";
@@ -37,7 +37,7 @@ export async function GET() {
             );
         }
         // Decode token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string, userId: string };
         const userId = decoded.id;
 
 
@@ -72,17 +72,22 @@ export async function POST(req: Request) {
         await connectDB();
         const data = await req.json()
 
-        const token = (await cookies()).get('token')?.value
+        const token = (await cookies()).get('token')?.value ?? ""
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const userId = decoded.id
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+        if (typeof decoded === "string") {
+            throw new Error("Invalid token format");
+        }
+
+        const userId = (decoded as JwtPayload).id;
 
         const event = await Event.findById(data.eventId)
         let _createdTickets = []
 
         let totalTickets = 0
 
-        data.ticketsToPurchase.forEach((ticket) => {
+        data.ticketsToPurchase.forEach((ticket: any) => {
             totalTickets += ticket.quantity
         })
 
@@ -134,7 +139,7 @@ export async function POST(req: Request) {
         }
 
 
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json(
             { error: "Failed to create ticket: " + error.message },
             { status: 500 }

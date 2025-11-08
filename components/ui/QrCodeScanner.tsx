@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 const qrcodeRegionId = "html5qr-code-full-region";
 
 // Creates the configuration object for Html5QrcodeScanner.
-const createConfig = (props) => {
-    let config = {};
+const createConfig = (props: any) => {
+    let config: any = {};
     if (props.fps) {
         config.fps = props.fps;
     }
@@ -22,11 +22,11 @@ const createConfig = (props) => {
     return config;
 };
 
-const QrCodeScanner = (props) => {
+const QrCodeScanner = (props: any) => {
 
     useEffect(() => {
         // when component mounts
-        const config = createConfig(props);
+        const config = createConfig(props) as any;
         const verbose = props.verbose === true;
         // Suceess callback is required.
         if (!(props.qrCodeSuccessCallback)) {

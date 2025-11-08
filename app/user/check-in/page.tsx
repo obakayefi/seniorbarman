@@ -7,7 +7,7 @@ import { QrReader } from 'react-qr-reader'
 const CheckIn = () => {
     const [data, setData] = useState('No result');
 
-    const onNewScanResult = (decodedText, decodedResult) => {
+    const onNewScanResult = (decodedText: any, decodedResult: any) => {
         // handle decoded results here
         console.log({ decodedResult, decodedText })
     };

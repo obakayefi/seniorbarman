@@ -1,15 +1,12 @@
 "use client"
-import React from 'react'
 import { useParams } from 'next/navigation'
-import BuyTicket from '@/components/modals/buy-ticket'
-
 
 const EventDetail = () => {
     const params = useParams()
     console.log({ params })
     return (
         <div>
-            <BuyTicket />
+            <h2 className="text-3xl text-orange-400">Event Details</h2>
         </div>
     )
 }

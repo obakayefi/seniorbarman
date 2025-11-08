@@ -21,13 +21,13 @@ export async function GET() {
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    await connectDB()
-    const body = await req.json()
+// export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+//     await connectDB()
+//     const body = await req.json()
 
-    const updated = await Event.findByIdAndUpdate(params.id, body, { new: true })
-    return NextResponse.json(updated)
-}
+//     const updated = await Event.findByIdAndUpdate(params.id, body, { new: true })
+//     return NextResponse.json(updated)
+// }
 
 export async function POST(req: Request) {
     try {

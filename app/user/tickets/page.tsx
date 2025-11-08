@@ -38,7 +38,7 @@ const Tickets = () => {
           </div>
         ) : (
           <div className='grid grid-cols-2 gap-6 mt-20'>
-            {tickets.map(ticket => (
+            {tickets.map((ticket: any) => (
               <Ticket ticket={ticket} key={ticket._id} />
             ))}
           </div>

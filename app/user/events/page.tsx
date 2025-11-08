@@ -11,7 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Spinner } from '@/components/ui/spinner'
 import { Input } from '@/components/ui/input'
 import EventCard from '@/components/ui/event-card'
-import { IEvent } from '@/types/components'
+import { EventType, IEvent } from '@/types/components'
 import axios from 'axios'
 import api from '@/lib/axios'
 
@@ -213,8 +213,9 @@ async function getEvents() {
     }
 }
 
+
 const Events = () => {
-    const [data, setData] = React.useState<{}[]>([])
+    const [data, setData] = React.useState<EventType[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const role = { is_admin: false }
 
@@ -229,13 +230,13 @@ const Events = () => {
         fetchEvents()
     }, [])
 
-    const table = useReactTable({
-        data,
-        columns: sportsColumns,
-        // getCoreRowModel: getCoreRowModel(),
-        // getPaginationRowModel: getPaginationRowModel(),
-        getCoreRowModel: getCoreRowModel(),
-    })
+    // const table = useReactTable({
+    //     data,
+    //     columns: sportsColumns,
+    //     // getCoreRowModel: getCoreRowModel(),
+    //     // getPaginationRowModel: getPaginationRowModel(),
+    //     getCoreRowModel: getCoreRowModel(),
+    // })
     return (
         <div className='p-10 w-full'>
             <PageHeader title='Events'>

@@ -75,7 +75,7 @@ export default function Login() {
                                 id="email"
                                 type="email"
                                 placeholder="m@example.com"
-                                value={email.value}
+                                value={String(email.value ?? "")}
                                 onChange={email.onChange}
                                 required
                             />

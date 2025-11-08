@@ -67,7 +67,7 @@ const CreateEventForm = () => {
     // const [eventDate, setEventDate] = React.useState<Date | undefined>(new Date(Date.now()))
     const [eventDate, setEventDate] = React.useState<Date | undefined>(new Date(Date.now()))
     const [month, setMonth] = React.useState<Date | undefined>(eventDate)
-    const [dateValue, setDateValue] = React.useState<Date | string>(formatDate(eventDate))
+    const [dateValue, setDateValue] = React.useState<Date | undefined>(new Date(formatDate(eventDate)))
     const [isLoading, setIsLoading] = React.useState(false)
     const [homeTeam, setHomeTeam] = React.useState('')
     const [awayTeam, setAwayTeam] = React.useState('')

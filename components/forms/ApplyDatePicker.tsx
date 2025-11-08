@@ -36,9 +36,9 @@ type Props = {
   month: Date | undefined;
   dateValue: Date | undefined;
   eventDate: Date | undefined;
-  setEventDate: (e: any) => void;
+  setEventDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
   setMonth: (e: any) => void;
-  setDateValue: (e: string) => void;
+  setDateValue: React.Dispatch<React.SetStateAction<Date | undefined>>;
 }
 
 export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, setEventDate, setMonth }: Props) {
@@ -57,16 +57,16 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
       <div className="relative flex gap-2">
         <Input
           id="date"
-          value={dateValue}
+          value={String(dateValue)}
           placeholder="July 01, 2025"
           className="bg-background pr-10"
           onChange={(e) => {
             const date = new Date(e.target.value)
-            setDateValue(e.target.value)
+            setDateValue(new Date(e.target.value))
             if (isValidDate(date)) {
-              setEventDate(date)
+              setEventDate(new Date(date))
               // onDateChange(date)
-                setMonth(date)
+              setMonth(date)
             }
           }}
           onKeyDown={(e) => {
@@ -103,7 +103,7 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
                 // setDate(date)
                 setEventDate(date)
                 // onDateChange(date)
-                setDateValue(formatDate(date))
+                setDateValue(new Date(formatDate(date)))
                 setOpen(false)
               }}
             />
