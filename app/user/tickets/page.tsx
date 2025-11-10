@@ -6,6 +6,7 @@ import { TicketPlus } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Ticket from './Ticket'
+import { Spinner } from '@/components/ui/spinner'
 
 const Tickets = () => {
   const [tickets, setTickets] = useState([])
@@ -24,12 +25,14 @@ const Tickets = () => {
   return (
     <div className='p-10 w-full'>
       <PageHeader title='Tickets'>
-        <Button title='Create Ticket' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>Create Ticket <TicketPlus /></Button>
+        {/* <Button title='Create Ticket' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>Create Ticket <TicketPlus /></Button> */}
+        {""}
       </PageHeader>
       <section>
         {loading ? (
-          <div>
-            <h2>Loading events...</h2>
+          <div className='flex items-center gap-1'>
+            <Spinner />
+            <h2>Loading events</h2>
           </div>
         ) : tickets.length === 0 ? (
           <div className='flex flex-col gap-2'>
@@ -37,7 +40,7 @@ const Tickets = () => {
             <p>Purchase a ticket</p>
           </div>
         ) : (
-          <div className='grid grid-cols-2 gap-6 mt-20'>
+          <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-20'>
             {tickets.map((ticket: any) => (
               <Ticket ticket={ticket} key={ticket._id} />
             ))}

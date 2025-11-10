@@ -15,6 +15,7 @@ export async function connectDB() {
         cached.promise = mongoose.connect(MONGODB_URI, {
             dbName: "event-booking-db",
             bufferCommands: true,
+            serverSelectionTimeoutMS: 20000
         }).then(m => m)
     }
 }

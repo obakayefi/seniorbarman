@@ -203,7 +203,7 @@ async function getEvents() {
     try {
         const { data } = await api.get("/events")
         console.log({ data })
-        const upcomingGames = {...data}
+        const upcomingGames = { ...data }
         // upcomingGames.map(game => {
         //     consoe
         // })
@@ -238,7 +238,7 @@ const Events = () => {
     //     getCoreRowModel: getCoreRowModel(),
     // })
     return (
-        <div className='p-10 w-full'>
+        <div className='md:p-10 p-2 w-full'>
             <PageHeader title='Events'>
                 <div className='flex items-center gap-1'>
                     {role.is_admin ? (
@@ -248,17 +248,31 @@ const Events = () => {
                     ) : null}
                 </div>
             </PageHeader>
-            <section className="flex items-center mt-10 gap-2">
+            <section className="flex items-center flex-col md:flex-row items-center overflow-x-auto mt-10 gap-2">
                 {MOCK_EVENT_STATS.map(event => (
                     <SummaryCard icon={event.icon} key={event.title} title={event.title} value={event.value} />
                 ))}
             </section>
 
             <section className='mt-10'>
-                <h1 className='text-4xl'>Upcoming Events</h1>
-                <div className='grid grid-cols-2 gap-4'>
-                    {data.map(event => <EventCard key={event._id} event={event} />)}
-                    {/* {console.log({foundEvents: data})} */}
+                <h1 className='text-4xl mb-4'>Upcoming Events</h1>
+                <div className=' flex sm:grid items-center md:grid-cols-2 flex-col gap-4'>
+                    {isLoading ? (
+                        <div className='flex items-center w-full gap-2 text-slate-700 text-left'>
+                            <h2>Loading Upcoming Fixtures </h2>
+                            <Spinner />
+                        </div>
+                    ) : data.length === 0 ? (
+                        <div>
+                            <h2>No Events</h2>
+                            <p>There are no upcoming matches for the season</p>
+                        </div>
+                    ) : (
+                        (
+                            data.map(event => <EventCard key={event._id} event={event} />
+                            ))
+                    )}
+
                 </div>
             </section>
         </div>

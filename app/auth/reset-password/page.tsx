@@ -19,10 +19,10 @@ export default function ResetPassword() {
     const email = useInput('')
 
     return (
-        <Card className="w-full max-w-lg">
+        <Card className="w-full mx-4 md:mx-0  max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="text-3xl">Reset your account</h1>
-                <p className="text-gray-400">
+                <h1 className="text-3xl md:text-3xl text-2xl">Reset your account</h1>
+                <p className="text-gray-400 md:text-normal text-sm">
                     With your email you can easily recover your account
                 </p>
                 <CardAction>

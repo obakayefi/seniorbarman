@@ -20,6 +20,11 @@ const ticketSchema = new Schema({
         ref: "Event",
         required: true
     },
+    checkInToken: {
+        type: String,
+        unique: true,
+        required: true
+    },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -58,7 +63,7 @@ ticketSchema.virtual("status").get(function () {
     const lastLog = this.checkInLogs[this.checkInLogs.length - 1]
     const timeSince = (Date.now() - new Date(lastLog.time).getTime()) / (1000 * 6)
 
-    if (timeSince < 240) return "Active";
+    if (timeSince < 240) return "Checked In";
     return "Checked Out"
 })
 

@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { CheckCircle } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '../ui/spinner'
+import { toast } from 'sonner'
 
 type Props = {
     goBack: () => void;
@@ -19,6 +20,7 @@ const PayNow = ({ goBack, ticketsToPurchase, eventId }: Props) => {
             setLoading(true)
             const result = await api.post("/tickets", { ticketsToPurchase, eventId })
             console.log({ result })
+            toast.success('Tickets purchased!')
             // setTimeout(() => setLoading(false), 3000)
         } catch (error: any) {
             console.log('Error creating ticket:', error.message)

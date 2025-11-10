@@ -17,7 +17,7 @@ type Props = {
 
 const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInputChange, resetForm, totalTickets, handleOnBuyTicket }: Props) => {
     return (
-        <>
+        <section className=''>
             <DialogHeader>
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Buy Ticket</DialogTitle>
@@ -25,7 +25,7 @@ const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInput
                         Plan ahead for that match and reserve your spot.
                     </DialogDescription>
                 </div>
-                <div className="flex gap-2 mt-5 justify-between">
+                <div className="flex gap-2 mt-5 flex-col mb-6 md:flex-row justify-between">
                     {ticketTypes.reverse().map(({ name, icon: Icon, color, price, max, id }, index) => {
                         const selected = ticketsToPurchase.find(t => t.id === id)
                         const quantity = selected?.quantity || 0
@@ -83,7 +83,7 @@ const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInput
                     onClick={handleOnBuyTicket} disabled={totalTickets < 1}>
                     {(totalTickets > 1) ? 'Purchase Summary' : 'Pay Now'}</Button>
             </DialogFooter>
-        </>
+        </section>
     )
 }
 

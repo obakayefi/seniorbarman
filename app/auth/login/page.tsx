@@ -56,10 +56,10 @@ export default function Login() {
     }
 
     return (
-        <Card className="w-full max-w-lg">
+        <Card className="w-full mx-6 max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="text-3xl">Login to your account</h1>
-                <p className="text-gray-400">
+                <h1 className="md:text-3xl text-2xl">Login to your account</h1>
+                <p className="text-gray-400 text-sm md:text-normal">
                     Enter your email below to login to your account
                 </p>
                 <CardAction>

@@ -1,5 +1,3 @@
-import React from 'react'
-
 const About = () => {
   return (
     <div className='outline-1 text-white mt-4 text-center  flex flex-col items-center h-auto pb-18 p-4 bg-[url("/about-bg.png")] bg-cover bg-center'>
@@ -15,7 +13,7 @@ const About = () => {
         </p>
 
         <p>
-          <span className='text-5xl'>H</span>e is a founding member of the Toscana Sports Club and an active advocate for community-based engagement in Anambra and Enugu States. Ezeoke is married to Nemi Chukwurah-Ezeoke, and they have four children.
+          <span className='text-5xl'>H</span>e is a founding member of the Toscana Sports Club and an active advocate for community-based engagement in Anambra and Enugu States.
         </p>
       </div>
     </div>

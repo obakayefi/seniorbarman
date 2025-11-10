@@ -63,10 +63,10 @@ export default function Register() {
 
 
     return (
-        <Card className="w-full max-w-lg">
+        <Card className="w-full mx-4 md:mx-0 max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="text-3xl">Create an account</h1>
-                <p className="text-gray-400">
+                <h1 className="md:text-3xl text-2xl">Create an account</h1>
+                <p className="text-gray-400 md:text-normal text-sm">
                     Put in your details to get a new account
                 </p>
                 <CardAction>

@@ -41,11 +41,11 @@ import {
 // ]
 
 const items = [
-//   {
-//     title: "Dashboard",
-//     url: "/user/dashboard",
-//     icon: Home,
-//   },
+  {
+    title: "Dashboard",
+    url: "/user/dashboard",
+    icon: Home,
+  },
   {
     title: "Events",
     url: "/user/events",
@@ -56,11 +56,11 @@ const items = [
     url: "/user/tickets",
     icon: Calendar,
   },
-  {
-    title: "Check In",
-    url: "/user/check-in",
-    icon: Calendar,
-  },
+  // {
+  //   title: "Check In",
+  //   url: "/user/check-in",
+  //   icon: Calendar,
+  // },
 ]
  
 export function AppSidebar() {

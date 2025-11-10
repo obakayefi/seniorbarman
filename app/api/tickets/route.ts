@@ -9,6 +9,7 @@ import axios from "axios";
 import api from "@/lib/axios";
 import crypto from 'crypto'
 import Ticket from "@/models/Ticket";
+import mongoose from "mongoose";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -106,20 +107,31 @@ export async function POST(req: Request) {
             for (let i = 0; i < tickets.length; i++) {
                 // console.log({ singleTicket: tickets[i] })
                 for (let j = 0; j < tickets[i].quantity; j++) {
+                    const ticketNumber = `${data.eventId}-${crypto.randomBytes(24).toString('hex')}`
+                    const ticketId = new mongoose.Types.ObjectId()
+                    console.log({ newTicketNumber: ticketNumber })
                     const checkInToken = crypto.randomBytes(16).toString('hex')
+                    if (!ticketId) {
+                        return NextResponse.json({ error: "A ticket ID is required" },
+                            { status: 500 })
+                    }
                     const qrPayload = {
+                        ticket: ticketId,
                         event: data.eventId,
                         createdBy: userId,
                         stand: tickets[i].name,
                         checkInToken,
                         price: tickets[i].price,
-                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XSX`,
+                        ticketNumber,
                     }
 
                     const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
 
                     console.log({ printNow: tickets[i], j, i })
+
                     _createdTickets.push({
+                        _id: ticketId,
+                        checkInToken,
                         event: data.eventId,
                         createdBy: userId,
                         stand: tickets[i].name,
