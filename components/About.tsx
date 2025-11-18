@@ -9,11 +9,11 @@ const About = () => {
         </p>
 
         <p>
-          <span className='text-xl lg:text-5xl'>E</span>zeoke is also the convener of Party in the Park, an annual outdoor event organized by Toscana’s “Party at The Park” initiative. In addition to his entertainment ventures, he established the Connect to Humanity Foundation, which organized a free voter registration drive at Okpara Square, Enugu, in 2023.
+          <span className='text-xl lg:text-5xl'>S</span>eniorbarman is also the convener of Party in the Park, an annual outdoor event organized by Toscana’s “Party at The Park” initiative. In addition to his entertainment ventures, he established the Connect to Humanity Foundation, which organized a free voter registration drive at Okpara Square, Enugu, in 2023.
         </p>
 
         <p>
-          <span className='text-xl lg:text-5xl'>H</span>e is a founding member of the Toscana Sports Club and an active advocate for community-based engagement in Anambra and Enugu States.
+          <span className='text-xl lg:text-5xl'>H</span>e is a founding member of the Toscana Sports Club and Elites Friends’ Club, where he also serves as captain, and is an active advocate for community-based engagement in Anambra and Enugu States.
         </p>
       </div>
     </div>

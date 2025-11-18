@@ -11,9 +11,10 @@ const SOCIAL_CONTACTS = [
         type: "location"
     },
     {
-        value: "+2349042433425",
+        value: "+2347015272791",
+        url: "https://wa.link/qf8754",
         iconLocation: "/whatsapp-icon.svg",
-        type: "phone"
+        type: "link"
     },
     {
         value: "seniorbarman@gmail.com",
@@ -38,7 +39,7 @@ const Footer = () => {
                     {SOCIAL_CONTACTS.map(sContact => (
                         <div key={sContact.value} className='flex items-center text-[#626262] gap-2'>
                             <span className='mt-2'><ImgIcon width={35} iconLocation={sContact.iconLocation} /></span>
-                            <a href={`${sContact.type === 'phone' ? 'tel': sContact.type === 'mail' ? 'mailto' : '#'}:${sContact.value}`} className=''>{sContact.value}</a>
+                            <a href={`${sContact.type === 'phone' ? 'tel': sContact.type === 'mail' ? 'mailto' : sContact.type === "link" ? sContact.url : '#'}${sContact.type === "link" ? "" : ":" + sContact.value }`} className=''>{sContact.value}</a>
                         </div>
                     ))}
                 </section>
