@@ -9,31 +9,30 @@ import React, { useEffect } from 'react'
 import { DataTable } from './data-table'
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
-import { Input } from '@/components/ui/input'
 import EventCard from '@/components/ui/event-card'
 import { EventType, IEvent } from '@/types/components'
-import axios from 'axios'
 import api from '@/lib/axios'
+import { EmblaCarousel } from '@/components/carousels/EmblaCarousel'
 
 const MOCK_EVENT_STATS = [
     {
-        title: 'Ongoing Events',
-        value: 60,
-        icon: <Calendar1 />
-    },
-    {
         title: 'Total Events',
-        value: 3402,
+        value: 152,
         icon: <CalendarDays />
     },
     {
+        title: 'Ongoing Events',
+        value: 1,
+        icon: <Calendar1 />
+    },
+    {
         title: 'Upcoming Events',
-        value: 1801,
+        value: 23,
         icon: <CalendarClock />
     },
     {
         title: 'Past Events',
-        value: 2001,
+        value: 12,
         icon: <CalendarX />
     },
 ]
@@ -224,6 +223,7 @@ const Events = () => {
         const fetchEvents = async () => {
             setIsLoading(true)
             const _events = await getEvents()
+            console.log("Fetching events", { events: _events })
             setData(_events)
             setIsLoading(false)
         }
@@ -239,7 +239,7 @@ const Events = () => {
     // })
     return (
         <div className='md:p-10 p-2 w-full'>
-            <PageHeader title='Events'>
+            <PageHeader title='Dashboard'>
                 <div className='flex items-center gap-1'>
                     {role.is_admin ? (
                         <Button title='Create Event' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>
@@ -248,14 +248,19 @@ const Events = () => {
                     ) : null}
                 </div>
             </PageHeader>
-            <section className="flex items-center flex-col md:flex-row items-center overflow-x-auto mt-10 gap-2">
+
+            {/* <section>
+                <EmblaCarousel />
+            </section> */}
+            
+            <section className="flex items-center flex-col lg:flex-row items-center overflow-x-auto mt-10 gap-2">
                 {MOCK_EVENT_STATS.map(event => (
                     <SummaryCard icon={event.icon} key={event.title} title={event.title} value={event.value} />
                 ))}
             </section>
 
             <section className='mt-10'>
-                <h1 className='text-4xl mb-4'>Upcoming Events</h1>
+                <h1 className='text-3xl mb-4'>Upcoming Events</h1>
                 <div className=' flex sm:grid items-center md:grid-cols-2 flex-col gap-4'>
                     {isLoading ? (
                         <div className='flex items-center w-full gap-2 text-slate-700 text-left'>

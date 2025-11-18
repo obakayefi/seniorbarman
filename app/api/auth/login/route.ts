@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { connectDB } from "@/lib/mongodb";
 import User from '@/models/User'
 import { error } from "console";
-import { signToken } from "@/lib/jwt";
+import { signToken, verifyToken } from "@/lib/jwt";
 
 export async function POST(req: Request) {
     try {
@@ -33,13 +33,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
         }
 
-        const token = signToken({ id: user._id, email: user.email })
+        const jwtPayload = { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role, name: `${user.firstName} ${user.lastName}` }
+        
+        const token = signToken(jwtPayload)
+       
+        // const userInfo = {
+        //     email: user.email,
+        //     firstName: user.firstName,
+        //     lastName: user.lastName,
+        //     name: `${user.firstName} ${user.lastName}`,
+        //     role: user.role,
+        //     id: user.id
+        // }
 
+        // console.log({decoded, userInfo});
         const res = NextResponse.json({
             success: true,
             message: "Login successful",
-            token,
-            user: { id: user._id, firstName: user.firstName }
+            user: jwtPayload
         })
 
         res.cookies.set('token', token, {

@@ -3,6 +3,61 @@
 
 @custom-variant dark (&:is(.dark *));
 
+
+@keyframes subtle-bounce {
+
+  0%,
+  100% {
+    /* Change this value to control the height of the bounce. -5% is more subtle than the default -25% */
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.subtle-bounce {
+  animation: subtle-bounce 3s infinite;
+}
+
+@keyframes bounce-loop {
+    0%, 100% {
+      /* Element is slightly above its starting position */
+      transform: translateY(-5px);
+    }
+    50% {
+      /* Element returns to or slightly dips below its starting position */
+      transform: translateY(0);
+    }
+  }
+
+@keyframes subtle-pulse {
+
+  0%,
+  100% {
+    /* Starts and ends at normal size and opacity */
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    /* Scales up just slightly (1.05) and reduces opacity slightly (0.3) for a softer fade */
+    transform: scale(1.05);
+    opacity: 0.4;
+  }
+}
+
+.subtle-pulse {
+  animation: subtle-pulse 3s infinite;
+}
+
+.bounce-loop {
+    animation: bounce-loop 2s infinite;
+  }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -50,12 +105,31 @@
   }
 }
 
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+
 body {
   font-family: var(--font-gabarito), Arial, Helvetica, sans-serif;
 }
 
 .next-event-bg {
   background-image: url('/blur-next-event-bg.svg') center no-repeat;
+  background-size: cover;
+}
+
+.header-bg {
+  background-image: url('/sbarman_one.svg') top no-repeat;
   background-size: cover;
 }
 
@@ -132,6 +206,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

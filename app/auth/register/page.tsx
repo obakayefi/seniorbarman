@@ -47,9 +47,11 @@ export default function Register() {
             lastName.reset()
             email.reset()
             password.reset()
+            
 
             //show toaster 
-            toast.success(`${createdUser.data.user.firstName} your account has been created, wait while we redirect you`)
+            // toast.success(`${createdUser.data.user.firstName} your account has been created, wait while we redirect you`)
+            toast.success(`Your account has been created, login to continue`)
 
             // then redirect user
             setTimeout(() => redirect('/auth/login'), 2000)
@@ -104,7 +106,7 @@ export default function Register() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="m@example.com"
+                                placeholder="johndoe@example.com"
                                 value={email.value}
                                 onChange={email.onChange}
                                 required

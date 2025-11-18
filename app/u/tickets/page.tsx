@@ -7,21 +7,31 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Ticket from './Ticket'
 import { Spinner } from '@/components/ui/spinner'
+import EventTicket from './EventTicket'
+import { useParams } from 'next/navigation'
 
 const Tickets = () => {
-  const [tickets, setTickets] = useState([])
+  const [eventsWithTickets, setEventsWithTickets] = useState([])
   const [loading, setLoading] = useState(true)
+  // const  { eventNumber } = us()
+
+  useEffect(() => {
+    // console.log({ eventNumber: eventNumber ?? "Nada" });
+
+  }, [])
+
 
   useEffect(() => {
     async function getTickets() {
-      const data = await api('/tickets')
+      const data = await api(`/tickets?event-number${3141048014}`)
       console.log({ tickets_are: data.data.tickets })
-      setTickets(data.data.tickets)
+      setEventsWithTickets(data.data.tickets)
       setLoading(false)
     }
 
     getTickets()
   }, [])
+
   return (
     <div className='p-10 w-full'>
       <PageHeader title='Tickets'>
@@ -32,17 +42,18 @@ const Tickets = () => {
         {loading ? (
           <div className='flex items-center gap-1'>
             <Spinner />
-            <h2>Loading events</h2>
+            <h2 className='text-slate-400'>Loading Tickets</h2>
           </div>
-        ) : tickets.length === 0 ? (
+        ) : eventsWithTickets.length === 0 ? (
           <div className='flex flex-col gap-2'>
             <h2 className="text-4xl">No Tickets</h2>
             <p>Purchase a ticket</p>
           </div>
         ) : (
           <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-20'>
-            {tickets.map((ticket: any) => (
-              <Ticket ticket={ticket} key={ticket._id} />
+            {eventsWithTickets.map((event: any) => (
+              // <Ticket ticket={ticket} key={ticket._id} />
+              <EventTicket event={event} />
             ))}
           </div>
         )}

@@ -42,7 +42,7 @@ const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInput
 
                                 <div className="flex items-center gap-2">
                                     {/* <Button className="bg-white text-orange-400" onClick={() => updateTicketQty({ name, qty: -1, max, price })}>x */}
-                                    <Button className="bg-white text-orange-400" onClick={() => updateTicketQty({ id, name, delta: -1, max })}>
+                                    <Button className="bg-white text-orange-400 rounded" onClick={() => updateTicketQty({ id, name, delta: -1, max })}>
                                         <CircleMinus />
                                     </Button>
 
@@ -54,7 +54,7 @@ const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInput
 
                                     />
 
-                                    <Button className="bg-orange-400 text-white" onClick={() => updateTicketQty({ id, name, delta: 1, max })}>
+                                    <Button className="bg-orange-400 text-white rounded" onClick={() => updateTicketQty({ id, name, delta: 1, max })}>
                                         <CirclePlus />
                                     </Button>
                                 </div>

@@ -15,6 +15,15 @@ const CheckInLogSchema = new Schema({
 })
 
 const ticketSchema = new Schema({
+    payment: {
+        reference: String,
+        authorizationUrl: String,
+        status: {
+            type: String,
+            enum: ['pending', 'success', 'failed'],
+            default: 'pending'
+        }
+    },
     event: {
         type: Schema.Types.ObjectId,
         ref: "Event",

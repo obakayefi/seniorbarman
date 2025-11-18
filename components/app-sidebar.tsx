@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Calendar, CalendarDays, Home, Inbox, PowerIcon, ScanQrCode, Search, Settings, Tickets } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +11,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
+import { Avatar, AvatarFallback } from "./ui/avatar"
+import { NavUser } from "./ui/nav-user"
+import SidebarFooterWrap from "./ui/SidebarFooterWrap"
+import { useApp } from "@/context/AppContext"
 
 // const items = [
 //   {
@@ -40,30 +45,14 @@ import {
 //   },
 // ]
 
-const items = [
-  {
-    title: "Dashboard",
-    url: "/user/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Events",
-    url: "/user/events",
-    icon: Inbox,
-  },
-  {
-    title: "Tickets",
-    url: "/user/tickets",
-    icon: Calendar,
-  },
-  // {
-  //   title: "Check In",
-  //   url: "/user/check-in",
-  //   icon: Calendar,
-  // },
-]
- 
-export function AppSidebar() {
+
+type SidebarLink = {
+  title: string;
+  url: string,
+  icon: React.ComponentType
+}
+
+export function AppSidebar({ links }: { links: SidebarLink[] }) {
   return (
     <Sidebar>
       <SidebarContent>
@@ -71,7 +60,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {links.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
@@ -85,6 +74,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarFooterWrap />
+      </SidebarFooter>
     </Sidebar>
   )
 }

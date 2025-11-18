@@ -22,8 +22,7 @@ const CardContent = ({ showContent, toggleShowContent, business }: CardContentPr
             {showContent ? (
                 <section className='bg-[#FAFAFA] p-4 border border-[#D4D4D4]' style={{ color: business.color }}>
                     <p>
-                        Lorem ipsum dolor sit amet consectetur adipiscing elit quisque faucibus ex sapien
-                        vitae pellentesque sem placerat in id cursus mi pretium tellus duis convallis tempus leo eu aenean sed
+                        {business.description}
                     </p>
                 </section>
             ) : null}

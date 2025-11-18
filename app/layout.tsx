@@ -3,6 +3,7 @@ import { Gabarito } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/ui/Footer";
 import { Toaster } from "sonner";
+import { AppProvider } from "@/context/AppContext";
 
 const gabaritoFonts = Gabarito({
   variable: "--font-gabarito",
@@ -24,7 +25,7 @@ export default function RootLayout({
       <body
         className={`${gabaritoFonts.variable} antialiased`}
       >
-        {children}
+        <AppProvider>{children}</AppProvider>
         <Toaster />
         <Footer />
       </body>

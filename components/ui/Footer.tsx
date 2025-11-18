@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import React from 'react'
 import ImgIcon from './ImgIcon'
+import { FaTiktok } from "react-icons/fa6";
+import { TbBrandInstagramFilled } from "react-icons/tb";
 
 const SOCIAL_CONTACTS = [
     {
@@ -41,11 +43,11 @@ const Footer = () => {
                     ))}
                 </section>
             </section>
-            <section className='flex justify-between border-t-2 pt-2 border-[#DDDDDD]'>
+            <section className='flex flex-col-reverse sm:flex-row py-3 items-center justify-between border-t-2 pt-2 border-[#DDDDDD]'>
                 <p className='text-[#9D9D9D]'> © 2025 Copyrights. All rights reserved</p>
-                <div className='flex gap-2 items-center'>
-                    <Image alt='social-logo' src={'/instagram-icon.svg'} height={100} width={50} />
-                    <Image alt='social-logo' src={'/ig-footer-icon.svg'} height={100} width={50} />
+                <div className='flex gap-2  items-center'>
+                    <FaTiktok size={24} color={"red"}/>
+                    <TbBrandInstagramFilled size={32} />
                 </div>
             </section>
         </div>

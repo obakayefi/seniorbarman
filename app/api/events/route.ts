@@ -1,19 +1,42 @@
-import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import {NextResponse} from "next/server";
+import {connectDB} from "@/lib/mongodb";
 import Event from "@/models/Event"
-import { verifyAuth } from "@/lib/auth";
+import {verifyAuth} from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: Request) {
+    const {searchParams} = new URL(req.url);
+    const upcoming = searchParams.get("upcoming");
+    let filter = {}
+    let sort = {date: -1};
+    const now = new Date();
+    const cutoff = new Date(now.getTime() - 120 * 60 * 1000);
+
     try {
         await connectDB()
-        await verifyAuth()
-        const events = await Event.find().sort({ date: 1 })
-        console.log({ events })
-        return NextResponse.json(events)
-    } catch (error: any) {
+        //await verifyAuth()
+        let _events = await Event.find().sort({date: -1});
+        if (upcoming) {
+            _events = _events.filter((event) => {
+                const [hours, minutes] = event.time.split(":");
+                const eventStart = new Date(event.date);
+                eventStart.setHours(Number(hours));
+                eventStart.setMinutes(Number(minutes));
+                eventStart.setSeconds(0);
+
+                console.log({eventStart, cutoff})
+                return eventStart >= cutoff;
+            })
+        }
+
+        const events = await Event.find().sort({date: -1})
+        const filteredEvents = await Event.find(filter).sort({date: -1})
+        console.log({filteredEvents, events, _events})
+        return NextResponse.json(_events)
+    } catch
+        (error: any) {
         return NextResponse.json({
-            error: "Can't fetch events:: " + error.message
-        },
+                error: "Can't fetch events:: " + error.message
+            },
             {
                 status: 401
             }
@@ -45,15 +68,15 @@ export async function POST(req: Request) {
         // console.log({body})
         if (type === "event" && !title) {
             return NextResponse.json(
-                { error: "Events require titles" },
-                { status: 400 }
+                {error: "Events require titles"},
+                {status: 400}
             )
         }
 
         if (type === "sports" && (!homeTeam || !awayTeam)) {
             return NextResponse.json(
-                { error: "Sports events require home and away teams" },
-                { status: 400 }
+                {error: "Sports events require home and away teams"},
+                {status: 400}
             )
         }
 
@@ -72,7 +95,7 @@ export async function POST(req: Request) {
             venue
         }
 
-        console.log({ newEvent })
+        console.log({newEvent})
 
         const event = await Event.create(newEvent)
 
@@ -89,8 +112,8 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Error creating event", error)
         return NextResponse.json(
-            { error: "Failed to create event.", details: error.message },
-            { status: 500 }
+            {error: "Failed to create event.", details: error.message},
+            {status: 500}
         )
     }
 }

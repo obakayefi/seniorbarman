@@ -107,7 +107,8 @@ export function BookEventModal({ eventId }: { eventId: string }) {
     }
 
     const redirectToPayNowModal = () => {
-        setModalState(2)
+        console.log('Paying now...')
+        // setModalState(2)
     }
 
     return (
@@ -127,6 +128,7 @@ export function BookEventModal({ eventId }: { eventId: string }) {
                     ) : modalState === 1 ? (
                         <ConfirmTicketPurchase
                             goBack={goBack}
+                            eventId={eventId}
                             redirectToPayNow={redirectToPayNowModal}
                             ticketsToPurchase={ticketsToPurchase}
                             totalPrice={totalPrice}

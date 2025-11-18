@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import axios from "axios"
 import { verifyToken } from "@/lib/jwt";
+import Ticket from "@/models/Ticket";
+import Event from "@/models/Event";
 
 const PAYSTACK_API_KEY = process.env.PAYSTACK_API_KEY as string;
 
@@ -27,7 +29,8 @@ export async function POST(req: Request) {
     // if (!user)
     //     return NextResponse.json({ error: "Unauthorized, you need to log in" }, { status: 401 })
 
-    const { email, amount } = await req.json();
+    const { eventId, ticketId, email, amount } = await req.json();
+    // const body = await req.json();
     try {
 
         if (!email || !amount) {
@@ -37,10 +40,18 @@ export async function POST(req: Request) {
             )
         }
 
+        if (!eventId) {
+            return NextResponse.json(
+                { error: "An Event is required" },
+                { status: 400 }
+            )
+        }
+        const foundEvent = await Event.findById(eventId)
+
         const paystackPayload = {
             email,
             amount: amount * 100, // convert from KOBO to naira,
-            callback_url: `https://seniorbar.com/payment/verify`
+            callback_url: `https://tamia-uninitialed-ernestina.ngrok-free.dev/verify`
         }
 
         const headers = {
@@ -48,21 +59,33 @@ export async function POST(req: Request) {
             "Content-Type": "application/json"
         }
 
-        const response = await axios.post("https://api.paystack.co/transaction/initialize", paystackPayload, { headers })
+        const response = (await axios.post("https://api.paystack.co/transaction/initialize", paystackPayload, { headers })).data.data
+
+        console.log({ authorization_url: response.authorization_url })
+
+        // const { authorization_url, reference } = response.data
+
+        // foundEvent.payment = { reference, authorizationUrl: authorization_url, status: 'pending'}
+
+        // foundEvent.
+
+        // await foundEvent.save()
 
 
-        console.log({ response: response.data })
+        // if (!ticket) return NextResponse.json({ tick })
 
         return NextResponse.json(
-            { error: "Payment initialized successfully" },
+            {
+                message: "Payment initialized successfully",
+                redirectTo: response.authorization_url,
+                reference: response.reference
+            },
             { status: 200 }
         )
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    // console.log(body);
-    // return NextResponse.json({ message: "Payment route working!" });
 }
 
 export async function GET() {

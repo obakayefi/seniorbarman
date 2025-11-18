@@ -5,12 +5,12 @@ import mongoose, { Schema, models } from "mongoose";
 const userSchema = new Schema(
   {
     firstName: {
-        type: String,
-        require: true
-    }, 
+      type: String,
+      require: true
+    },
     lastName: {
-        type: String,
-        require: true
+      type: String,
+      require: true
     },
     email: {
       type: String,
@@ -23,6 +23,11 @@ const userSchema = new Schema(
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
     },
+    role: {
+      enum: ["user", "organizer", "bouncer", "admin"],
+      type: String,
+      default: "user"
+    }
   },
   { timestamps: true }
 );

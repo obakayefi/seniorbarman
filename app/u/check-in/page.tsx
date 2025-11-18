@@ -2,7 +2,6 @@
 "use client"
 import QrCodeScanner from '@/components/ui/QrCodeScanner';
 import { useState } from 'react';
-import { QrReader } from 'react-qr-reader'
 
 const CheckIn = () => {
     const [data, setData] = useState('No result');
@@ -19,14 +18,7 @@ const CheckIn = () => {
                 <p className='text-gray-400'>Verify tickets upon entry efficiently.</p>
             </section>
 
-            <section>
-                <QrCodeScanner
-                    fps={10}
-                    qrbox={250}
-                    disableFlip={false}
-                    qrCodeSuccessCallback={onNewScanResult}
-                />
-            </section>
+         
         </div>
     )
 }

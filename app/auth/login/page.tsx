@@ -12,7 +12,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useApp } from "@/context/AppContext"
 import useInput from "@/hooks/useInput"
+import { sitemap } from "@/lib/utils"
 import axios from "axios"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -24,6 +26,7 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
     const email = useInput('')
     const password = useInput('')
+    const { setUser } = useApp()
 
     const formFilled = email.value && password.value
 
@@ -43,10 +46,9 @@ export default function Login() {
                     withCredentials: true
                 }
             )
-
+            setUser(data.user)
             toast.success('Welcome back ' + data.user.firstName)
-
-            router.replace('/user/events')
+            router.replace(sitemap.user.dashboard)
         } catch (error: any) {
             console.error('Error signing player in', { error: error.message })
             toast.error('Invalid email or password')
@@ -74,7 +76,7 @@ export default function Login() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="m@example.com"
+                                placeholder="johndoe@example.com"
                                 value={String(email.value ?? "")}
                                 onChange={email.onChange}
                                 required
