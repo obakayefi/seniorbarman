@@ -20,8 +20,8 @@ const EventTicket = ({ event }: { event: EventProps }) => {
     const teamLogos = () => {
         let homeLogo, awayLogo;
 
-        homeLogo = CLUBS.map(club => club.name === event.event.homeTeam)[0]
-        awayLogo = CLUBS.map(club => club.name === event.event.awayTeam)[0]
+        homeLogo = CLUBS.map(club => club.name === event.event?.homeTeam)[0]
+        awayLogo = CLUBS.map(club => club.name === event.event?.awayTeam)[0]
 
         console.log({homeLogo, awayLogo})
 

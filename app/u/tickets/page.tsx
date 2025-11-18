@@ -53,7 +53,7 @@ const Tickets = () => {
           <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-20'>
             {eventsWithTickets.map((event: any) => (
               // <Ticket ticket={ticket} key={ticket._id} />
-              <EventTicket event={event} />
+              <EventTicket event={event.event} />
             ))}
           </div>
         )}
