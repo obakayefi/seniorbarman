@@ -38,8 +38,7 @@ const BUSINESSES: IBusiness[] = [
     id: '09031',
     title: 'Bamboo Garden',
     description: 'Bamboo Garden is the premier relaxation and entertainment destination in Awka, Anambra State. \n' +
-        'Bamboo Garden is the premier relaxation and entertainment destination in Awka, Anambra State. \n' +
-        'Strategically located at Aroma Junction, it offers a uniquely Nigerian ambiance, characterized by its signature tall palm trees that provide natural shielding and a perpetually cool, serene effect against the sunlight.\n' +
+        'Strategically located at Aroma Junction, it offers a uniquely traditional ambiance, characterized by its signature tall palm trees that provide natural shielding and a perpetually cool, serene effect against the sunlight.\n' +
         '\n' +
         'More than just a bar, Bamboo Garden offers a diverse setting where patrons can unwind in this tranquil environment while enjoying gaming and social activities. \n' +
         'It features a full bar and a kitchen, serving delicious meals and making it the perfect spot to gather with friends for a relaxed evening or simply to escape the city\'s hustle. \n' +
@@ -75,13 +74,13 @@ export default function Home() {
   return (
     <div className="relative bg-gray-100 overflow-x-hidden">
       {/* Absolute Login Button */}
-      {/* <section className="absolute right-0 top-0 ">
+      <section className="absolute right-0 top-0 ">
         <Link href={"/auth/login"}>
           <button className="p-4 flex gap-2 hover:opacity-90 duration-200 bg-orange-400 text-white cursor-pointer">
             Log In <User />
           </button>
         </Link>
-      </section> */}
+      </section> 
       <section className="flex w-full md:w-1/2 justify-center mx-auto pt-8 flex-col gap-2 items-center">
         <Image src='/logo.png' alt="logo" width={400} height={100} />
         <Header />

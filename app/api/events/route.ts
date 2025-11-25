@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
     try {
         await connectDB()
-        //await verifyAuth()
+        // await verifyAuth()
         let _events = await Event.find().sort({date: -1});
         if (upcoming) {
             _events = _events.filter((event) => {
@@ -23,14 +23,14 @@ export async function GET(req: Request) {
                 eventStart.setMinutes(Number(minutes));
                 eventStart.setSeconds(0);
 
-                console.log({eventStart, cutoff})
+                // console.log({eventStart, cutoff})
                 return eventStart >= cutoff;
             })
         }
 
         const events = await Event.find().sort({date: -1})
         const filteredEvents = await Event.find(filter).sort({date: -1})
-        console.log({filteredEvents, events, _events})
+        // console.log({filteredEvents, events, _events})
         return NextResponse.json(_events)
     } catch
         (error: any) {
@@ -94,11 +94,7 @@ export async function POST(req: Request) {
             time,
             venue
         }
-
-        console.log({newEvent})
-
         const event = await Event.create(newEvent)
-
         return NextResponse.json(
             {
                 success: true,

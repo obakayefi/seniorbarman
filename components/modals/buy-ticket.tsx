@@ -34,14 +34,15 @@ const BuyTicket = ({ ticketTypes, ticketsToPurchase, updateTicketQty, onQtyInput
                         return (
                             <Card
                                 key={name}
-                                className={`flex bg-gray-100 hover:bg-gray-200 duration-200 items-center gap-3 p-4`}>
+                                className={`flex bg-gray-100 hover:bg-slate-200 duration-300 items-center gap-3 p-4`}>
                                 <Icon className={`h-6 w-6 ${color}`} />
                                 <span className="font text-gray-600">{name}</span>
                                 <span className="text-green-900">₦{price.toLocaleString()}</span>
 
 
                                 <div className="flex items-center gap-2">
-                                    {/* <Button className="bg-white text-orange-400" onClick={() => updateTicketQty({ name, qty: -1, max, price })}>x */}
+                                    {/* <Button className="bg
+                                    -white text-orange-400" onClick={() => updateTicketQty({ name, qty: -1, max, price })}>x */}
                                     <Button className="bg-white text-orange-400 rounded" onClick={() => updateTicketQty({ id, name, delta: -1, max })}>
                                         <CircleMinus />
                                     </Button>

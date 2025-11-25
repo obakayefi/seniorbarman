@@ -15,7 +15,7 @@ type EventProps = {
 }
 
 const EventTicket = ({ event }: { event: EventProps }) => {
-    console.log({ event })
+    console.log({ NowEvent: event })
 
     const teamLogos = () => {
         let homeLogo, awayLogo;
@@ -39,15 +39,15 @@ const EventTicket = ({ event }: { event: EventProps }) => {
     }
 
     return (
-        <Link href={`/u/tickets/${event.id}`}>
+        <Link href={`/u/tickets/${event.event._id}`}>
             <div className='border-2 border-gray-100 hover:bg-gray-100/50 cursor-pointer duration-300 p-2 flex flex-col gap-6 px-4 rounded'>
                 <section className="flex justify-between">
                     <div className="flex items-center gap-2 text-slate-500">
                         <BsFillCalendarDateFill />
-                        <h3>{new Date(event.event.date).toDateString()}</h3>
+                        <h3>{new Date(event.event?.date).toDateString()}</h3>
                     </div>
                     <div className="flex items-center gap-2 text-slate-500">
-                        <h3>{event.event.time}</h3>
+                        <h3>{event.event?.time}</h3>
                         <FaClock />
                     </div>
 

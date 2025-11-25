@@ -11,6 +11,8 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     // if (!user.authenticated) redirect('/auth/login')
 
     const user = await getUserFromCookie()
+    
+    
 
     const userLinks = [
         {

@@ -13,6 +13,9 @@ import EventCard from '@/components/ui/event-card'
 import { EventType, IEvent } from '@/types/components'
 import api from '@/lib/axios'
 import { EmblaCarousel } from '@/components/carousels/EmblaCarousel'
+import {useApp} from "@/context/AppContext";
+import {redirect} from "next/navigation";
+import {sitemap} from "@/lib/utils";
 
 const MOCK_EVENT_STATS = [
     {
@@ -132,80 +135,11 @@ async function getData(): Promise<{}[]> {
     ]
 }
 
-
-// async function getEvents(): Promise<IEvent[]> {
-//     return [
-//         {
-//             id: "3",
-//             homeTeam: "Rangers FC",
-//             type: "sports",
-//             homeLogo: '/rangers-logo.png', // file name within public folder
-//             awayLogo: '/enyimba-logo.png',
-//             awayTeam: "Enyimba FC",
-//             venue: "Nnamdi Azikiwe Stadium",
-//             time: "16:00",
-//             date: {
-//                 day: "16",
-//                 month: "Nov",
-//                 year: "2025"
-//             },
-//         },
-//         {
-//             id: "113",
-//             homeTeam: "Rangers FC",
-//             type: "sports",
-//             homeLogo: '/rangers-logo.png', // file name within public folder
-//             awayLogo: '/ikorodu-city-logo.png',
-//             awayTeam: "Ikorodu City",
-//             venue: "Nnamdi Azikiwe Stadium",
-//             time: "16:00",
-//             date: {
-//                 day: "21",
-//                 month: "Dec",
-//                 year: "2025"
-//             },
-//         },
-//         {
-//             id: "611",
-//             homeTeam: "Rangers FC",
-//             type: "sports",
-//             homeLogo: '/rangers-logo.png', // file name within public folder
-//             awayLogo: '/remo-stars-logo.png',
-//             awayTeam: "Remo Stars",
-//             venue: "Nnamdi Azikiwe Stadium",
-//             time: "16:00",
-//             date: {
-//                 day: "25",
-//                 month: "Dec",
-//                 year: "2025"
-//             },
-//         },
-//         {
-//             id: "032",
-//             homeTeam: "Rangers FC",
-//             type: "sports",
-//             homeLogo: '/rangers-logo.png', // file name within public folder
-//             awayLogo: '/bayelsa-logo.png',
-//             awayTeam: "Bayelsa United FC",
-//             venue: "Nnamdi Azikiwe Stadium",
-//             time: "16:00",
-//             date: {
-//                 day: "29",
-//                 month: "JAN",
-//                 year: "2026"
-//             },
-//         },
-//     ]
-// }
-
 async function getEvents() {
     try {
         const { data } = await api.get("/events")
         console.log({ data })
         const upcomingGames = { ...data }
-        // upcomingGames.map(game => {
-        //     consoe
-        // })
         return data
     } catch (error: any) {
         console.error('Could not get events', { error: error.message })
@@ -217,6 +151,7 @@ const Events = () => {
     const [data, setData] = React.useState<EventType[]>([])
     const [isLoading, setIsLoading] = React.useState(true)
     const role = { is_admin: false }
+    const { user } = useApp()
 
 
     useEffect(() => {
@@ -229,20 +164,13 @@ const Events = () => {
         }
         fetchEvents()
     }, [])
-
-    // const table = useReactTable({
-    //     data,
-    //     columns: sportsColumns,
-    //     // getCoreRowModel: getCoreRowModel(),
-    //     // getPaginationRowModel: getPaginationRowModel(),
-    //     getCoreRowModel: getCoreRowModel(),
-    // })
+    
     return (
         <div className='md:p-10 p-2 w-full'>
             <PageHeader title='Dashboard'>
                 <div className='flex items-center gap-1'>
-                    {role.is_admin ? (
-                        <Button title='Create Event' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>
+                    {user?.role ===  "admin" ? (
+                        <Button onClick={() => redirect(sitemap.admin.createEvent)} title='Create Event' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>
                             Create Event <CalendarPlus />
                         </Button>
                     ) : null}

@@ -9,9 +9,13 @@ const CheckInLogSchema = new Schema({
     location: {
         type: String
     },
+    action: {
+        type: String
+    },
     method: {
         type: String // e.g "QR Scan" or "Manual Scan"
-    }
+    },
+    
 })
 
 const ticketSchema = new Schema({

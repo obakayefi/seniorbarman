@@ -11,9 +11,9 @@ export interface IEvent {
   // date: { month: string; year: string; day: string };
   time: string;
   homeTeam: string;
-  homeLogo: string;
+  homeLogo?: string;
   awayTeam: string;
-  awayLogo: string;
+  awayLogo?: string;
   venue: string;
   type: string;
 }

@@ -10,7 +10,7 @@ import api from "@/lib/axios";
 import crypto from 'crypto'
 import Ticket from "@/models/Ticket";
 import mongoose from "mongoose";
-import { getUserFromCookie } from "@/lib/auth";
+import {getUserFromCookie, verifyAuth} from "@/lib/auth";
 import { StandType } from "@/types/components";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -42,20 +42,17 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
             // console.log({  eventInLoop: event._id.toString(), eventInticketLoop: ticket.event._id.toString() })
             const ticketStand = ticket.stand as StandType
             ticketSummary[ticketStand] += 1
-            
+            console.log({sampOne: ticket, sampTwo: event})
             return ticket.event._id.toString() === event._id.toString()
         })
-        console.log({ticketsForEvent, ticketSummary});
+        // console.log({ticketsForEvent, ticketSummary});
         return {
             event,
             tickets: ticketsForEvent,
             summary: ticketSummary
         }
-    })    
-
-    console.log({orderedEvents});
-    
-    
+    })
+    // console.log({orderedEvents});
     return orderedEvents
 }
 
@@ -64,6 +61,7 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
 export async function GET(req: Request) {
     try {
         await connectDB();
+        await verifyAuth()
 
         // Get token from cookies
         const token = (await cookies()).get("token")?.value;
@@ -98,6 +96,7 @@ export async function GET(req: Request) {
         const tickets = await Ticket
             .find({ createdBy: userId })
             .populate("event")
+        console.log({ userId })
         // console.log({ serverTickets: tickets, userId })
         // Handle case where user has no events
         if (!tickets.length) {
@@ -231,7 +230,7 @@ export async function POST(req: Request) {
                         ticketNumber,
                     }
 
-                    const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
+                    // const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
 
                     console.log({ printNow: tickets[i], j, i })
 
@@ -242,8 +241,7 @@ export async function POST(req: Request) {
                         createdBy: userId,
                         stand: tickets[i].name,
                         price: tickets[i].price,
-                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XSX`,
-                        qrCode,
+                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XSX-SBM`,
                     })
                 }
                 console.log('tickets_to_print', _createdTickets)

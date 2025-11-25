@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
@@ -6,6 +7,8 @@ import useUser from '@/hooks/useUser'
 import api from '@/lib/axios'
 import { useApp } from '@/context/AppContext'
 import NButton from '../native/NButton'
+import {OnPayNow} from "@/lib/helpers";
+import {getUserFromCookie} from "@/lib/auth";
 
 type Props = {
     ticketsToPurchase: any[];
@@ -15,23 +18,11 @@ type Props = {
     eventId: string;
 }
 
-export const OnPayNow = async (payload: {}, ticketsToPrint: any[], eventId: string) => {
-    // setLoading(true)
-    // try {
-    const result = await api.post("/payment", payload, { withCredentials: true })
-    console.log({ result: result.data })
-    const paymentUrl = result.data.redirectTo
-    console.log({ paymentUrl });
-    const flattenedOrder = ticketsToPrint.filter(ticket => ticket.quantity > 0)
-    const orderPayload = { tickets: flattenedOrder, eventId, reference: result.data.reference, isGenerated: false }
-    const savedTicketOrder = await api.post('/ticket-order', orderPayload)
-    console.log({ orderPayload, response: savedTicketOrder })
-    setTimeout(() => window.location.assign(paymentUrl), 1000)
-}
 
 const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId }: Props) => {
     const [loading, setLoading] = useState(false)
     const { user, loading: userLoading } = useApp()
+    
 
     const paymentPayload = {
         email: user?.email,
