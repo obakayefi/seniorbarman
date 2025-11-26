@@ -26,7 +26,7 @@ const Ticket = ({ ticket }: { ticket: any }) => {
 
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
                 <Image
-                    text={`https://tamia-uninitialed-ernestina.ngrok-free.dev/u/tickets/preview/${ticket.checkInToken}/`}
+                    text={`https://sbmdev.netlify.app/u/tickets/preview/${ticket.checkInToken}/`}
                     options={{
                         type: 'image/jpeg',
                         quality: 0.3,
