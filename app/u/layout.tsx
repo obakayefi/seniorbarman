@@ -2,7 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { CalendarDays, ScanQrCode, Tickets, UserPlus } from 'lucide-react'
+import {CalendarDays, CalendarPlus, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound} from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
 
@@ -43,19 +43,19 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             title: "Create Admin",
             url: sitemap.admin.createAdmin,
             roles: ["admin"],
-            icon: UserPlus,
+            icon: ShieldUser,
         },
         {
             title: "Create Events",
             url: sitemap.admin.createEvent,
             roles: ["admin"],
-            icon: UserPlus,
+            icon: CalendarPlus,
         },
         {
             title: "Users",
             url: sitemap.admin.users,
             roles: ["bouncer", "admin"],
-            icon: UserPlus,
+            icon: UsersRound,
         },
         ...bouncerLinks,
     ]
