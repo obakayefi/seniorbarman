@@ -177,13 +177,8 @@ const AdminTicketScanner = () => {
         setTargetHash(ticketHash)
         setTicketStatus(data.result.ticket.status)
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-        // console.log({ticket: data.ticket})
         setOpenApprovalModal(true)
         setCanScan(false)
-
-        // detectedCodes.forEach((code: any) => {
-        //   console.log(`Format: ${code.format}, Value: ${code.rawValue}`);
-        // });
     };
 
     useEffect(() => {

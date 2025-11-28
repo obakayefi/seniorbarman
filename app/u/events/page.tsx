@@ -33,11 +33,6 @@ const MOCK_EVENT_STATS = [
         value: 23,
         icon: <CalendarClock />
     },
-    {
-        title: 'Past Events',
-        value: 12,
-        icon: <CalendarX />
-    },
 ]
 
 async function getData(): Promise<{}[]> {
@@ -145,7 +140,6 @@ async function getEvents() {
         console.error('Could not get events', { error: error.message })
     }
 }
-
 
 const Events = () => {
     const [data, setData] = React.useState<EventType[]>([])
