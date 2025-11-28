@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from 'react'
 import {useQRCode} from 'next-qrcode'
 import {Switch} from "@/components/ui/switch"
-import {MdSecurity} from "react-icons/md";
+import {MdSecurity, MdStadium} from "react-icons/md";
 import {Scanner} from '@yudiel/react-qr-scanner';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import api from '@/lib/axios';
@@ -11,12 +11,14 @@ import {Button} from '@/components/ui/button';
 import NButton from '@/components/native/NButton';
 import {TbSoccerField} from "react-icons/tb";
 import {toast} from 'sonner';
-import { RiVerifiedBadgeFill } from "react-icons/ri";
+import {RiVerifiedBadgeFill} from "react-icons/ri";
 import {MdReport} from "react-icons/md";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {getUpcomingEvents} from "@/services/actions";
 import {Spinner} from "@/components/ui/spinner";
+import {STATUS_TEXT} from "@/lib/utils"
 import {IEventStats} from "@/types/data";
+import {extractTicketStatus} from "@/lib/utils";
 
 type TicketSummary = {
     event: {
@@ -35,68 +37,89 @@ type TicketSummary = {
 type PreCheckInActionsProps = {
     loading: boolean;
     handleCheckingUserIn: () => void;
+    eventMismatch: boolean;
 }
 
-const PreCheckInActions = ({loading, handleCheckingUserIn}: PreCheckInActionsProps) => (
-    <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
-        <NButton
-            loading={loading}
-            disabled={loading}
-            onClick={handleCheckingUserIn}
-            icon={<ShieldCheckIcon/>}
-            className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
-            Check User In
-        </NButton>
+const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}: PreCheckInActionsProps) => {
+    if (eventMismatch) return null
 
-        <NButton
-            loading={false}
-            disabled={false}
-            onClick={() => {
-            }}
-            icon={<Delete/>}
-            className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
-            Block Ticket
-        </NButton>
-    </section>
-)
+    return (
+        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+            <NButton
+                loading={loading}
+                disabled={loading}
+                onClick={handleCheckingUserIn}
+                icon={<ShieldCheckIcon/>}
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
+                Check User In
+            </NButton>
+
+            <NButton
+                loading={false}
+                disabled={false}
+                onClick={() => {
+                }}
+                icon={<Delete/>}
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
+                Block Ticket
+            </NButton>
+        </section>
+    )
+}
 
 
 type PostCheckInActionsProps = {
     loading: boolean;
-    handleCheckingUserIn: () => void;
+    handleBlockingTicket: () => void;
+    handleCheckingUserOut: () => void;
+    eventMismatch: boolean;
 }
 
-const PostCheckInActions = ({loading, handleCheckingUserIn}: PostCheckInActionsProps) => (
-    <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
-        <NButton
-            loading={loading}
-            disabled={loading}
-            onClick={handleCheckingUserIn}
-            icon={<ShieldCheckIcon/>}
-            className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500'>
-            Void Ticket
-        </NButton>
+const PostCheckInActions = ({
+                                loading,
+                                eventMismatch,
+                                handleCheckingUserOut,
+                                handleBlockingTicket
+                            }: PostCheckInActionsProps) => {
 
-        <NButton
-            loading={loading}
-            disabled={loading}
-            onClick={handleCheckingUserIn}
-            icon={<Delete/>}
-            className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-white text-red-500'>
-            Block Ticket
-        </NButton>
-    </section>
-)
+    if (eventMismatch) return null
+
+    return (
+        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+            <NButton
+                loading={loading}
+                disabled={loading}
+                onClick={handleCheckingUserOut}
+                icon={<ShieldCheckIcon/>}
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500'>
+                Check User Out
+            </NButton>
+
+            <NButton
+                loading={loading}
+                disabled={loading}
+                onClick={handleBlockingTicket}
+                icon={<Delete/>}
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-white text-red-500'>
+                Block Ticket
+            </NButton>
+        </section>
+    )
+}
 
 
 const AdminTicketScanner = () => {
     const {SVG} = useQRCode()
     const [openApprovalModal, setOpenApprovalModal] = useState(false)
     const [currentTicket, setCurrentTicket] = useState<TicketSummary>({} as TicketSummary)
+    const [targetHash, setTargetHash] = useState<string>('')
     const [loading, setLoading] = useState(false)
     const [ticketStatus, setTicketStatus] = useState('')
+    const [isCheckingUserOut, setIsCheckingUserOut] = useState(false)
+    const [isBlockingTicket, setIsBlockingTicket] = useState(false)
     const [canScan, setCanScan] = useState(true)
     const [selectedEvent, setSelectedEvent] = useState('')
+    const [computedStatus, setComputedStatus] = useState('')
     const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [events, setEvents] = useState<[]>([])
     const [eventStats, setEventStats] = useState<IEventStats>({
@@ -108,8 +131,21 @@ const AdminTicketScanner = () => {
 
     const toggleMonitorMode = () => setMonitorMode(!monitorMode)
 
-
     const toggleScanMode = () => setCanScan(scan => !scan)
+
+
+    const statusBadgeStyle = () => {
+        switch (computedStatus) {
+            case STATUS_TEXT[0]:
+                return "bg-green-200 text-green-600"
+            case STATUS_TEXT[1]:
+                return "bg-red-200 text-red-600"
+            case STATUS_TEXT[2]:
+                return "bg-orange-200 text-orange-600"
+            default:
+                return "bg-slate-200 text-slate-600"
+        }
+    }
 
     useEffect(() => {
         async function loadEvents() {
@@ -129,13 +165,21 @@ const AdminTicketScanner = () => {
     const handleScan = async (detectedCodes: any) => {
         const qrValue = (detectedCodes[0].rawValue).split('/')
         const ticketHash = qrValue[qrValue.length - 2]
-        const {data: { ticket }} = await api.get(`/admin/scanner?hash=${ticketHash}`)
-        //console.log({gottenTickets: data})
-        setCurrentTicket({...ticket, hash: ticketHash})
-        setTicketStatus(ticket.status)
-        // 
+        const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
+        const ticket = data.result.ticket
+        const user = data.result.createdBy
+        const ticketData = {
+            ...ticket,
+            createdBy: user
+        }
+        console.log({gottenTickets: data, ticketData})
+        setCurrentTicket(ticketData)
+        setTargetHash(ticketHash)
+        setTicketStatus(data.result.ticket.status)
+        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
         // console.log({ticket: data.ticket})
         setOpenApprovalModal(true)
+        setCanScan(false)
 
         // detectedCodes.forEach((code: any) => {
         //   console.log(`Format: ${code.format}, Value: ${code.rawValue}`);
@@ -143,21 +187,34 @@ const AdminTicketScanner = () => {
     };
 
     useEffect(() => {
+        setComputedStatus(extractTicketStatus(currentTicket.checkInLogs))
+        console.log({computedStatus})
         console.log({currentTicket})
     }, [currentTicket]);
 
-    const handleCheckingUserIn = async () => {
-        // setLoading(true)
-        // const _updatedTicket = await api.post(`/tickets/${currentTicket.ticket.id}/check-in`)
-        // console.log({_updatedTicket})
-        // setTicketStatus(_updatedTicket.data.ticket.status)
-        // toast.info('User checked in!')
-        // setLoading(false)
-        
-        const _updatedTicket = await api.post(`/tickets/${currentTicket.hash}/check-ticket-in`)
-        // console.log({_updatedTicket, currentTicket})
-        console.log({checkInTicket: currentTicket, _updatedTicket})
+    const handleCheckingUserOut = async () => {
+        setIsCheckingUserOut(true)
+        const {data} = await api.post(`/tickets/${targetHash}/check-ticket-out`)
+        console.log({data})
+        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+        setIsCheckingUserOut(false)
     }
+
+    const handleBlockingTicket = async () => {
+        setIsBlockingTicket(true)
+        const blockedTicket = await api.post(`/tickets/${targetHash}/block-ticket`)
+        console.log('Blocking Ticket', {blockedTicket})
+        setIsBlockingTicket(false)
+    }
+    const handleCheckingUserIn = async () => {
+        setLoading(true)
+        const {data} = await api.post(`/tickets/${targetHash}/check-ticket-in`)
+        console.log({ data, ticket: data.result.ticket})
+        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+        //setCurrentTicket(data.ticket)
+        setLoading(false)
+    }
+
 
     return (
         <div className='p-15 h-screen overflow-y-auto'>
@@ -340,20 +397,37 @@ const AdminTicketScanner = () => {
                                 <DialogHeader>
                                     <DialogTitle>Ticket Information</DialogTitle>
                                 </DialogHeader>
-                                <DialogDescription className='flex justify-between'>
+                                <DialogDescription className='flex flex-col gap-2 justify-between'>
+                                    {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
+                                        <section className={'flex items-center gap-1 text-green-500'}>
+                                            <h4>Valid </h4>
+                                            <span><RiVerifiedBadgeFill size={24} className={'mb-0.5'}/></span>
+                                        </section>
+                                    ) : (
+                                        <section className={'flex items-center gap-1 text-red-500'}>
+                                            <h4>Event Mismatch </h4>
+                                            <span><MdReport size={24}/></span>
+                                        </section>
+                                    )}
+
+                                    <div className='flex flex-col items-start gap-1'>
+                                        {/*<h4>Status</h4>*/}
+                                        <h4 className={`${statusBadgeStyle()} p-1 px-2 rounded `}>{computedStatus ?? "Ah!"}</h4>
+                                    </div>
                                     <div className='flex items-center gap-1'>
                                         <h2 className='text-lg text-slate-800'>{currentTicket.event?.homeTeam}</h2>
                                         <span>vs</span>
                                         <h2 className='text-lg text-slate-800'>{currentTicket.event?.awayTeam}</h2>
                                     </div>
-                                    <div className='flex items-center gap-1'>
-                                        {/*<h4>{ticketStatus ?? "Ah!"}</h4>*/}
-                                        <h4>Ticket status</h4>
-                                    </div>
+
                                 </DialogDescription>
                                 <section className='flex items-center w-full justify-between'>
-                                    <div>
-                                        <h5 className='text-sm text-slate-400'>{currentTicket.stand}</h5>
+                                    <div className={'flex items-center text-slate-600 gap-1'}>
+                                        <h5 className='text-sm text-slate-600'>{currentTicket.stand}</h5>
+                                        <span>
+                                            <MdStadium size={21}/>
+                                        </span>
+
                                     </div>
 
                                     <div
@@ -365,27 +439,19 @@ const AdminTicketScanner = () => {
                                     </div>
                                 </section>
 
-                                {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
-                                    <section className={'flex items-center gap-1 text-green-500'}>
-                                        <h4>Ticket Valid </h4>
-                                        <span><RiVerifiedBadgeFill size={28}/></span>
-                                    </section>
-                                ) : (
-                                    <section className={'flex items-center gap-1 text-red-500'}>
-                                        <h4>Event Mismatch </h4>
-                                        <span><MdReport size={28}/></span>
-                                    </section>
-                                )}
 
                                 {/* ACTIONS */}
                                 {
-                                    ticketStatus !== "Not Checked In" ?
+                                    computedStatus === "Checked In" ?
                                         <PostCheckInActions
-                                            handleCheckingUserIn={handleCheckingUserIn}
-                                            loading={loading}
+                                            eventMismatch={(selectedEvent !== currentTicket.event?._id)}
+                                            handleCheckingUserOut={handleCheckingUserOut}
+                                            handleBlockingTicket={handleBlockingTicket}
+                                            loading={isCheckingUserOut}
                                         />
                                         : <PreCheckInActions
                                             handleCheckingUserIn={handleCheckingUserIn}
+                                            eventMismatch={(selectedEvent !== currentTicket.event?._id)}
                                             loading={loading}
                                         />
                                 }

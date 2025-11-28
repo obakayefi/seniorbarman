@@ -2,17 +2,18 @@ import { TicketStandIcon } from '@/components/icons'
 import { TicketIcon } from 'lucide-react'
 import Image from 'next/image'
 import {useQRCode} from "next-qrcode";
+import {extractTicketStatus} from "@/lib/utils";
 
 const Ticket = ({ ticket }: { ticket: any }) => {
     const { Image } = useQRCode();
 
-    const status_checkedIn = ticket.status === "Checked In"
-    const status_checkedOut = ticket.status === "Checked Out"
-    const status_notCheckedIn = ticket.status === "Not Checked In"
+    const status_checkedIn = extractTicketStatus(ticket.checkInLogs) === "Checked In"
+    const status_checkedOut = extractTicketStatus(ticket.checkInLogs) === "Checked Out"
+    const status_notCheckedIn = extractTicketStatus(ticket.checkInLogs) === "Not Checked In"
 
     // console.log({clientticket: ticket})
     
-    const statusBgColor = status_checkedIn ? "bg-green-200 text-green-500" : status_checkedOut ? "bg-red-200 text-red-500 " : status_notCheckedIn ? "bg-slate-800 text-slate-200" : null
+    const statusBgColor = status_checkedIn ? "bg-green-200 text-green-700" : status_checkedOut ? "bg-red-200 text-red-700 " : status_notCheckedIn ? "bg-slate-800 text-slate-200" : null
 
     return (
         <div className='flex flex-col md:flex-row items-center hover:bg-gray-100/50 duration-200 border-2 border-gray-100 p-2 rounded gap-4'>
@@ -40,7 +41,7 @@ const Ticket = ({ ticket }: { ticket: any }) => {
                         },
                     }}
                 />
-                <p className={`bg-[#3C3C3C] text-xs uppercase text-center py-1 text-[#9D9D9D] rounded ${statusBgColor}`}>{ticket.status}</p>
+                <p className={`bg-[#3C3C3C] text-xs uppercase text-center py-1 text-[#9D9D9D] rounded ${statusBgColor}`}>{extractTicketStatus(ticket.checkInLogs)}</p>
             </section>
             
 

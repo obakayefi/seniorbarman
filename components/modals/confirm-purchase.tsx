@@ -23,7 +23,6 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
     const [loading, setLoading] = useState(false)
     const { user, loading: userLoading } = useApp()
     
-
     const paymentPayload = {
         email: user?.email,
         amount: totalPrice,

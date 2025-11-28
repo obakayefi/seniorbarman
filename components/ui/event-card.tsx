@@ -32,7 +32,6 @@ export const EventCard = ({event}: { event: EventType }) => {
                     <div className="flex items-center gap-2">
                         <section className='flex h-40 justify-between items-center gap-1'>
                             <span className='text-center'>{matchInformation.homeTeam}</span>
-                            {console.log({matchInfo: matchInformation.homeLogo})}
                             <Image
                                 src={matchInformation.homeLogo ?? "https://placehold.co/400"}
                                 alt='home logo'

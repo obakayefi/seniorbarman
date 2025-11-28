@@ -233,10 +233,33 @@ export const STADIUMS = [
 
 export function giveLogo(clubName: string) {
     const _club = CLUBS.filter(club => club.name === clubName)[0]
-    // console.log()
     const data = _club ? _club.icon : '/club/rangers-logo.png'
     return data
 }
+
+export const STATUS_TEXT = ["Checked In", "Checked Out", "Not Checked In"]
+export function extractTicketStatus (checkInLogs: []) {
+    
+    let result;
+    
+    if (checkInLogs && checkInLogs.length === 0) {
+        console.log('Not Checked In!!!')
+        return STATUS_TEXT[2]
+    }
+    
+    const lastGateAction = checkInLogs?.[checkInLogs?.length - 1]
+    console.log({extractorLogs: checkInLogs, lastGateAction})
+    
+    if (lastGateAction?.action.toLowerCase() === "entry") {
+        result = STATUS_TEXT[0]
+    }  else if (lastGateAction?.action.toLowerCase() === "exit") {
+        result = STATUS_TEXT[1]
+    }
+    
+    console.log({resultfromExtractor: result, lastGateAction})
+    
+    return result;
+} 
 
 export const sitemap = {
     user: {

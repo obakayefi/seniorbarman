@@ -35,19 +35,19 @@ export default function DetailsPreview() {
     return (
         <>
             <div className='bg-slate-100/20 border-1 rounded justify-center flex flex-col items-center py-6'>
-                <section className='flex items-center gap-10'>
-                    <div className='flex gap-2 items-center'>
-                        <h2 className="text-xl">{eventInfo?.homeTeam}</h2>
-                        <Image src={giveLogo(eventInfo?.homeTeam)} alt='logo' height={100} width={150}/>
+                <section className='flex flex-col sm:flex-row items-center gap-6 md:gap-10 mr-0 md:mr-5'>
+                    <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
+                        <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
+                        <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.homeTeam)} alt='logo' height={100} width={150}/>
                     </div>
-                    <span className='text-xl text-orange-400'>vs</span>
-                    <div className='flex gap-2 items-center'>
-                        <Image src={giveLogo(eventInfo?.awayTeam)} alt='logo' height={100} width={125}/>
-                        <h2 className="text-xl">{eventInfo?.awayTeam}</h2>
+                    <span className='text-xl text-orange-400 bg-slate-100 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
+                    <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
+                        <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo' height={100} width={125}/>
+                        <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam}</h2>
                     </div>
                 </section>
-
-                <section className='flex items-center gap-10 mr-10 mt-15 '>
+            
+                <section className='flex flex-col md:flex-row gap-10 mt-15 '>
                     <div className="flex-col flex gap items-center">
                         <MdStadium className='text-slate-400' size={22}/>
                         <p className='text-slate-500'>Venue</p>
@@ -66,21 +66,23 @@ export default function DetailsPreview() {
                 </section>
             </div>
 
-            <section className='flex items-center gap-2 justify-center text-center'>
+            
+
+            <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
                 <div
-                    className='text-center bg-slate-100 p-2 px-3 rounded cursor-pointer hover:bg-slate-200 duration-100'>
+                    className='text-center bg-slate-100 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
                     <h4 className='text-slate-400'>Popular Stands</h4>
-                    <span className='text-2xl text-slate-600'>3</span>
+                    <span className='text-2xl text-slate-600'>0</span>
                 </div>
                 <div
-                    className='text-center bg-slate-100 p-2 px-3 rounded cursor-pointer hover:bg-slate-200 duration-100'>
+                    className='text-center bg-slate-100 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
                     <h4 className='text-slate-400'>Regular Stands</h4>
-                    <span className='text-2xl text-slate-600'>12</span>
+                    <span className='text-2xl text-slate-600'>0</span>
                 </div>
                 <div
-                    className='text-center bg-slate-100 p-2 px-3 rounded cursor-pointer hover:bg-slate-200 duration-100'>
+                    className='text-center bg-slate-100 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
                     <h4 className='text-slate-400'>Executive Stands</h4>
-                    <span className='text-2xl text-slate-600'>2</span>
+                    <span className='text-2xl text-slate-600'>0</span>
                 </div>
             </section>
 

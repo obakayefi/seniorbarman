@@ -3,6 +3,7 @@ import {connectDB} from "@/lib/mongodb";
 import {NextResponse} from "next/server";
 import {verifyAuth} from "@/lib/auth";
 import Ticket from "@/models/Ticket";
+import User from "@/models/User"
 
 export async function GET(req: Request) {
     try {
@@ -11,19 +12,18 @@ export async function GET(req: Request) {
 
         const { searchParams } = new URL(req.url);
         const hash = searchParams.get("hash");
-        const ticket = await Ticket.findOne({checkInToken: hash}).populate("event").populate("createdBy")
+        const ticket = await Ticket.findOne({checkInToken: hash}).populate("event")
+        const user = await User.findById(ticket.createdBy)
 
-        console.log({hash, ticket}) 
+        console.log({hash, ticket, user}) 
         
         return NextResponse.json({
             message: "Ticket found",
-            ticket
+            result: {
+                ticket,
+                createdBy: user
+            }
         })
-
-        // Pull ticket hash and find the ticket
-        // Arrange data to show Total Checked In, All Outside and Inside.
-        // Send it back
-
     } catch (e: any) {
         console.error("Error fetching user events:", e);
         return NextResponse.json(

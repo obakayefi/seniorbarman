@@ -181,7 +181,7 @@ const Events = () => {
                 <EmblaCarousel />
             </section> */}
             
-            <section className="flex items-center flex-col lg:flex-row items-center overflow-x-auto mt-10 gap-2">
+            <section className="flex items-center flex-col lg:flex-row overflow-x-auto mt-10 gap-2">
                 {MOCK_EVENT_STATS.map(event => (
                     <SummaryCard icon={event.icon} key={event.title} title={event.title} value={event.value} />
                 ))}
@@ -205,7 +205,6 @@ const Events = () => {
                             data.map(event => <EventCard key={event._id} event={event} />
                             ))
                     )}
-
                 </div>
             </section>
         </div>

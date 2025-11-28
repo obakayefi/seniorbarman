@@ -12,8 +12,9 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
 
     const user = await getUserFromCookie()
     
+    // if no token - logout to terminate session
+    if (!user) redirect('/auth/logout')
     
-
     const userLinks = [
         {
             title: "Dashboard",

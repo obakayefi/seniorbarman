@@ -1,65 +1,20 @@
 import {NextResponse} from "next/server";
 import {connectDB} from "@/lib/mongodb";
 import Ticket from "@/models/Ticket";
+import Event from "@/models/Event"
 import {TicketPayload} from "@/types/data";
 import {cookies} from "next/headers";
 import jwt, {JwtPayload} from "jsonwebtoken";
+import User from "@/models/User";
 
 type Params = {
     params: Promise<{ hashToken: string }>;
 };
 
-
-function HandleTicketCheckIn(ticket: TicketPayload) {
-    // pass the ticket details in
-    // console.log({eventCheckIn: ticket})
-    let _gateAction = {
-        time: new Date(),
-        action: "entry",
-        method: "QR Code",
-        location: "Gate 1"
-    }
-
-
-    if (ticket.checkInLogs.length === 0)
-        _gateAction = {
-            ..._gateAction,
-            action: "entry",
-        }
-
-    if (ticket.checkInLogs.length) {
-        const lastAction = ticket.checkInLogs[ticket.checkInLogs.length - 1];
-        console.log({lastAction})
-
-        if (lastAction?.action === "entry") {
-            _gateAction = {
-                ..._gateAction,
-                action: "exit",
-            }
-        } else if (lastAction?.action === "exit") {
-            _gateAction = {
-                ..._gateAction,
-                action: "entry",
-            }
-        }
-    }
-    // look at the checkInLogs[]
-    // if log is empty user has not checked in, so check them in
-    // if the log has an entry, pull the last entry and check what action was done
-    // if last action was entry then the user wants to check out of the stadium -> check them out
-    // if the last action was "exit" then check the user back in
-    // add this last action to the checkInLogs
-
-    // returns the action a user needs to add to the check in logs
-
-    return _gateAction;
-}
-
 export async function POST(req: Request, {params}: Params) {
     try {
         await connectDB();
         const {hashToken} = await params;
-       
 
         if (!hashToken) {
             return NextResponse.json(
@@ -68,9 +23,9 @@ export async function POST(req: Request, {params}: Params) {
             );
         }
         let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-
+        let user = await User.findById(ticket.createdBy)
+        let event;
         //console.log({ticket})
-
         if (!ticket) {
             return NextResponse.json(
                 {error: "Ticket not found"},
@@ -78,38 +33,40 @@ export async function POST(req: Request, {params}: Params) {
             );
         }
 
-        const gateAction = HandleTicketCheckIn(ticket)
+        const gateAction = {
+            time: new Date(),
+            action: "entry",
+            method: "QR Code",
+            location: "Gate 1"
+        }
+        console.log({gateAction, logs: ticket.checkInLogs})
+        ticket.isInside = true;
 
-        console.log({gateAction})
-
-        // Let's create a method that handles the check in algo
-        // 
-
-        // if (ticket.status === "Checked In") {
-        //     return NextResponse.json(
-        //         { error: "Ticket has already been checked in" },
-        //         { status: 400 }
-        //     );
-        // }
-
-        // update and return updated document
-        // const updatedTicket = await Ticket.findByIdAndUpdate(ticketNumber,
-        //     { status: "Checked In" },
-        //     { new: true }
-        // ).populate("event");
-        // console.log({ updatedTicket });
-        //
+        if (ticket.checkInLogs?.length < 1) {
+            console.log('Log below 1')
+            event = await Event.findByIdAndUpdate(ticket.event._id, {
+                $inc: {
+                    peopleInside: 1,
+                    totalPeople: 1,
+                }
+            })
+        } else {
+            console.log('Log above 1')
+            event = await Event.findByIdAndUpdate(ticket.event._id, {
+                $inc: {
+                    peopleInside: 1,
+                    // peopleOutside: -1
+                }
+            })
+        }
+        
         ticket.checkInLogs.push(gateAction)
-
         await ticket.save()
-        let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-
+        let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
+        console.log({ticketOnIn: updatedTicket, modifiedEvent: event})
         return NextResponse.json({
             message: "Ticket successfully checked in",
-            // ticket: ticket.toObject({ virtuals: true }),
-            ticket,
-            updatedTicket,
-            gateAction
+            result: {ticket: updatedTicket, user},
         });
     } catch (error) {
         console.error("Error checking in ticket:", error);

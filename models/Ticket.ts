@@ -28,6 +28,10 @@ const ticketSchema = new Schema({
             default: 'pending'
         }
     },
+    isInside: {
+        type: Boolean,
+        default: false,
+    },
     event: {
         type: Schema.Types.ObjectId,
         ref: "Event",
