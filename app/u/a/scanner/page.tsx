@@ -223,10 +223,20 @@ const AdminTicketScanner = () => {
             </h2>
             <div className="flex lg:flex-row flex-col-reverse gap-2">
                 <section className='w-4/4'>
-                    <div className="flex gap-4 w-full">
+                    <div className="flex lg:flex-row flex-col gap-1 w-full">
+                        {selectedEvent ? (
+                            <section className="flex mt-2 lg:mt-10 w-1/2 mb-4 flex-col">
+                                <h2 className="text-xl mb-4 text-slate-600">Monitoring Mode</h2>
+                                <div className="bg-amber-100 gap-2 h-full flex pl-2 p-2 px-6 rounded items-center max-w-fit lg:w-full">
+                                    <Switch checked={monitorMode} onCheckedChange={toggleMonitorMode}/>
+                                    <span className={'text-amber-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
+                                </div>
+                            </section>
+                        ) : null}
+                        
                         <section className="flex mt-2 lg:mt-10 mb-4 w-full flex-col">
                             <h2 className="text-xl mb-4 text-slate-600">Pick Event To Monitor</h2>
-                            <div className="bg-gray-200 w-full">
+                            <div className="bg-gray-200 rounded w-full">
                                 {events.length > 0 ? (
                                     <Select
                                         value={selectedEvent}
@@ -234,12 +244,12 @@ const AdminTicketScanner = () => {
                                             setSelectedEvent(value);
                                         }}
                                     >
-                                        <SelectTrigger className="3/4 grow-0 flex">
+                                        <SelectTrigger className="w-full grow-0 flex">
                                             <SelectValue placeholder="Pick an event to scan for"/>
                                         </SelectTrigger>
                                         <SelectContent className={'w-full'}>
                                             {events.map(event => (
-                                                <SelectItem key={event._id} value={event._id}>
+                                                <SelectItem key={event._id} value={event._id} className={'w-full outline'}>
                                                     {/*<span className={'text-xs bg-green-400 text-white p-1 rounded'}>(Home)</span> {event.homeTeam} vs {event.awayTeam} <span className={'bg-orange-400 text-white p-1 rounded text-xs'}>(Away)</span> | {new Date(event.date).toDateString()}*/}
                                                     <span
                                                         className={'text-xs bg-green-500 text-white p-1 rounded'}>Home</span> {event.homeTeam} vs {event.awayTeam}
@@ -258,15 +268,7 @@ const AdminTicketScanner = () => {
                             </div>
                         </section>
 
-                        {selectedEvent ? (
-                            <section className="flex mt-2 lg:mt-10 w-1/2 mb-4 flex-col">
-                                <h2 className="text-xl mb-4 text-slate-600">Monitoring Mode</h2>
-                                <div className="bg-slate-300 gap-2 h-full flex pl-2 items-center w-full">
-                                    <Switch checked={monitorMode} onCheckedChange={toggleMonitorMode}/>
-                                    <span>{monitorMode ? "Activated" : "Deactivated"}</span>
-                                </div>
-                            </section>
-                        ) : null}
+                        
                     </div>
 
                     {/*MOBILE SCANNER */}
