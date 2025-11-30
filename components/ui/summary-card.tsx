@@ -11,7 +11,7 @@ export const SummaryCard = ({ title, value, icon }: SummaryCardType) => (
         </div>
         <div className="text-right w-2/4 lg:w-3/4">
             <h2 className='text-slate-500'>{title}</h2>
-            <p className='text-3xl'>{value.toLocaleString('en-US')}</p>
+            <p className='text-3xl'>{value?.toLocaleString('en-US')}</p>
         </div>
     </div>
 )
