@@ -53,13 +53,17 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                         Verify the quantities you want.
                     </DialogDescription>
                 </div>
-                <div className="flex gap-2 flex-col mt-5 justify-between">
+                <div className="flex flex-col mt-5 gap-10 md:gap-3 justify-between">
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="">
-                                <div className="flex justify-between">
-                                    <h5>{ticket.name} <span className="text-sm text-gray-500">(₦{ticket.price.toLocaleString()})</span></h5> <p className="text-lg text-orange-500">₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-700 text-sm">{ticket.quantity} tickets</span> </p>
+                            <section className="border-b-2 border-orange-100">
+                                <div className="flex flex-col sm:flex-row justify-between">
+                                    <h5>{ticket.name}
+                                    </h5> 
+                                    <p className="text-lg text-orange-500">
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-700 text-sm">{ticket.quantity} ticket(s)</span> 
+                                    </p>
                                 </div>
                             </section>
                         )
