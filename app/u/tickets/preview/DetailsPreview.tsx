@@ -18,16 +18,20 @@ export default function DetailsPreview() {
 
     useEffect(() => {
         async function getTickets() {
-            const data = await api.get(`/tickets/${params.id}`)
-            //console.log({params, data: data.data})
-            setEventInfo(data.data.response.event)
-            setTickets(data.data.response.tickets)
+            const {data} = await api.get(`/tickets/${params.id}`)
+            console.log({event: data.response.event, data, eventId: data.response.event._id})
+            setEventInfo(data.response.event)
+            setTickets(data.response.tickets.tickets)
             setLoading(false)
         }
 
         getTickets()
     }, [])
 
+    useEffect(() => {
+        console.log({ticketUpdated: tickets})
+    }, [tickets]);
+    
     useEffect(() => {
         console.log({eventInfo})
     }, [eventInfo]);

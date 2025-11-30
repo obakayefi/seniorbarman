@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import {NextResponse} from "next/server";
+import {connectDB} from "@/lib/mongodb";
 import Event from "@/models/Event";
-import { cookies } from "next/headers";
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import { Resend } from 'resend'
+import {cookies} from "next/headers";
+import jwt, {JwtPayload} from 'jsonwebtoken'
+import {Resend} from 'resend'
 import QRCode from 'qrcode'
 import axios from "axios";
 import api from "@/lib/axios";
@@ -11,7 +11,7 @@ import crypto from 'crypto'
 import Ticket from "@/models/Ticket";
 import mongoose from "mongoose";
 import {getUserFromCookie, verifyAuth} from "@/lib/auth";
-import { StandType } from "@/types/components";
+import {StandType} from "@/types/components";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -26,7 +26,6 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 //     })
 
 // }
-
 
 
 async function SortTicketsForView(events: any[], tickets: any[]) {
@@ -57,7 +56,6 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
 }
 
 
-
 export async function GET(req: Request) {
     try {
         await connectDB();
@@ -65,10 +63,10 @@ export async function GET(req: Request) {
 
         // Get token from cookies
         const token = (await cookies()).get("token")?.value;
-        const { searchParams } = new URL(req.url)
+        const {searchParams} = new URL(req.url)
         const eventNumber = searchParams.get("event-number")
 
-        console.log({ eventNumber })
+        console.log({eventNumber})
         // if (!eventNumber) {
         //     return NextResponse.json({ error: "An event is required" }, { status: 400 })
         // }
@@ -76,27 +74,28 @@ export async function GET(req: Request) {
         // find all the events 
         // for each event attach the tickets in the db that match it's event id
         // finally only show events that have atleast one ticket
-        
+
         // LOADING SINGLE TICKET
         // use the ticket's ID t
-        
+
 
         if (!token) {
             return NextResponse.json(
-                { error: "Unauthorized: No token provided" },
-                { status: 401 }
+                {error: "Unauthorized: No token provided"},
+                {status: 401}
             );
         }
         // Decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string, userId: string };
         const userId = decoded.id;
 
-
+        //const ticketList = new Map<string, { event: any, tickets: any[] }>()
+        
         // Fetch events created by this user
         const tickets = await Ticket
-            .find({ createdBy: userId })
+            .find({createdBy: userId})
             .populate("event")
-        console.log({ userId })
+        console.log({userId})
         // console.log({ serverTickets: tickets, userId })
         // Handle case where user has no events
         if (!tickets.length) {
@@ -107,20 +106,32 @@ export async function GET(req: Request) {
         }
 
         const events = await Event.find({})
+        // for (const ticket of tickets) {
+        //     console.log({porjectedTicket: ticket})
+        //     const eventId = ticket.event._id.toString();
+        //     if (!ticketList.has(eventId)) {
+        //         ticketList.set(eventId, {
+        //             event: ticket.event,
+        //             tickets: []
+        //         })
+        //     }
+        //     ticketList.get(eventId)!.tickets.push(eventId)
+        // }
+        //
+        // console.log({map: ticketList})
 
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
-
 
         return NextResponse.json({
             message: "tickets fetched successfully",
             tickets: eventsSortedWithTickets.filter(event => event.tickets.length !== 0),
-            
+
         });
     } catch (error) {
         console.error("Error fetching user events:", error);
         return NextResponse.json(
-            { error: "Failed to fetch events" },
-            { status: 500 }
+            {error: "Failed to fetch events"},
+            {status: 500}
         );
     }
 }
@@ -129,18 +140,18 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
     const userId = (await getUserFromCookie())?.id
     const _createdTickets = []
     const tickets = data.filter((ticket: any) => ticket.quantity !== 0)
-    console.log({ nowTickets: tickets })
+    console.log({nowTickets: tickets})
 
     for (let i = 0; i < tickets.length; i++) {
         // console.log({ singleTicket: tickets[i] })
         for (let j = 0; j < tickets[i].quantity; j++) {
             const ticketNumber = `${eventId}-${crypto.randomBytes(24).toString('hex')}`
             const ticketId = new mongoose.Types.ObjectId()
-            console.log({ newTicketNumber: ticketNumber })
+            console.log({newTicketNumber: ticketNumber})
             const checkInToken = crypto.randomBytes(16).toString('hex')
             if (!ticketId) {
-                return NextResponse.json({ error: "A ticket ID is required" },
-                    { status: 500 })
+                return NextResponse.json({error: "A ticket ID is required"},
+                    {status: 500})
             }
             const qrPayload = {
                 ticket: ticketId,
@@ -159,7 +170,7 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
             _createdTickets.push({
                 _id: ticketId,
                 checkInToken,
-                payment: { status: isPaid ? 'success' : 'pending' },
+                payment: {status: isPaid ? 'success' : 'pending'},
                 event: eventId,
                 createdBy: userId,
                 stand: tickets[i].name,
@@ -207,18 +218,18 @@ export async function POST(req: Request) {
 
             // prepare the ticket
             const tickets = data.ticketsToPurchase.filter((ticket: any) => ticket.quantity !== 0)
-            console.log({ nowTickets: tickets })
+            console.log({nowTickets: tickets})
 
             for (let i = 0; i < tickets.length; i++) {
                 // console.log({ singleTicket: tickets[i] })
                 for (let j = 0; j < tickets[i].quantity; j++) {
                     const ticketNumber = `${data.eventId}-${crypto.randomBytes(24).toString('hex')}`
                     const ticketId = new mongoose.Types.ObjectId()
-                    console.log({ newTicketNumber: ticketNumber })
+                    console.log({newTicketNumber: ticketNumber})
                     const checkInToken = crypto.randomBytes(16).toString('hex')
                     if (!ticketId) {
-                        return NextResponse.json({ error: "A ticket ID is required" },
-                            { status: 500 })
+                        return NextResponse.json({error: "A ticket ID is required"},
+                            {status: 500})
                     }
                     const qrPayload = {
                         ticket: ticketId,
@@ -232,7 +243,7 @@ export async function POST(req: Request) {
 
                     // const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
 
-                    console.log({ printNow: tickets[i], j, i })
+                    console.log({printNow: tickets[i], j, i})
 
                     _createdTickets.push({
                         _id: ticketId,
@@ -257,8 +268,8 @@ export async function POST(req: Request) {
 
     } catch (error: any) {
         return NextResponse.json(
-            { error: "Failed to create ticket: " + error.message },
-            { status: 500 }
+            {error: "Failed to create ticket: " + error.message},
+            {status: 500}
         )
     }
 }
