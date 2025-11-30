@@ -22,7 +22,6 @@ export async function GET(req: Request) {
                 eventStart.setHours(Number(hours));
                 eventStart.setMinutes(Number(minutes));
                 eventStart.setSeconds(0);
-
                 // console.log({eventStart, cutoff})
                 return eventStart >= cutoff;
             })
@@ -30,8 +29,10 @@ export async function GET(req: Request) {
 
         const events = await Event.find().sort({date: -1})
         const filteredEvents = await Event.find(filter).sort({date: -1})
-        // console.log({filteredEvents, events, _events})
-        return NextResponse.json(_events)
+        return NextResponse.json(
+            {events: _events.reverse(), totalEvents: events.length, upcomingEvents: _events.length},
+            {status: 200}
+        )
     } catch
         (error: any) {
         return NextResponse.json({
