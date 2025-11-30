@@ -113,7 +113,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
             eventId
         }
         if (totalTickets > 1) {
-            setModalState(2)
+            setModalState(1)
         } else {
             setPayNowLoading(true)
             await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
@@ -129,7 +129,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
     return (
         <div>
             <form>
-                <DialogContent className="sm:max-w-[750px] w-4/5  h-full md:h-auto m-4  overflow-auto">
+                <DialogContent className="sm:max-w-[750px] w-4/5  h-fit md:h-auto m-4  overflow-auto">
                     {modalState === 0 ? (
                         <BuyTicket
                             ticketsToPurchase={ticketsToPurchase} 
