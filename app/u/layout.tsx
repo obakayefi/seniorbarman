@@ -17,7 +17,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     
     const userLinks = [
         {
-            title: "Dashboard",
+            title: "Upcoming Events",
             url: sitemap.user.dashboard,
             icon: CalendarDays,
         },
