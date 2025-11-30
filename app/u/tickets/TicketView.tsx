@@ -17,30 +17,17 @@ const TicketsPageView = () => {
     // const  { eventNumber } = us()
     const {user} = useApp()
     const router = useRouter()
-
-    console.log({routerUSer: user})
-
-    if (!user && !user?.role) {
-        console.log({UnouterUSer: user})
-        // router.push(`/auth/login`)
-    }
-
-    useEffect(() => {
-        // console.log({ eventNumber: eventNumber ?? "Nada" });
-
-    }, [])
-
-
+    
     useEffect(() => {
         async function getTickets() {
             const data = await api(`/tickets?event-number${3141048014}`)
-            console.log({tickets_are: data.data.tickets, data: data.data})
             setEventsWithTickets(data.data.tickets)
             setLoading(false)
         }
 
         getTickets()
     }, [])
+
 
     return (
         <div className='p-10 w-full'>
