@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, {Schema} from "mongoose";
 
 const EventSchema = new mongoose.Schema(
     {
@@ -56,8 +56,19 @@ const EventSchema = new mongoose.Schema(
         description: {
             type: String,
         },
+        
     },
-    {timestamps: true}
+    { 
+        timestamps: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true },
+    }
 );
+
+EventSchema.virtual("tickets", {
+    ref: "Ticket",
+    localField: "_id",
+    foreignField: "event",
+})
 
 export default mongoose.models.Event || mongoose.model("Event", EventSchema);
