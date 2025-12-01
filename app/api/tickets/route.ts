@@ -12,6 +12,7 @@ import Ticket from "@/models/Ticket";
 import mongoose from "mongoose";
 import {getUserFromCookie, verifyAuth} from "@/lib/auth";
 import {StandType} from "@/types/components";
+import {summary} from "framer-motion/m";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -29,32 +30,40 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 
 async function SortTicketsForView(events: any[], tickets: any[]) {
-    const orderedEvents = events.map((event, idx) => {
+    console.log('TO SORT!', {tickets})
 
-        // TODO! Extract keys into referenceable object.
-        const ticketSummary: Record<StandType, number> = {
-            "Cover Stand Regular": 0,
-            "Cover Stand Executive": 0,
-            "Popular Stand": 0,
+    const ticketCount: Record<string, Record<string, number>> = {};
+
+    for (const ticket of tickets) {
+        const eventId = ticket.event._id.toString();
+        const stand = ticket.stand || "Regular";
+
+        if (!ticketCount[eventId]) {
+            ticketCount[eventId] = {};
         }
-        const ticketsForEvent = tickets.filter(ticket => {
-            // console.log({  eventInLoop: event._id.toString(), eventInticketLoop: ticket.event._id.toString() })
-            const ticketStand = ticket.stand as StandType
-            ticketSummary[ticketStand] += 1
-            console.log({sampOne: ticket, sampTwo: event})
-            return ticket.event._id.toString() === event._id.toString()
-        })
-        // console.log({ticketsForEvent, ticketSummary});
-        return {
-            event,
-            tickets: ticketsForEvent,
-            summary: ticketSummary
-        }
+
+        ticketCount[eventId][stand] = (ticketCount[eventId][stand] || 0) + 1;
+    }
+
+    console.log({ticketCount});
+
+    const arraySummary = Object.entries(ticketCount).map(([eventId, stands]) => ({
+        eventId,
+        stands
+    }));
+    
+    const extendedEvents = events.map(event => {
+        const plain = event.toObject()
+        
+        const matchedEvent = (arraySummary.find((summary) => summary.eventId === event._id.toString()))?.stands;
+        const transformedSummary = matchedEvent && Object.entries(matchedEvent).map(([name, value]) => ({
+            name,
+            value
+        }));
+        return {...plain, transformedSummary}
     })
-    // console.log({orderedEvents});
-    return orderedEvents
+    return extendedEvents
 }
-
 
 export async function GET(req: Request) {
     try {
@@ -65,20 +74,9 @@ export async function GET(req: Request) {
         const token = (await cookies()).get("token")?.value;
         const {searchParams} = new URL(req.url)
         const eventNumber = searchParams.get("event-number")
-
+        
         console.log({eventNumber})
-        // if (!eventNumber) {
-        //     return NextResponse.json({ error: "An event is required" }, { status: 400 })
-        // }
-
-        // find all the events 
-        // for each event attach the tickets in the db that match it's event id
-        // finally only show events that have atleast one ticket
-
-        // LOADING SINGLE TICKET
-        // use the ticket's ID t
-
-
+      
         if (!token) {
             return NextResponse.json(
                 {error: "Unauthorized: No token provided"},
@@ -88,8 +86,6 @@ export async function GET(req: Request) {
         // Decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string, userId: string };
         const userId = decoded.id;
-
-        //const ticketList = new Map<string, { event: any, tickets: any[] }>()
         
         // Fetch events created by this user
         const tickets = await Ticket
@@ -106,26 +102,12 @@ export async function GET(req: Request) {
         }
 
         const events = await Event.find({})
-        // for (const ticket of tickets) {
-        //     console.log({porjectedTicket: ticket})
-        //     const eventId = ticket.event._id.toString();
-        //     if (!ticketList.has(eventId)) {
-        //         ticketList.set(eventId, {
-        //             event: ticket.event,
-        //             tickets: []
-        //         })
-        //     }
-        //     ticketList.get(eventId)!.tickets.push(eventId)
-        // }
-        //
-        // console.log({map: ticketList})
 
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
-
+        console.log({eventsSortedWithTickets})
         return NextResponse.json({
             message: "tickets fetched successfully",
-            tickets: eventsSortedWithTickets.filter(event => event.tickets.length !== 0),
-
+            tickets: eventsSortedWithTickets.filter(ticket => ticket.transformedSummary),
         });
     } catch (error) {
         console.error("Error fetching user events:", error);
