@@ -13,7 +13,7 @@ type EventProps = {
 }
 
 const EventTicket = ({event, summary}: { event: EventProps, summary: string }) => {
-    console.log({NowEvent: event})
+    //console.log({NowEvent: event})
 
     const teamLogos = () => {
         let homeLogo, awayLogo;
@@ -21,7 +21,7 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
         homeLogo = CLUBS.map(club => club.name === event.event?.homeTeam)[0]
         awayLogo = CLUBS.map(club => club.name === event.event?.awayTeam)[0]
 
-        console.log({homeLogo, awayLogo})
+        // console.log({homeLogo, awayLogo})
 
         return {
             homeLogo,

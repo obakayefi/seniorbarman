@@ -14,6 +14,7 @@ import {useApp} from "@/context/AppContext";
 const TicketsPageView = () => {
     const [eventsWithTickets, setEventsWithTickets] = useState([])
     const [loading, setLoading] = useState(true)
+    const [ticketSummary, setTicketSummary] = useState([])
     // const  { eventNumber } = us()
     const {user} = useApp()
     const router = useRouter()
@@ -22,6 +23,8 @@ const TicketsPageView = () => {
         async function getTickets() {
             const data = await api(`/tickets?event-number${3141048014}`)
             setEventsWithTickets(data.data.tickets)
+            setTicketSummary(data.data.summary)
+            //console.log({data, summary: data.data.summary})
             setLoading(false)
         }
 
@@ -50,7 +53,7 @@ const TicketsPageView = () => {
                     <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-20'>
                         {eventsWithTickets.map((event: any) => (
                             // <Ticket ticket={ticket} key={ticket._id} />
-                            <EventTicket key={event.event._id} event={event}/>
+                            <EventTicket summary={ticketSummary} key={event.id} event={event}/>
                         ))}
                     </div>
                 )}
