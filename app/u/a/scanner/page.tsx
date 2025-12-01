@@ -114,6 +114,7 @@ const AdminTicketScanner = () => {
     const [currentTicket, setCurrentTicket] = useState<TicketSummary>({} as TicketSummary)
     const [targetHash, setTargetHash] = useState<string>('')
     const [loading, setLoading] = useState(false)
+    const [loadingTickets, setLoadingTickets] = useState([])
     const [ticketStatus, setTicketStatus] = useState('')
     const [isCheckingUserOut, setIsCheckingUserOut] = useState(false)
     const [isBlockingTicket, setIsBlockingTicket] = useState(false)
@@ -149,9 +150,10 @@ const AdminTicketScanner = () => {
 
     useEffect(() => {
         async function loadEvents() {
+            setLoading(true)
             const _events = (await getUpcomingEvents()).data
-            console.log({storingEvents: _events})
-            if (_events && _events.length) setEvents(_events)
+            if (_events && _events.events.length) setEvents(_events.events)
+            setLoading(false)
         }
 
         loadEvents()
@@ -186,6 +188,10 @@ const AdminTicketScanner = () => {
         console.log({computedStatus})
         console.log({currentTicket})
     }, [currentTicket]);
+
+    useEffect(() => {
+        console.log({events})
+    }, [events]);
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
@@ -254,10 +260,14 @@ const AdminTicketScanner = () => {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                ) : (
+                                ) : loadingTickets ? (
                                     <div className={'flex gap-2 p-1 px-3 items-center'}>
                                         <h3 className={'text-slate-400'}>Loading Events </h3>
                                         <span><Spinner/></span>
+                                    </div>
+                                ): (
+                                    <div>
+                                        <h2 className="text-xl">No Events</h2>
                                     </div>
                                 )}
                             </div>
