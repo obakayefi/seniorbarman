@@ -37,6 +37,29 @@ export async function GET(req: Request, {params}: Params) {
         const tickets = await Ticket.find({ createdBy: userId }).populate("event");
         // const tickets = await Ticket.find({createdBy: userId});
         const ticketList = new Map<string, { event: any, tickets: any[] }>()
+        const ticketCount: Record<string, Record<string, number>> = {};
+
+        for (const ticket of tickets) {
+            const eventId = ticket.event._id.toString();
+            const stand = ticket.stand || "Regular";
+
+            if (!ticketCount[eventId]) {
+                ticketCount[eventId] = {};
+            }
+
+            ticketCount[eventId][stand] = (ticketCount[eventId][stand] || 0) + 1;
+        }
+
+        const arraySummary = Object.entries(ticketCount).map(([eventId, stands]) => ({
+            eventId,
+            stands
+        }));
+        
+        const specificSummary = arraySummary.filter(summary => summary.eventId === eventId)[0].stands;
+        const transformedSummary = Object.entries(specificSummary).map(([name, value]) => ({
+            name,
+            value
+        }));
 
         for (const ticket of tickets) {
             const _eventId = ticket.event._id.toString();
@@ -53,17 +76,20 @@ export async function GET(req: Request, {params}: Params) {
             }
             ticketList.get(_eventId)!.tickets.push(ticket)
         }
+        
         if (!tickets) {
             return NextResponse.json(
                 {error: "Could not find event for this ticket"},
                 {status: 404}
             );
         }
+        
         const matchedTicket = ticketList.get(eventId);
         console.log({ticketList, matchedTicket});
         const response = {
             event,
             tickets: matchedTicket,
+            summary: transformedSummary
         }
         
         return NextResponse.json(
