@@ -75,7 +75,7 @@ export async function GET(req: Request) {
         const {searchParams} = new URL(req.url)
         const eventNumber = searchParams.get("event-number")
         
-        console.log({eventNumber})
+        //console.log({eventNumber})
       
         if (!token) {
             return NextResponse.json(
