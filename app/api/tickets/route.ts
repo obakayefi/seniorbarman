@@ -190,7 +190,7 @@ export async function POST(req: Request) {
             totalTickets += ticket.quantity
         })
 
-        if (totalTickets > 5) {
+        if (totalTickets > 100) {
             // console.log('Bulk tickets are being generated...')
             return NextResponse.json({
                 message: "Bulk Tickets Order"

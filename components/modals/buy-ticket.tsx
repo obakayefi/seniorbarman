@@ -37,7 +37,7 @@ const BuyTicket = ({
                    }: Props) => {
     const {user} = useApp()
     return (
-        <section className=''>
+        <section className='overflow-y-auto'>
             <DialogHeader>
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Buy Ticket</DialogTitle>
@@ -95,7 +95,7 @@ const BuyTicket = ({
                 </div>
 
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className={'w-full'}>
                 <DialogClose asChild>
                     <Button variant="outline" onClick={resetForm}>Cancel</Button>
                 </DialogClose>

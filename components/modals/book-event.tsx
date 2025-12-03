@@ -127,9 +127,9 @@ export function BookEventModal({eventId}: { eventId: string }) {
     }
 
     return (
-        <div>
-            <form>
-                <DialogContent className="sm:max-w-[750px] w-4/5  h-fit md:h-auto m-4  overflow-auto">
+        <div className={''}>
+            <form className={'bg-orange-400'}>
+                <DialogContent className="sm:max-w-[750px] w-5/6  h-4/5 md:h-auto  overflow-auto">
                     {modalState === 0 ? (
                         <BuyTicket
                             ticketsToPurchase={ticketsToPurchase} 

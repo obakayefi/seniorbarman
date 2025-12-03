@@ -70,7 +70,7 @@ export function formatDate(date: Date) {
 
 export const CLUBS = [
     {
-        name: "Awka United FC",
+        name: "Akwa United FC",
         icon: "/clubs/awka.png"
     },
     {
