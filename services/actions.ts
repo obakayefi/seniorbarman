@@ -7,3 +7,13 @@ export async function getUpcomingEvents() {
         console.error(error)
     }
 }
+
+export async function fetchEventStats(id: string) {
+    try {
+        const {data} = await api.get(`/events/${id}/stats`);
+        console.log({data})
+        return data
+    } catch (e) {
+        console.error(e)
+    }
+}

@@ -238,27 +238,80 @@ export function giveLogo(clubName: string) {
 }
 
 export const STATUS_TEXT = ["Checked In", "Checked Out", "Not Checked In"]
-export function extractTicketStatus (checkInLogs: []) {    
+
+export function extractTicketStatus(checkInLogs: []) {
     let result;
-    
+
     if (checkInLogs && checkInLogs.length === 0) {
         //console.log('Not Checked In!!!')
         return STATUS_TEXT[2]
     }
-    
+
     const lastGateAction = checkInLogs?.[checkInLogs?.length - 1]
     // console.log({extractorLogs: checkInLogs, lastGateAction})
-    
+
     if (lastGateAction?.action?.toLowerCase() === "entry") {
         result = STATUS_TEXT[0]
-    }  else if (lastGateAction?.action?.toLowerCase() === "exit") {
+    } else if (lastGateAction?.action?.toLowerCase() === "exit") {
         result = STATUS_TEXT[1]
     }
-    
+
     // console.log({resultfromExtractor: result, lastGateAction})
-    
+
     return result;
-} 
+}
+
+export const PrepareEventStats = (tickets: any[]) => {
+    let totalTicketsBought;
+    let totalPeopleCheckedIn;
+    let totalPeopleInside;
+    let totalPeopleOutside;
+
+    totalTicketsBought = tickets.length
+    totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
+    totalPeopleInside = tickets.filter(ticket => {
+        const logs = ticket.checkInLogs
+        if (!logs || logs.length === 0) {
+            return false
+        }
+
+        const lastLog = logs[logs.length - 1]
+
+        if (lastLog.action === "entry") {
+            return true
+        }
+
+        if (lastLog.action === "exit") {
+            return false
+        }
+
+        return false
+    }).length
+
+    totalPeopleOutside = tickets.filter(ticket => {
+        const logs = ticket.checkInLogs
+        if (!logs || logs.length === 0) {
+            return false
+        }
+
+        const lastLog = logs[logs.length - 1]
+
+        if (lastLog.action === "entry") {
+            return false
+        }
+
+        if (lastLog.action === "exit") {
+            return true
+        }
+    }).length
+
+    return {
+        totalPeopleInside,
+        totalPeopleOutside,
+        totalTicketsBought,
+        totalPeopleCheckedIn
+    }
+}
 
 export const sitemap = {
     user: {

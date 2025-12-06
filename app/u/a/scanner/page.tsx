@@ -14,7 +14,7 @@ import {toast} from 'sonner';
 import {RiVerifiedBadgeFill} from "react-icons/ri";
 import {MdReport} from "react-icons/md";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {getUpcomingEvents} from "@/services/actions";
+import {fetchEventStats, getUpcomingEvents} from "@/services/actions";
 import {Spinner} from "@/components/ui/spinner";
 import {STATUS_TEXT} from "@/lib/utils"
 import {IEventStats} from "@/types/data";
@@ -123,11 +123,7 @@ const AdminTicketScanner = () => {
     const [computedStatus, setComputedStatus] = useState('')
     const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [events, setEvents] = useState<[]>([])
-    const [eventStats, setEventStats] = useState<IEventStats>({
-        totalOutsideStadium: 0,
-        totalInsideStadium: 0,
-        totalCheckedIn: 0
-    } as IEventStats)
+    const [eventStats, setEventStats] = useState<IEventStats>({} as IEventStats)
     // const [totalInStadium]
 
     const toggleMonitorMode = () => setMonitorMode(!monitorMode)
@@ -174,7 +170,6 @@ const AdminTicketScanner = () => {
             ...ticket,
             createdBy: user
         }
-        console.log({gottenTickets: data, ticketData})
         setCurrentTicket(ticketData)
         setTargetHash(ticketHash)
         setTicketStatus(data.result.ticket.status)
@@ -192,6 +187,20 @@ const AdminTicketScanner = () => {
     useEffect(() => {
         console.log({events})
     }, [events]);
+    
+    useEffect(() => {
+        if (!selectedEvent) return
+        const getEventStats = async () => {
+            const stats = await fetchEventStats(selectedEvent)
+            console.log({stats})
+            setEventStats(stats.eventTicketStats)
+        }
+        getEventStats()
+    }, [selectedEvent]);
+
+    useEffect(() => {
+        console.log({eventStatsChange: eventStats})
+    }, [eventStats]);
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
@@ -297,16 +306,23 @@ const AdminTicketScanner = () => {
                             <h2 className='text-3xl text-slate-600'>Fan Stats</h2>
                             <div className='flex gap-4 flex-col md:flex-row'>
                                 <section className="bg-green-100 p-2 rounded lg:w-54">
+                                    <h2 className='text-sm text-slate-500'>Tickets Sold</h2>
+                                    {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
+                                    <span className='text-5xl text-slate-800'>
+                                        {eventStats.totalTicketsBought}
+                                    </span>
+                                </section>
+                                <section className="bg-green-100 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-500'>Total Check In</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalCheckedIn}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}</span>
                                 </section>
                                 <section className="bg-blue-100 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-500'>Inside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalInsideStadium}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleInside}</span>
                                 </section>
                                 <section className="bg-red-100/50 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-800'>Outside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalOutsideStadium}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleOutside}</span>
                                 </section>
                             </div>
                         </div>

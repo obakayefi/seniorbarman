@@ -178,7 +178,7 @@ export async function POST(req: Request) {
         if (typeof decoded === "string") {
             throw new Error("Invalid token format");
         }
-
+        
         const userId = (decoded as JwtPayload).id;
 
         const event = await Event.findById(data.eventId)
@@ -190,10 +190,10 @@ export async function POST(req: Request) {
             totalTickets += ticket.quantity
         })
 
-        if (totalTickets > 100) {
+        if (totalTickets > 1000) {
             // console.log('Bulk tickets are being generated...')
             return NextResponse.json({
-                message: "Bulk Tickets Order"
+                message: "Bulk Tickets Order, yet to structure"
             })
         } else {
             console.log('Few tickets! Wait for your tickets', decoded)
@@ -203,7 +203,6 @@ export async function POST(req: Request) {
             console.log({nowTickets: tickets})
 
             for (let i = 0; i < tickets.length; i++) {
-                // console.log({ singleTicket: tickets[i] })
                 for (let j = 0; j < tickets[i].quantity; j++) {
                     const ticketNumber = `${data.eventId}-${crypto.randomBytes(24).toString('hex')}`
                     const ticketId = new mongoose.Types.ObjectId()
@@ -234,7 +233,7 @@ export async function POST(req: Request) {
                         createdBy: userId,
                         stand: tickets[i].name,
                         price: tickets[i].price,
-                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XSX-SBM`,
+                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XC10-SBM`,
                     })
                 }
                 console.log('tickets_to_print', _createdTickets)

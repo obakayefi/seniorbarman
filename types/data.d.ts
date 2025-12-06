@@ -1,7 +1,9 @@
 export interface IEventStats {
-    totalCheckedIn: number;
-    totalInsideStadium: number;
-    totalOutsideStadium: number;
+    totalTicketsBought: number;
+    totalPeopleCheckedIn: number;
+    totalPeopleInside: number;
+    totalPeopleOutside: number;
+    
 }
 
 export type TicketPayload = {
