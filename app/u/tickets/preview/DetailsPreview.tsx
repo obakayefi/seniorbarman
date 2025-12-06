@@ -66,8 +66,9 @@ export default function DetailsPreview() {
             </div>
 
             <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
-                {ticketSummary?.map(summary => (
+                {ticketSummary?.map((summary, index) => (
                     <div
+                        key={index}
                         className='text-center bg-slate-100 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
                         <h4 className='text-slate-400'>{summary.name}</h4>
                         <span className='text-2xl text-slate-600'>{summary.value}</span>
