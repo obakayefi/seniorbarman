@@ -23,7 +23,11 @@ export async function GET(req: Request) {
                 eventStart.setMinutes(Number(minutes));
                 eventStart.setSeconds(0);
                 // console.log({eventStart, cutoff})
-                return eventStart >= cutoff;
+                // return eventStart >= cutoff;
+                // Add 24 hours
+                const eventEnd = new Date(eventStart.getTime() + 24 * 60 * 60 * 1000);
+                // Keep if current time is before eventEnd
+                return eventEnd >= cutoff;
             })
         }
 
