@@ -187,14 +187,15 @@ const AdminTicketScanner = () => {
     useEffect(() => {
         console.log({events})
     }, [events]);
+
+    const getEventStats = async () => {
+        const stats = await fetchEventStats(selectedEvent)
+        console.log({stats})
+        setEventStats(stats.eventTicketStats)
+    }
     
     useEffect(() => {
         if (!selectedEvent) return
-        const getEventStats = async () => {
-            const stats = await fetchEventStats(selectedEvent)
-            console.log({stats})
-            setEventStats(stats.eventTicketStats)
-        }
         getEventStats()
     }, [selectedEvent]);
 
@@ -207,6 +208,10 @@ const AdminTicketScanner = () => {
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-out`)
         console.log({data})
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+        // setEventStats(data.result.ticket.eventTicketStats)
+        console.log({statusOut: data.result})
+        setEventStats(data.result.eventTicketStats)
+        //getEventStats()
         setIsCheckingUserOut(false)
     }
 
@@ -219,9 +224,12 @@ const AdminTicketScanner = () => {
     const handleCheckingUserIn = async () => {
         setLoading(true)
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-in`)
-        console.log({ data, ticket: data.result.ticket})
+        console.log({data, ticket: data.result.ticket})
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+        console.log({statusIn: data.result})
         //setCurrentTicket(data.ticket)
+        //getEventStats()
+        setEventStats(data.result.eventTicketStats)
         setLoading(false)
     }
 
@@ -237,13 +245,15 @@ const AdminTicketScanner = () => {
                         {selectedEvent ? (
                             <section className="flex mt-2 lg:mt-10 w-1/2 mb-4 flex-col">
                                 <h2 className="text-xl mb-4 text-slate-600">Monitoring Mode</h2>
-                                <div className="bg-amber-100 gap-2 h-full flex pl-2 p-2 px-6 rounded items-center max-w-fit lg:w-full">
+                                <div
+                                    className="bg-amber-100 gap-2 h-full flex pl-2 p-2 px-6 rounded items-center max-w-fit lg:w-full">
                                     <Switch checked={monitorMode} onCheckedChange={toggleMonitorMode}/>
-                                    <span className={'text-amber-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
+                                    <span
+                                        className={'text-amber-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
                                 </div>
                             </section>
                         ) : null}
-                        
+
                         <section className="flex mt-2 lg:mt-10 mb-4 w-full flex-col">
                             <h2 className="text-xl mb-4 text-slate-600">Pick Event To Monitor</h2>
                             <div className="bg-gray-200 rounded w-full">
@@ -259,7 +269,8 @@ const AdminTicketScanner = () => {
                                         </SelectTrigger>
                                         <SelectContent className={'w-full'}>
                                             {events.map(event => (
-                                                <SelectItem key={event._id} value={event._id} className={'w-full outline'}>
+                                                <SelectItem key={event._id} value={event._id}
+                                                            className={'w-full outline'}>
                                                     {/*<span className={'text-xs bg-green-400 text-white p-1 rounded'}>(Home)</span> {event.homeTeam} vs {event.awayTeam} <span className={'bg-orange-400 text-white p-1 rounded text-xs'}>(Away)</span> | {new Date(event.date).toDateString()}*/}
                                                     <span
                                                         className={'text-xs bg-green-500 text-white p-1 rounded'}>Home</span> {event.homeTeam} vs {event.awayTeam}
@@ -274,7 +285,7 @@ const AdminTicketScanner = () => {
                                         <h3 className={'text-slate-400'}>Loading Events </h3>
                                         <span><Spinner/></span>
                                     </div>
-                                ): (
+                                ) : (
                                     <div>
                                         <h2 className="text-xl">No Events</h2>
                                     </div>
@@ -282,7 +293,7 @@ const AdminTicketScanner = () => {
                             </div>
                         </section>
 
-                        
+
                     </div>
 
                     {/*MOBILE SCANNER */}
@@ -306,23 +317,23 @@ const AdminTicketScanner = () => {
                             <h2 className='text-3xl text-slate-600'>Fan Stats</h2>
                             <div className='flex gap-4 flex-col md:flex-row'>
                                 <section className="bg-green-100 p-2 rounded lg:w-54">
-                                    <h2 className='text-sm text-slate-500'>Tickets Sold</h2>
+                                    <h2 className='text-sm text-slate-500'>Total Alloted Tickets</h2>
                                     {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
                                     <span className='text-5xl text-slate-800'>
-                                        {eventStats.totalTicketsBought}
+                                        {Number(eventStats?.totalTicketsBought)?.toLocaleString()}
                                     </span>
                                 </section>
                                 <section className="bg-green-100 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-500'>Total Check In</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleCheckedIn}</span>
                                 </section>
                                 <section className="bg-blue-100 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-500'>Inside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleInside}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleInside}</span>
                                 </section>
                                 <section className="bg-red-100/50 p-2 rounded lg:w-54">
                                     <h2 className='text-sm text-slate-800'>Outside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats.totalPeopleOutside}</span>
+                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleOutside}</span>
                                 </section>
                             </div>
                         </div>
@@ -420,30 +431,38 @@ const AdminTicketScanner = () => {
                                 <DialogHeader>
                                     <DialogTitle>Ticket Information</DialogTitle>
                                 </DialogHeader>
-                                <DialogDescription className='flex flex-col gap-2 justify-between'>
-                                    {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
-                                        <section className={'flex items-center gap-1 text-green-500'}>
-                                            <h4>Valid </h4>
-                                            <span><RiVerifiedBadgeFill size={24} className={'mb-0.5'}/></span>
-                                        </section>
-                                    ) : (
-                                        <section className={'flex items-center gap-1 text-red-500'}>
-                                            <h4>Event Mismatch </h4>
-                                            <span><MdReport size={24}/></span>
-                                        </section>
-                                    )}
+                                {/*<DialogDescription className='flex flex-col gap-2 justify-between'>*/}
+                                <section className='flex flex-col gap-2 justify-between'>
+                                    <section className='flex flex-col gap-2'>
+                                        {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
+                                            <div className='flex items-center gap-1 text-green-500'>
+                                                <span>Valid</span>
+                                                <RiVerifiedBadgeFill size={24} className='mb-0.5'/>
+                                            </div>
+                                        ) : (
+                                            <div className='flex items-center gap-1 text-red-500'>
+                                                <h4 className='m-0'>Event Mismatch</h4>
+                                                <MdReport size={24}/>
+                                            </div>
+                                        )}
 
-                                    <div className='flex flex-col items-start gap-1'>
-                                        {/*<h4>Status</h4>*/}
-                                        <h4 className={`${statusBadgeStyle()} p-1 px-2 rounded `}>{computedStatus ?? "Ah!"}</h4>
-                                    </div>
-                                    <div className='flex items-center gap-1'>
-                                        <h2 className='text-lg text-slate-800'>{currentTicket.event?.homeTeam}</h2>
-                                        <span>vs</span>
-                                        <h2 className='text-lg text-slate-800'>{currentTicket.event?.awayTeam}</h2>
-                                    </div>
+                                        <div className='flex flex-col items-start gap-1'>
+                                            <div className={`${statusBadgeStyle()} p-1 px-2 rounded`}>
+                                                {computedStatus ?? "Ah!"}
+                                            </div>
+                                        </div>
 
-                                </DialogDescription>
+                                        <div className='flex items-center gap-1'>
+                                            <span
+                                                className='text-lg text-slate-800'>{currentTicket.event?.homeTeam}</span>
+                                            <span>vs</span>
+                                            <span
+                                                className='text-lg text-slate-800'>{currentTicket.event?.awayTeam}</span>
+                                        </div>
+                                    </section>
+                                </section>
+                                {/*</DialogDescription>*/}
+
                                 <section className='flex items-center w-full justify-between'>
                                     <div className={'flex items-center text-slate-600 gap-1'}>
                                         <h5 className='text-sm text-slate-600'>{currentTicket.stand}</h5>

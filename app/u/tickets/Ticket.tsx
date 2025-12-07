@@ -4,7 +4,7 @@ import Image from 'next/image'
 import {useQRCode} from "next-qrcode";
 import {extractTicketStatus} from "@/lib/utils";
 
-const Ticket = ({ticket}: { ticket: any }) => {
+const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
     const {Image} = useQRCode();
 
     if (!ticket) return null
@@ -13,12 +13,12 @@ const Ticket = ({ticket}: { ticket: any }) => {
     const status_checkedOut = extractTicketStatus(ticket.checkInLogs) === "Checked Out"
     const status_notCheckedIn = extractTicketStatus(ticket.checkInLogs) === "Not Checked In"
 
-    console.log({clientTicket: ticket, event: ticket.event, checkInLogs: status_checkedIn})
+    // console.log({clientTicket: ticket, event: ticket.event, checkInLogs: status_checkedIn})
 
     const statusBgColor = status_checkedIn ? "bg-green-200 text-green-700" : status_checkedOut ? "bg-red-200 text-red-700 " : status_notCheckedIn ? "bg-slate-800 text-slate-200" : null
 
     const formattedDate = (_date: Date) => {
-        console.log({formatted: _date})
+        // console.log({formatted: _date})
         const date = new Date(_date)
         const day = String(date.getDate()).padStart(2, "0");
         const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -28,12 +28,12 @@ const Ticket = ({ticket}: { ticket: any }) => {
     
     return (
         <div
-            className='flex flex-col md:flex-row items-center hover:bg-gray-100/50 duration-200 border-2 border-gray-100 p-2 rounded gap-4'>
-            <section className='flex gap-0 flex-col-reverse md:flex-col overflow-hidden'>
+            className={`flex flex-col md:flex-row items-center bg-white hover:bg-gray-100/50 duration-200 border-2 border-gray-100 p-2 rounded ${toPrint ? 'h-84': 'h-auto' } gap-4`}>
+            <section className='flex gap-0 items-center flex-col md:flex-col overflow-hidden'>
                 <div>
                     <div className='bg-[#F5F5F5] flex justify-center items-center gap-1 px-4 py-2'>
                         <span><TicketStandIcon size={24}/></span>
-                        <span>{ticket.stand}</span>
+                        <span className={'text-sm'}>{ticket.stand}</span>
                     </div>
                     <div className='text-slate-700 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
                         <h2 className="text-sm">{ticket.event.homeTeam}</h2>
@@ -48,7 +48,7 @@ const Ticket = ({ticket}: { ticket: any }) => {
                 </div>
 
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
-                <div className={'-mt-4 bg-transparent'}>
+                <div className={'md:-mt-4 mt-0 bg-transparent'}>
                     <Image
                         text={`https://sbmdev.netlify.app/u/tickets/preview/${ticket.checkInToken}/`}
                         options={{
@@ -56,8 +56,8 @@ const Ticket = ({ticket}: { ticket: any }) => {
                             quality: 0.3,
                             errorCorrectionLevel: 'M',
                             margin: 2,
-                            scale: 4,
-                            width: 200,
+                            scale: 3,
+                            width: toPrint ? 140 : 200,
                             color: {
                                 dark: '#010599FF',
                                 light: '#FFF',
@@ -65,7 +65,7 @@ const Ticket = ({ticket}: { ticket: any }) => {
                         }}
                     />
                 </div>
-                <p className={`bg-[#3C3C3C] text-xs uppercase text-center py-1 text-[#9D9D9D] rounded ${statusBgColor}`}>{extractTicketStatus(ticket.checkInLogs)}</p>
+                {!toPrint ? (<p className={`bg-[#3C3C3C] text-xs uppercase text-center w-full mt-2 py-1 text-[#9D9D9D] rounded ${statusBgColor}`}>{extractTicketStatus(ticket.checkInLogs)}</p>) : null}
             </section>
         </div>
     )

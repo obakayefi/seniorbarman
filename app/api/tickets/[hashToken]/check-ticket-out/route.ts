@@ -3,6 +3,7 @@ import {connectDB} from "@/lib/mongodb";
 import Ticket from "@/models/Ticket";
 import User from "@/models/User";
 import Event from "@/models/Event";
+import {PrepareEventStats} from "@/lib/utils";
 
 type Params = {
     params: Promise<{ hashToken: string }>
@@ -32,7 +33,7 @@ export async function POST(req: Request, {params}: Params) {
         let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event")
         let user = await User.findById(ticket.createdBy)
         let event;
-        
+
         if (!ticket) {
             return NextResponse.json(
                 {error: "Ticket not found"},
@@ -48,14 +49,19 @@ export async function POST(req: Request, {params}: Params) {
                 peopleOutside: 1
             }
         })
-        
+
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
-        console.log({ticketOnOut: ticket, modifiedEvent: event})
+        //console.log({ticketOnOut: ticket, modifiedEvent: event})
         const updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-
+        const ticketsForEvent = await Ticket.find({event: ticket.event})
+        const eventTicketStats = PrepareEventStats(ticketsForEvent);
+        console.log({eventTicketStats})
         return NextResponse.json(
-            {message: "Checking User Out", result: {ticket: updatedTicket, user}},
+            {
+                message: "Checking User Out",
+                result: {ticket: updatedTicket, user, eventTicketStats}
+            },
             {status: 200}
         )
     } catch (e: any) {

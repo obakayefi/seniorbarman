@@ -6,6 +6,7 @@ import {TicketPayload} from "@/types/data";
 import {cookies} from "next/headers";
 import jwt, {JwtPayload} from "jsonwebtoken";
 import User from "@/models/User";
+import {PrepareEventStats} from "@/lib/utils";
 
 type Params = {
     params: Promise<{ hashToken: string }>;
@@ -56,9 +57,12 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
     }
 
     console.log({ totalInsideStadium, totalOutsideStadium, allTickets: tickets.length });
+    
+    const eventTicketStats = PrepareEventStats(tickets);
    
     return {
         allPurchasedTickets: tickets.length,
+        eventTicketStats,
         totalOutsideStadium,
         totalInsideStadium,
         totalCheckedIn,
@@ -119,13 +123,11 @@ export async function POST(req: Request, {params}: Params) {
         await ticket.save()
         let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
         const ticketsForEvent = await Ticket.find({event: ticket.event})
-        //console.log({logs: updatedTicket.checkInLogs})
-        // console.log({ticketOnIn: updatedTicket, modifiedEvent: event})
-        const stats = ProcessLogsForGameStats(ticketsForEvent, gateAction)
-        console.log({stats})
+        const eventTicketStats = PrepareEventStats(ticketsForEvent);
+        console.log({eventTicketStats})
         return NextResponse.json({
             message: "Ticket successfully checked in",
-            result: {ticket: updatedTicket, user},
+            result: {ticket: updatedTicket, user, eventTicketStats},
         });
     } catch (error) {
         console.error("Error checking in ticket:", error);
