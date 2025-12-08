@@ -158,7 +158,6 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
                 stand: tickets[i].name,
                 price: tickets[i].price,
                 ticketNumber: `${eventId}-${Date.now()}-${j}XSX`,
-                qrCode,
             })
         }
 
@@ -172,25 +171,20 @@ export async function POST(req: Request) {
         const data = await req.json()
 
         const token = (await cookies()).get('token')?.value ?? ""
-
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
         if (typeof decoded === "string") {
             throw new Error("Invalid token format");
         }
-        
         const userId = (decoded as JwtPayload).id;
-
-        const event = await Event.findById(data.eventId)
+        // const event = await Event.findById(data.eventId)
         let _createdTickets = []
-
         let totalTickets = 0
 
         data.ticketsToPurchase.forEach((ticket: any) => {
             totalTickets += ticket.quantity
         })
 
-        if (totalTickets > 1000) {
+        if (totalTickets > 400) {
             // console.log('Bulk tickets are being generated...')
             return NextResponse.json({
                 message: "Bulk Tickets Order, yet to structure"
@@ -200,13 +194,12 @@ export async function POST(req: Request) {
 
             // prepare the ticket
             const tickets = data.ticketsToPurchase.filter((ticket: any) => ticket.quantity !== 0)
-            console.log({nowTickets: tickets})
-
+            
             for (let i = 0; i < tickets.length; i++) {
                 for (let j = 0; j < tickets[i].quantity; j++) {
                     const ticketNumber = `${data.eventId}-${crypto.randomBytes(24).toString('hex')}`
                     const ticketId = new mongoose.Types.ObjectId()
-                    console.log({newTicketNumber: ticketNumber})
+                    // console.log({newTicketNumber: ticketNumber})
                     const checkInToken = crypto.randomBytes(16).toString('hex')
                     if (!ticketId) {
                         return NextResponse.json({error: "A ticket ID is required"},
@@ -224,7 +217,7 @@ export async function POST(req: Request) {
 
                     // const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
 
-                    console.log({printNow: tickets[i], j, i})
+                    // console.log({printNow: tickets[i], j, i})
 
                     _createdTickets.push({
                         _id: ticketId,
@@ -236,7 +229,6 @@ export async function POST(req: Request) {
                         ticketNumber: `${data.eventId}-${Date.now()}-${j}XC10-SBM`,
                     })
                 }
-                console.log('tickets_to_print', _createdTickets)
                 await Ticket.insertMany(_createdTickets)
             }
 
@@ -245,7 +237,6 @@ export async function POST(req: Request) {
                 tickets: _createdTickets
             })
         }
-
 
     } catch (error: any) {
         return NextResponse.json(
