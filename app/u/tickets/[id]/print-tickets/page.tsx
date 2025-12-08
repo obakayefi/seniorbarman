@@ -119,8 +119,8 @@ export default function PrintTicketsPage({params}) {
                     Download All PNG Tickets
                 </button>
 
-                <div ref={ref} className=" grid grid-cols-7 grid-rows-2 gap-1 mt-10 py-5 place-items-center">
-                    {batches[currentBatch]?.map(ticket => (
+                <div ref={ref} className="grid grid-cols-7 grid-rows-2 gap-1 mb-4 mt-10 py-5 place-items-start">
+                    {batches[currentBatch]?.map((ticket: any) => (
                         <Ticket toPrint key={ticket._id} ticket={ticket}/>
                     ))}
                 </div>

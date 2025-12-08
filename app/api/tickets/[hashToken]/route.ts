@@ -85,7 +85,7 @@ export async function GET(req: Request, {params}: Params) {
         }
         
         const matchedTicket = ticketList.get(eventId);
-        console.log({ticketList, matchedTicket});
+        // console.log({ticketList, matchedTicket});
         const response = {
             event,
             tickets: matchedTicket,
