@@ -28,14 +28,14 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
     
     return (
         <div
-            className={`flex flex-col md:flex-row items-center bg-white hover:bg-gray-100/50 duration-200 border-2 border-gray-100 p-2 rounded ${toPrint ? 'h-84': 'h-auto' } gap-4`}>
-            <section className='flex gap-0 items-center flex-col md:flex-col overflow-hidden'>
+            className={`flex flex-col md:flex-row items-start bg-white hover:bg-gray-100/50 duration-200 border-2 border-gray-100 rounded ${toPrint ? 'h-80 p-0': 'h-auto p-2' } gap-4`}>
+            <section className='flex  gap-0 items-center flex-col md:flex-col overflow-hidden'>
                 <div>
                     <div className='bg-[#F5F5F5] flex justify-center items-center gap-1 px-4 py-2'>
                         <span><TicketStandIcon size={24}/></span>
                         <span className={'text-sm'}>{ticket.stand}</span>
                     </div>
-                    <div className='text-slate-700 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
+                    <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
                         <h2 className="text-sm">{ticket.event.homeTeam}</h2>
                         <h2 className="text-sm bg-gray-200  rounded-full text-center h-6 w-6 flex items-center justify-center ">vs</h2>
                         <h2 className="text-sm">{ticket.event.awayTeam}</h2>
@@ -48,7 +48,7 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
                 </div>
 
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
-                <div className={'md:-mt-4 mt-0 bg-transparent'}>
+                <div className={'md:-mt-4  mt-0 bg-transparent'}>
                     <Image
                         text={`https://sbmdev.netlify.app/u/tickets/preview/${ticket.checkInToken}/`}
                         options={{
