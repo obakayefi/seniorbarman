@@ -60,9 +60,6 @@ const ticketSchema = new Schema({
         type: Number,
         required: true,
     },
-    qrCode: {
-        type: String
-    },
     issuedAt: {
         type: Date,
         default: Date.now()
