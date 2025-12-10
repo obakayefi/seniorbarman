@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/ui/Footer";
 import { Toaster } from "sonner";
 import { AppProvider } from "@/context/AppContext";
+import NativeNavbar from "@/components/ui/navbar";
 
 const gabaritoFonts = Gabarito({
   variable: "--font-gabarito",
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body
         className={`${gabaritoFonts.variable} antialiased`}
       >
+      {/*<NativeNavbar />*/}
         <AppProvider>{children}</AppProvider>
         <Toaster />
         <Footer />
