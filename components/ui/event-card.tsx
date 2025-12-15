@@ -20,7 +20,7 @@ export const EventCard = ({event}: { event: EventType }) => {
 
     return (
         <section
-            className='flex flex-col outline w-full items-center   duration-200 hover:bg-gray-100/50 border border-gray-200 gap-3 justify-center rounded-lg p-4'>
+            className='flex flex-col outline w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-800 gap-3 justify-center rounded-lg p-4'>
             <div className='flex items-center justify-center gap-1'>
                 <span className=''>{matchInformation.day}</span>
                 <span className=' uppercase'>{matchInformation.month}</span>

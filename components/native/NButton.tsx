@@ -13,7 +13,7 @@ type Props = {
 
 const NButton = ({ disabled, loading, onClick, children, className, icon }: Props) => {
     return (
-        <Button onClick={onClick} disabled={disabled} className={`py-1 px-3 disabled:bg-slate-400 ${className}`}>
+        <Button onClick={onClick} disabled={disabled} className={`py-1 px-3 disabled:bg-slate-400 cursor-pointer ${className}`}>
             {children} {loading ? <Spinner /> : icon}
         </Button>
     )

@@ -39,7 +39,7 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
     return (
         <Link href={`/u/tickets/${event._id}`}>
             <div
-                className='border-2 border-gray-100 hover:bg-gray-100/50 cursor-pointer duration-300 p-2 flex flex-col gap-6 px-4 rounded'>
+                className='border-2 border-zinc-800 hover:bg-gray-100/50 cursor-pointer duration-300 p-2 flex flex-col gap-6 px-4 rounded'>
                 <section className="flex justify-between">
                     <div className="flex items-center gap-2 text-slate-500">
                         <BsFillCalendarDateFill/>
@@ -49,13 +49,17 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
                         <h3>{event?.time}</h3>
                         <FaClock/>
                     </div>
-
                 </section>
 
                 <section className='flex flex-col md:flex-row items-center justify-center gap-1'>
                     <div className="flex flex-col items-center">
-                        <Image src={giveLogo(event.homeTeam)} className={'w-12 h-12'} width={75} alt="logo"
-                               height={100}/>
+                        <Image 
+                            src={giveLogo(event.homeTeam)} 
+                            className={'w-12 h-12'} 
+                            width={75} 
+                            alt="logo"
+                            height={100}
+                        />
                         <h2 className='text-base lg:text-xl'>{event.homeTeam}</h2>
                     </div>
                     <span className='text-slate-400 mx-4'>vs</span>
@@ -85,9 +89,9 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
                         {event?.transformedSummary.map(t => {
                             console.log({t})
                             return (
-                                <div className='text-center bg-slate-100 lg:max-w-fit w-full p-2 px-3 rounded'>
-                                    <h4 className='text-slate-400'>{t.name}</h4>
-                                    <span className='text-2xl text-slate-600'>{t.value}</span>
+                                <div className='text-center bg-zinc-700 lg:max-w-fit w-full p-2 px-3 rounded'>
+                                    <h4 className='text-zinc-400'>{t.name}</h4>
+                                    <span className='text-2xl text-zinc-200'>{t.value}</span>
                                 </div>
                             )
                         })}

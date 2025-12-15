@@ -45,7 +45,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
     }
 
     return (
-        <>
+        <div className={''}>
             <DialogHeader>
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Confirm Ticket Purchase</DialogTitle>
@@ -57,12 +57,12 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="border-b-2 border-orange-100">
+                            <section className="border-b-2 border-zinc-950">
                                 <div className="flex flex-col sm:flex-row justify-between">
                                     <h5>{ticket.name}
                                     </h5> 
                                     <p className="text-lg text-orange-500">
-                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-700 text-sm">{ticket.quantity} ticket(s)</span> 
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span> 
                                     </p>
                                 </div>
                             </section>
@@ -75,7 +75,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
             </DialogHeader>
             <DialogFooter className='items-center flex justify-center'>
                 {/* <DialogClose asChild > */}
-                <Button variant="outline" onClick={goBack}>Go back</Button>
+                <Button variant="outline" className={'text-zinc-800'} onClick={goBack}>Go back</Button>
                 {/* </DialogClose> */}
                 <NButton
                     onClick={payNow}
@@ -85,7 +85,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     Pay Now
                 </NButton>
             </DialogFooter>
-        </>
+        </div>
     )
 }
 

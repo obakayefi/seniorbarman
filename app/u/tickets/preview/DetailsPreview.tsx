@@ -39,7 +39,6 @@ export default function DetailsPreview() {
             setTicketSummary(data.response.summary)
             setLoading(false)
         }
-
         getTickets()
     }, [])
 
@@ -51,11 +50,11 @@ export default function DetailsPreview() {
                 </div>
             ) : tickets.length ? (
                 <div>
-                    <Link href={'/u/tickets'}  className={'text-orange-300 flex items-center gap-2'}>
+                    <Link href={'/u/tickets'}  className={'text-orange-300 flex items-center mb-3 gap-2'}>
                         <MoveLeft />
                         <span className={'text-orange-500'}>Back to Tickets</span>
                     </Link>
-                    <div className='bg-slate-100/20 border-1 rounded justify-center flex flex-col items-center py-6'>
+                    <div className='bg-zinc-950/90 border-zinc-800 border-1 rounded justify-center flex flex-col items-center mb-4 py-6'>
                         <section className='flex flex-col sm:flex-row items-center gap-6 md:gap-10 mr-0 md:mr-5'>
                             <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
                                 <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
@@ -64,7 +63,7 @@ export default function DetailsPreview() {
                                        width={150}/>
                             </div>
                             <span
-                                className='text-xl text-orange-400 bg-slate-100 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
+                                className='text-xl text-orange-400 bg-zinc-900 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
                             <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
                                 <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo'
                                        height={100}
@@ -96,9 +95,9 @@ export default function DetailsPreview() {
                         {ticketSummary?.map((summary, index) => (
                             <div
                                 key={index}
-                                className='text-center bg-slate-100 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
-                                <h4 className='text-slate-400'>{summary.name}</h4>
-                                <span className='text-2xl text-slate-600'>{summary.value}</span>
+                                className='text-center bg-zinc-800 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-slate-200 duration-100'>
+                                <h4 className='text-zinc-400'>{summary.name}</h4>
+                                <span className='text-2xl text-zinc-200'>{summary.value}</span>
                             </div>
                         ))}
                     </section>

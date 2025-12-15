@@ -27,10 +27,10 @@ const SOCIAL_CONTACTS = [
 const Footer = () => {
     return (
         <div
-            className='bg-[#0E0E11] text-gray-600 flex flex-col font-base pt-10 px-6'
+            className='bg-[#0E0E11] text-gray-600 flex flex-col font-base pt-10  px-4 xl:px-60'
         >
             <section className="flex flex-col gap-6">
-                <div className={'flex items-start flex-col lg:flex-row gap-4'}>
+                <div className={'flex items-start justify-between flex-col lg:flex-row gap-4'}>
                     <section className='flex flex-col gap-4 w-full lg:w-1/5'>
                         <div className='flex flex-col'>
                             <Image src={'/logo-clear.svg'} height={100} width={300} alt='logo'/>
@@ -61,8 +61,7 @@ const Footer = () => {
 
                     <section
                         className='flex flex-col'>
-                        <h2 className="text-xl text-white ml-1">Contact Us
-                        </h2>
+                        <h2 className="text-xl text-white ml-1">Contact Us</h2>
 
                         <section className={'flex gap-6 flex-col'}>
                             {SOCIAL_CONTACTS.map(sContact => (

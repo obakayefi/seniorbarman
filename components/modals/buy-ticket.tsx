@@ -37,7 +37,7 @@ const BuyTicket = ({
                    }: Props) => {
     const {user} = useApp()
     return (
-        <section className='overflow-y-auto'>
+        <section className='bg-[#020202] overflow-y-auto'>
             <DialogHeader>
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Buy Ticket</DialogTitle>
@@ -54,16 +54,16 @@ const BuyTicket = ({
                         return (
                             <Card
                                 key={name}
-                                className={`flex bg-gray-100 hover:bg-slate-200 duration-300 items-center gap-3 p-4`}>
+                                className={`flex text-white bg-zinc-950 border-zinc-800 hover:bg-zinc-900 duration-300 items-center gap-3 p-4`}>
                                 <Icon className={`h-6 w-6 ${color}`}/>
                                 <span className="font text-gray-600">{name}</span>
-                                <span className="text-green-900">₦{price.toLocaleString()}</span>
+                                <span className="text-green-300">₦{price.toLocaleString()}</span>
 
 
                                 <div className="flex items-center gap-2">
                                     {/* <Button className="bg
                                     -white text-orange-400" onClick={() => updateTicketQty({ name, qty: -1, max, price })}>x */}
-                                    <Button className="bg-white text-orange-400 rounded"
+                                    <Button className="bg-[#020202] text-white rounded"
                                             onClick={() => updateTicketQty({id, name, delta: -1, max})}>
                                         <CircleMinus/>
                                     </Button>
@@ -71,23 +71,23 @@ const BuyTicket = ({
                                     <Input
                                         value={quantity}
                                         type="text"
-                                        className="text-4xl appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                        className="text-3xl text-white appearance-none outline-none border focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                         onChange={(e) => onQtyInputChange(e, {name, price, max, id})}
 
                                     />
 
-                                    <Button className="bg-orange-400 text-white rounded"
+                                    <Button className="bg-[#020202] text-rose-600 rounded"
                                             onClick={() => updateTicketQty({id, name, delta: 1, max})}>
                                         <CirclePlus/>
                                     </Button>
                                 </div>
 
-                                <div>
-                                    ₦{(Number(total).toLocaleString())}
-                                </div>
+                                {/*<div>*/}
+                                {/*    ₦{(Number(total).toLocaleString())}*/}
+                                {/*</div>*/}
 
                                 <div className="mt-4 text-gray-400">
-                                    <span className="text-sm">Maxium of {max.toLocaleString()} tickets</span>
+                                    <span className="text-sm">Maximum of {max.toLocaleString()} tickets</span>
                                 </div>
                             </Card>
                         )
@@ -97,7 +97,7 @@ const BuyTicket = ({
             </DialogHeader>
             <DialogFooter className={'w-full'}>
                 <DialogClose asChild>
-                    <Button variant="outline" onClick={resetForm}>Cancel</Button>
+                    <Button variant="outline" className={'text-zinc-900'} onClick={resetForm}>Cancel</Button>
                 </DialogClose>
                 <NButton
                     loading={loading}

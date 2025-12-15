@@ -7,7 +7,7 @@ function FootballMatch({isNextMatch}: {isNextMatch?: boolean}) {
     return (
         <div className={`${isNextMatch ? "border-green-400" : "border-slate-900"} border-2 flex lg:flex-row flex-col justify-between items-start gap-3 px-6 py-2 rounded-lg`}>
             {isNextMatch ? (
-                <div className="min-w-fit flex max-w-fit lg:px-4 lg:items-center justify-center lg:flex-start">
+                <div className="min-w-fit flex max-w-fit lg:px-4 lg:items-center justify-center mx-auto lg:flex-start">
                     <span className={'bg-green-500 px-2  text-white text-xs mt-5 rounded'}>Next Match</span>
                 </div>
             ): null}
@@ -28,7 +28,7 @@ function FootballMatch({isNextMatch}: {isNextMatch?: boolean}) {
                     </div>
                 </div>
 
-                <div className={'text-sm flex flex-row lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
+                <div className={'text-sm flex flex-col lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
                     <p className={'text-slate-500 hidden lg:flex'}>From</p>
                     <h4 className={'text-2xl text-green-500 font-bold'}>₦500</h4>
                     <p className={'text-slate-500'}>16,000 tickets left</p>
@@ -44,7 +44,7 @@ function FootballMatch({isNextMatch}: {isNextMatch?: boolean}) {
 
 export default function UpcomingMatches() {
     return (
-        <section className={'px-2 xl:px-60'} id={'upcomingMatches'}>
+        <section className={'px-2 xl:px-60 mb-20'} id={'upcomingMatches'}>
             <div>
                 <h2 className={'text-xl lg:text-3xl'}>Upcoming Home Matches</h2>
                 <span className={'text-gray-400 text-xs'}>Secure your tickets for Enugu Rangers FC home games</span>

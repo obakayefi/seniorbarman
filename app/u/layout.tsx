@@ -65,11 +65,11 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     return (
         <SidebarProvider>
             <AppSidebar links={navlinks} />
-            <main className='w-full'>
+            <main className='w-full bg-[#020202]'>
                 <SidebarTrigger />
                 {children}
             </main>
-        </SidebarProvider>
+        </SidebarProvider> 
     )
 }
 
