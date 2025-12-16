@@ -193,7 +193,8 @@ const Events = () => {
 
             <section className='mt-10'>
                 {/*<h1 className='text-3xl mb-4'>Upcoming Events</h1>*/}
-                <div className=' flex sm:grid items-center md:grid-cols-2 flex-col gap-4'>
+                {/*<div className=' flex sm:grid items-center md:grid-cols-2 flex-col gap-4'>*/}
+                <div className=' flex flex-col justify-between md:grid grid-cols-2 gap-4'>
                     {isLoading ? (
                         <div className='flex items-center w-full gap-2 text-slate-700 text-left'>
                             <h2>Loading Upcoming Fixtures </h2>

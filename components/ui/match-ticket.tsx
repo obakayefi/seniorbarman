@@ -10,14 +10,14 @@ export default function MatchTicket({ticket}:{ticket: {}}) {
     const {Image} = useQRCode();
     // console.log({ticket});
     return (
-        <section className={'max-w-96 min-w-96 border-1  p-2 border-zinc-800 flex flex-col gap-1 rounded-lg'}>
+        <section className={'max-w-96 min-w-fit border-1  p-2 border-zinc-800 flex flex-col gap-1 rounded-lg'}>
             <div className={'p-4 gap-1 items-center mb-2 text-center flex-col justify-center flex rounded'}>
                 <h2 className={'text-xl'}>{ticket?.event.homeTeam}</h2>
                 <span className={'text-zinc-600'}>vs</span>
                 <h2 className={'text-xl'}>{ticket?.event.awayTeam}</h2>
             </div>
 
-            <div className={'md:-mt-4 flex max-w-fit mx-auto overflow-hidden rounded-lg items-center justify-center mt-0 bg-transparent'}>
+            <div className={'md:-mt-4 flex md:max-w-72 max-w-62 mx-auto overflow-hidden rounded-lg items-center justify-center mt-0 bg-transparent'}>
                 <Image
                     text={`https://sbmdev.netlify.app/u/tickets/preview/${ticket?.checkInToken}/`}
                     options={{
@@ -26,7 +26,7 @@ export default function MatchTicket({ticket}:{ticket: {}}) {
                         errorCorrectionLevel: 'M',
                         margin: 2,
                         scale: 3,
-                        width: 300,
+                        width: 210,
                         color: {
                             dark: '#010599FF',
                             light: '#FFF',
@@ -35,7 +35,7 @@ export default function MatchTicket({ticket}:{ticket: {}}) {
                 />
             </div>
             
-            <div className={'p-4 flex justify-between'}>
+            <div className={'p-4 flex sm:flex-row flex-col gap-2 justify-between'}>
                 <section className={'text-xs'}>
                     <h4 className={'text-zinc-600 font-semibold'}>DATE</h4>
                     <div className={'flex items-gap items-center gap-1'}>
@@ -51,11 +51,9 @@ export default function MatchTicket({ticket}:{ticket: {}}) {
                         <span> {ticket?.event?.venue}</span>
                     </div>
                 </section>
-
-               
             </div>
             
-            <div className={'p-4 flex justify-between'}>
+            <div className={'p-4 flex sm:flex-row flex-col gap-2 justify-between'}>
                 <section className={'text-xs'}>
                     <h4 className={'text-zinc-600 font-semibold'}>TIME</h4>
                     <div className={'flex items-gap items-center gap-1'}>

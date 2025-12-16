@@ -52,7 +52,7 @@ export default function HeroCountdown() {
         return () => clearInterval(interval);
     }, []);
     return (
-        <div className="gap-8 items-center rounded flex pt-3">
+        <div className="gap-5 items-center rounded flex pt-3">
             <TimeBlock value={timeLeft.days} label="Days" />
             <Divider />
             <TimeBlock value={timeLeft.hours} label="Hours" />

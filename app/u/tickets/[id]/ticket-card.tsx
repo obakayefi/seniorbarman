@@ -106,7 +106,7 @@ export default function TicketCard () {
                         ))}
                     </section>
 
-                <section className="flex flex-col flex-wrap md:flex-row xl:grid grid-cols-4 lg:grid-cols-3 md:justify-between gap-4 mt-4">
+                <section className="flex flex-col flex-wrap md:flex-row xl:grid grid-cols-4 lg:grid-cols-4 md:justify-between gap-4 mt-4">
                     {tickets.map((ticket, index) => (
                         <MatchTicket ticket={ticket} />
                     ))}

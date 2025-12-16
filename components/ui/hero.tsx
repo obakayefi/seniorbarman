@@ -7,7 +7,7 @@ import HeroCountdown from "@/components/ui/hero-countdown";
 
 export default function Hero () {
     return (
-        <header className={'flex flex-col xl:flex-row w-full justify-between'}>
+        <header className={'flex flex-col xl:flex-row w-full items-center justify-between'}>
             <div className="flex gap-2 flex-col">
                 <section className="bg-red-600 max-w-fit px-2 rounded mb-2">
                     <span>Official Ticketing Partner</span>
@@ -50,14 +50,17 @@ export default function Hero () {
                 </section>
             </div>
 
-            <section className={'flex mx-auto lg:mx-0 border-slate-950 rounded z-20 items-center mt-11'}>
+            <section className={'flex mx-auto border-1 lg:mx-0 border-zinc-950 rounded z-20 items-center mt-11'}>
                 
-                <div className={'bg-black/80 z-50 p-5'}>
+                <div className={'bg-black/80 min-w-fit z-50 p-5'}>
                     <div className="border-b-1  border-gray-800">
-                        <h2 className={'text-sm  lg:text-lg text-gray-400 uppercase'}>Next Match</h2>
-                        <div className="flex font-semibold gap-3 text-lg lg:text-xl items-center justify-between">
+                        <h2 className={'text-xs  lg:text-lg text-gray-400 uppercase'}>Next Match</h2>
+                        <div className="flex font-semibold gap-1 text-base md:text-lg pb-2 lg:text-xl items-center justify-between">
                             <h2>Enugu Rangers</h2>
-                            <span className={'text-white h-6 w-6 text-sm rounded-full bg-red-600 flex flex-col items-center justify-center font-normal'}>vs</span>
+                            <span 
+                                className={'text-white h-6 w-6 text-sm rounded-full bg-red-600 flex flex-col items-center justify-center font-normal'}>
+                                vs
+                            </span>
                             <h2>Ikorodu City</h2>
                         </div>
                     </div>

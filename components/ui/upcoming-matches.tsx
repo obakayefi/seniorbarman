@@ -26,7 +26,7 @@ function FootballMatch({isNextMatch, match}: { isNextMatch?: boolean, match: {} 
                 <div className={'w-full '}>
                     <div className={'flex text-slate-200  w-full flex-col gap-1 justify-between'}>
                         <div
-                            className={'flex gap-2 items-center lg:items-start lg:justify-start justify-center text-center'}>
+                            className={'flex flex-col md:flex-row gap-2 items-center lg:items-start lg:justify-start justify-center text-center'}>
                             <h2>{match.homeTeam}</h2>
                             <span className={'text-gray-400'}>vs</span>
                             <h2>{match.awayTeam}</h2>
@@ -83,7 +83,7 @@ export default function UpcomingMatches() {
                 <span className={'text-gray-400 text-xs'}>Secure your tickets for Enugu Rangers FC home games</span>
             </div>
 
-            <section className={'flex flex-col gap-4 mt-10'}>
+            <section className={'flex flex-col md:grid grid-cols-2 lg:flex gap-4 mt-10'}>
                 {data.map((match, index) => (
                     <FootballMatch match={match} isNextMatch={index === 0}/>
                 ))}
