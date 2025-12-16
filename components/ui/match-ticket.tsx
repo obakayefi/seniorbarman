@@ -19,7 +19,7 @@ export default function MatchTicket({ticket}:{ticket: {}}) {
 
             <div className={'md:-mt-4 flex md:max-w-72 max-w-62 mx-auto overflow-hidden rounded-lg items-center justify-center mt-0 bg-transparent'}>
                 <Image
-                    text={`https://sbmdev.netlify.app/u/tickets/preview/${ticket?.checkInToken}/`}
+                    text={`https://seniorbarman.com/u/tickets/preview/${ticket?.checkInToken}/`}
                     options={{
                         type: 'image/jpeg',
                         quality: 0.3,

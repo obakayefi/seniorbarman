@@ -49,8 +49,7 @@ export default function HowItWorks() {
                         <CircleCheck className={'text-green-500'}/>
                     </div>
                     <p className="font-semibold text-green-400">4. Scan & Enter</p>
-                    <p className={'text-slate-300'}>Receive your digital ticket instantly via email and in your account.
-                        No printing needed!</p>
+                    <p className={'text-slate-300'}>Show your QR ticket at the gate, get scanned, and walk straight in.</p>
                 </div>
             </div>
         </section>

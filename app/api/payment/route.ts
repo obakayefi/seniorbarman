@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         const paystackPayload = {
             email,
             amount: amount * 100, // convert from KOBO to naira,
-            callback_url: `https://sbmdev.netlify.app/verify`
+            callback_url: `https://seniorbarman.com/verify`
         }
 
         const headers = {
