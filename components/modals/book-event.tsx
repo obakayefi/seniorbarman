@@ -90,6 +90,10 @@ export function BookEventModal({eventId}: { eventId: string }) {
         if (Number(inputValue) > max) {
             toast.info(`You can't buy more than ${max.toLocaleString()} tickets for the ${name}`);
         }
+        
+        if (totalTickets > 5) {
+            toast.info(`You can't buy more than 5 tickets`);
+        }
 
         setTicketsToPurchase((prev) => {
             const exists = prev.find((t) => t.id === id);
@@ -122,7 +126,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
     }
 
     const redirectToPayNowModal = () => {
-        console.log('Paying now...')
+        // console.log('Paying now...')
         // setModalState(2)
     }
 

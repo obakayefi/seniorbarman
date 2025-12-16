@@ -42,7 +42,7 @@ const BuyTicket = ({
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Buy Ticket</DialogTitle>
                     <DialogDescription>
-                        Plan ahead for that match and reserve your spot.
+                        Plan ahead for that match and reserve your spot <strong>(MAX of 5)</strong>
                     </DialogDescription>
                 </div>
                 <div className="flex gap-2 mt-5 flex-col mb-6 md:flex-row justify-between">
@@ -71,6 +71,7 @@ const BuyTicket = ({
                                     <Input
                                         value={quantity}
                                         type="text"
+                                        max={5}
                                         className="text-3xl text-white appearance-none outline-none border focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                         onChange={(e) => onQtyInputChange(e, {name, price, max, id})}
 
@@ -86,9 +87,9 @@ const BuyTicket = ({
                                 {/*    ₦{(Number(total).toLocaleString())}*/}
                                 {/*</div>*/}
 
-                                <div className="mt-4 text-gray-400">
-                                    <span className="text-sm">Maximum of {max.toLocaleString()} tickets</span>
-                                </div>
+                                {/*<div className="mt-4 text-gray-400">*/}
+                                {/*    <span className="text-sm">Maximum of {max.toLocaleString()} tickets</span>*/}
+                                {/*</div>*/}
                             </Card>
                         )
                     })}
@@ -101,9 +102,9 @@ const BuyTicket = ({
                 </DialogClose>
                 <NButton
                     loading={loading}
-                    className={`${totalTickets === 0 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    className={`bg-orange-500 ${totalTickets === 0 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                     onClick={handleOnBuyTicket}
-                    disabled={(loading || (totalTickets < 1))}>
+                    disabled={(loading || (totalTickets < 1) || totalTickets > 5)}>
                     {(totalTickets > 1) ? 'Purchase Summary' : 'Pay Now'}
                 </NButton>
             </DialogFooter>

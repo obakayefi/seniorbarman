@@ -35,8 +35,8 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
     const ticketCount: Record<string, Record<string, number>> = {};
 
     for (const ticket of tickets) {
-        const eventId = ticket.event._id.toString();
-        const stand = ticket.stand || "Regular";
+        const eventId = ticket?.event?._id.toString();
+        const stand = ticket?.stand || "Regular";
 
         if (!ticketCount[eventId]) {
             ticketCount[eventId] = {};
@@ -55,7 +55,7 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
     const extendedEvents = events.map(event => {
         const plain = event.toObject()
         
-        const matchedEvent = (arraySummary.find((summary) => summary.eventId === event._id.toString()))?.stands;
+        const matchedEvent = (arraySummary.find((summary) => summary?.eventId === event?._id.toString()))?.stands;
         const transformedSummary = matchedEvent && Object.entries(matchedEvent).map(([name, value]) => ({
             name,
             value
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
         const tickets = await Ticket
             .find({createdBy: userId})
             .populate("event")
-        console.log({userId})
+        // console.log({userId})
         // console.log({ serverTickets: tickets, userId })
         // Handle case where user has no events
         if (!tickets.length) {
@@ -104,13 +104,13 @@ export async function GET(req: Request) {
         const events = await Event.find({})
 
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
-        console.log({eventsSortedWithTickets})
+        // console.log({eventsSortedWithTickets})
         return NextResponse.json({
             message: "tickets fetched successfully",
             tickets: eventsSortedWithTickets.filter(ticket => ticket.transformedSummary),
         });
     } catch (error) {
-        console.error("Error fetching user events:", error);
+       //  console.error("Error fetching user events:", error);
         return NextResponse.json(
             {error: "Failed to fetch events"},
             {status: 500}
@@ -122,14 +122,14 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
     const userId = (await getUserFromCookie())?.id
     const _createdTickets = []
     const tickets = data.filter((ticket: any) => ticket.quantity !== 0)
-    console.log({nowTickets: tickets})
+   // console.log({nowTickets: tickets})
 
     for (let i = 0; i < tickets.length; i++) {
         // console.log({ singleTicket: tickets[i] })
         for (let j = 0; j < tickets[i].quantity; j++) {
             const ticketNumber = `${eventId}-${crypto.randomBytes(24).toString('hex')}`
             const ticketId = new mongoose.Types.ObjectId()
-            console.log({newTicketNumber: ticketNumber})
+            // console.log({newTicketNumber: ticketNumber})
             const checkInToken = crypto.randomBytes(16).toString('hex')
             if (!ticketId) {
                 return NextResponse.json({error: "A ticket ID is required"},
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
                 message: "Bulk Tickets Order, yet to structure"
             })
         } else {
-            console.log('Few tickets! Wait for your tickets', decoded)
+           // console.log('Few tickets! Wait for your tickets', decoded)
 
             // prepare the ticket
             const tickets = data.ticketsToPurchase.filter((ticket: any) => ticket.quantity !== 0)

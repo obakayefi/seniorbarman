@@ -130,10 +130,10 @@ async function getData(): Promise<{}[]> {
     ]
 }
 
-async function getEvents() {
+export async function getEvents() {
     try {
         const {data} = await api.get("/events")
-        console.log({data})
+        //console.log({data})
         const upcomingGames = {...data}
         return data
     } catch (error: any) {
@@ -151,12 +151,12 @@ const Events = () => {
         const fetchEvents = async () => {
             setIsLoading(true)
             const _events = await getEvents()
-            console.log("Fetching events", {events: _events})
+            //console.log("Fetching events", {events: _events})
             const stats = {
                 upcoming: _events.upcomingEvents,
                 total: _events.totalEvents,
             }
-            setData(_events.events)
+            setData(_events.events.reverse())
             setEventStats(stats)
             setIsLoading(false)
         }

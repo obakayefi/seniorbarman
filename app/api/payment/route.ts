@@ -61,7 +61,7 @@ export async function POST(req: Request) {
 
         const response = (await axios.post("https://api.paystack.co/transaction/initialize", paystackPayload, { headers })).data.data
 
-        console.log({ authorization_url: response.authorization_url })
+        // console.log({ authorization_url: response.authorization_url })
 
         // const { authorization_url, reference } = response.data
 

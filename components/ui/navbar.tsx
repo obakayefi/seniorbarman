@@ -64,18 +64,7 @@ export default function NativeNavbar
         setIsMobileMenuOpen(false)
         redirect("/auth/login")
     }
-
-    useEffect(() => {
-        console.log({seen: user})
-        if (user.user) {
-            console.log({filled: user})
-            setIsLoggedIn(true);
-        } else {
-            console.log({empty: user})
-            setIsLoggedIn(false);
-        }
-    }, [user]);
-
+    
     const registerUser = () => {
         setIsMobileMenuOpen(false)
         redirect("/auth/register")

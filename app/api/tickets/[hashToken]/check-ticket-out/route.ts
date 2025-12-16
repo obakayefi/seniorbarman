@@ -21,7 +21,7 @@ export async function POST(req: Request, {params}: Params) {
             location: "Gate 1"
         }
 
-        console.log({hashToken, gateAction})
+       //  console.log({hashToken, gateAction})
 
         if (!hashToken) {
             return NextResponse.json(
@@ -56,7 +56,7 @@ export async function POST(req: Request, {params}: Params) {
         const updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
         const ticketsForEvent = await Ticket.find({event: ticket.event})
         const eventTicketStats = PrepareEventStats(ticketsForEvent);
-        console.log({eventTicketStats})
+       //  console.log({eventTicketStats})
         return NextResponse.json(
             {
                 message: "Checking User Out",

@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         if (verified.status === "success") {
             const metadata = verified.metadata
 
-            console.log({verified, metadata})
+           //  console.log({verified, metadata})
         }
     }
 

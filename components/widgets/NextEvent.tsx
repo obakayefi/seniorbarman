@@ -108,7 +108,7 @@ const NextEvent = () => {
             try {
                 const response = await api.get('/events?upcoming=true/')
                 const _events = response.data.filter((event: any, idx: any) => idx === 0)
-                console.log('Next Event Data:', response.data)
+                // console.log('Next Event Data:', response.data)
                 setEvents(_events)
                 
             } catch (error) {

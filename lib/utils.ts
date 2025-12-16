@@ -157,6 +157,14 @@ export const CLUBS = [
         name: "Sunshine Stars FC",
         icon: "/clubs/sunshine-stars.png"
     },
+    {
+        name: "Warri Wolves FC",
+        icon: "/clubs/warri-wolves.jpeg" 
+    },
+    {
+        name: "Wikki Tourists FC",
+        icon: "/clubs/wikki-tourists.webp"
+    },
 ]
 
 export const STADIUMS = [
@@ -312,6 +320,16 @@ export const PrepareEventStats = (tickets: any[]) => {
         totalPeopleCheckedIn
     }
 }
+
+export const formattedDate = (_date: Date) => {
+    // console.log({formatted: _date})
+    const date = new Date(_date)
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+}
+
 
 export const sitemap = {
     user: {

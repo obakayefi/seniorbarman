@@ -3,6 +3,7 @@ import {FaLocationPinLock} from "react-icons/fa6";
 import NButton from "@/components/native/NButton";
 import {redirect} from "next/navigation";
 import HeroAction from "@/components/ui/hero-action";
+import HeroCountdown from "@/components/ui/hero-countdown";
 
 export default function Hero () {
     return (
@@ -52,7 +53,7 @@ export default function Hero () {
             <section className={'flex mx-auto lg:mx-0 border-slate-950 rounded z-20 items-center mt-11'}>
                 
                 <div className={'bg-black/80 z-50 p-5'}>
-                    <div className="border-b-1 border-gray-800">
+                    <div className="border-b-1  border-gray-800">
                         <h2 className={'text-sm  lg:text-lg text-gray-400 uppercase'}>Next Match</h2>
                         <div className="flex font-semibold gap-3 text-lg lg:text-xl items-center justify-between">
                             <h2>Enugu Rangers</h2>
@@ -60,27 +61,7 @@ export default function Hero () {
                             <h2>Ikorodu City</h2>
                         </div>
                     </div>
-                    <div className={' gap-8 items-center rounded flex pt-3'}>
-                        <section className={'flex flex-col items-center'}>
-                            <span className={'text-xl lg:text-3xl'}>03</span>
-                            <span className={'text-gray-600 text-xs'}>Days</span>
-                        </section>
-                        <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-                        <section className={'flex flex-col items-center'}>
-                            <span className={'text-xl lg:text-3xl'}>11</span>
-                            <span className={'text-gray-600 text-xs'}>Hours</span>
-                        </section>
-                        <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-                        <section className={'flex flex-col items-center'}>
-                            <span className={'text-xl lg:text-3xl'}>31</span>
-                            <span className={'text-gray-600 text-xs'}>Minutes</span>
-                        </section>
-                        <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-                        <section className={'flex flex-col items-center'}>
-                            <span className={'text-xl lg:text-3xl'}>31</span>
-                            <span className={'text-gray-600 text-xs'}>Seconds</span>
-                        </section>
-                    </div>
+                   <HeroCountdown />
                 </div>
             </section>
         </header>

@@ -57,7 +57,7 @@ type SidebarLink = {
 
 export function AppSidebar({ links }: { links: SidebarLink[] }) {
   return (
-    <Sidebar>
+    <Sidebar className={'bg-amber-500'}>
       <SidebarContent>
           <div className="pt-2 pb-0 p-2 border-b-2 border-zinc-900 bg-zinc-950 flex items-center justify-center">
               <Link href={'/'}>

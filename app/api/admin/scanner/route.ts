@@ -15,7 +15,7 @@ export async function GET(req: Request) {
         const ticket = await Ticket.findOne({checkInToken: hash}).populate("event")
         const user = await User.findById(ticket.createdBy)
 
-        console.log({hash, ticket, user}) 
+      //  console.log({hash, ticket, user}) 
         
         return NextResponse.json({
             message: "Ticket found",

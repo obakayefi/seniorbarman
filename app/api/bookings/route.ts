@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         const { name, email, message, eventID } = await req.json()
 
         const event = await Event.findById(eventID)
-        console.log({ name, email, message })
+        //console.log({ name, email, message })
         if (!event) return NextResponse.json(
             {
                 error: "Event not found",

@@ -40,7 +40,7 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
         const beforeLast = ticket.checkInLogs[ticket.checkInLogs.length - 2];
                 
         if (lastLog.action === "entry") {
-            console.log({entry: lastLog.action})
+           //  console.log({entry: lastLog.action})
             totalInsideStadium += 1
             if (beforeLast && beforeLast.action === "exit") {
                 totalOutsideStadium -= 1
@@ -56,7 +56,7 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
         
     }
 
-    console.log({ totalInsideStadium, totalOutsideStadium, allTickets: tickets.length });
+    // console.log({ totalInsideStadium, totalOutsideStadium, allTickets: tickets.length });
     
     const eventTicketStats = PrepareEventStats(tickets);
    
@@ -100,31 +100,31 @@ export async function POST(req: Request, {params}: Params) {
         }
         // console.log({gateAction, logs: ticket.checkInLogs})
         ticket.isInside = true;
-
-        if (ticket.checkInLogs?.length < 1) {
-            console.log('Log below 1')
-            // event = await Event.findByIdAndUpdate(ticket.event._id, {
-            //     $inc: {
-            //         peopleInside: 1,
-            //         totalPeople: 1,
-            //     }
-            // })
-        } else { 
-            console.log('Log above 1')
-            // event = await Event.findByIdAndUpdate(ticket.event._id, {
-            //     $inc: {
-            //         peopleInside: 1,
-            //         // peopleOutside: -1
-            //     }
-            // })
-        }
+        //
+        // if (ticket.checkInLogs?.length < 1) {
+        //     console.log('Log below 1')
+        //     // event = await Event.findByIdAndUpdate(ticket.event._id, {
+        //     //     $inc: {
+        //     //         peopleInside: 1,
+        //     //         totalPeople: 1,
+        //     //     }
+        //     // })
+        // } else { 
+        //     console.log('Log above 1')
+        //     // event = await Event.findByIdAndUpdate(ticket.event._id, {
+        //     //     $inc: {
+        //     //         peopleInside: 1,
+        //     //         // peopleOutside: -1
+        //     //     }
+        //     // })
+        // }
         
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
         let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
         const ticketsForEvent = await Ticket.find({event: ticket.event})
         const eventTicketStats = PrepareEventStats(ticketsForEvent);
-        console.log({eventTicketStats})
+        // console.log({eventTicketStats})
         return NextResponse.json({
             message: "Ticket successfully checked in",
             result: {ticket: updatedTicket, user, eventTicketStats},

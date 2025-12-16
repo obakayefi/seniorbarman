@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const { eventId, tickets, reference } = await req.json()
     const user = await getUserFromCookie()
 
-    console.log({ eventId, tickets, reference })
+    // console.log({ eventId, tickets, reference })
 
     try {
         const newTicketOrder = await TicketOrder.create({
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
             reference,
             paymentStatus: 'success'
         })
-        console.log({ newTicketOrder })
+        // console.log({ newTicketOrder })
         return NextResponse.json({ message: "Ticket order created" }, { status: 200 })
     } catch (error: any) {
         return NextResponse.json({ error: "Could not get ticket order" }, { status: 400 })
@@ -47,14 +47,14 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "You can't generate tickets like this, sorry" }, { status: 400 })
         }
 
-        console.log({ticketOrders, reference})
+       // console.log({ticketOrders, reference})
 
         // throw Error if tickets have already been generated
         // if (ticketOrders?.isGenerated) return NextResponse.json({ error: 'Tickets for this order has been generated', }, { status: 400 })   
 
         const _ticketsToPrint = await PrintTickets(ticketOrders.tickets, ticketOrders.event, true)
 
-        console.log({ ticketOrders, _ticketsToPrint });
+       //  console.log({ ticketOrders, _ticketsToPrint });
 
         const createdTickets = await Ticket.create(_ticketsToPrint)
 

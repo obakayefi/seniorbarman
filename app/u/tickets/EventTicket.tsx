@@ -39,7 +39,7 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
     return (
         <Link href={`/u/tickets/${event._id}`}>
             <div
-                className='border-2 border-zinc-800 hover:bg-gray-100/50 cursor-pointer duration-300 p-2 flex flex-col gap-6 px-4 rounded'>
+                className='border-2 border-zinc-800 hover:bg-zinc-900/50 cursor-pointer duration-300 p-2 flex flex-col gap-6 px-4 rounded'>
                 <section className="flex justify-between">
                     <div className="flex items-center gap-2 text-slate-500">
                         <BsFillCalendarDateFill/>
@@ -87,9 +87,9 @@ const EventTicket = ({event, summary}: { event: EventProps, summary: string }) =
                 {event?.transformedSummary?.length > 0 ? (
                     <section className={'flex items-center flex-col sm:flex-row gap-2 justify-center text-center'}>
                         {event?.transformedSummary.map(t => {
-                            console.log({t})
+                          //  console.log({t})
                             return (
-                                <div className='text-center bg-zinc-700 lg:max-w-fit w-full p-2 px-3 rounded'>
+                                <div className='text-center bg-zinc-700 hover:bg-zinc-800 lg:max-w-fit w-full p-2 px-3 rounded'>
                                     <h4 className='text-zinc-400'>{t.name}</h4>
                                     <span className='text-2xl text-zinc-200'>{t.value}</span>
                                 </div>

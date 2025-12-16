@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
-      console.log("!Server aboutlogging user out...")
+     // console.log("!Server aboutlogging user out...")
     // Create the response object
     const res = NextResponse.json(
       { message: "Logged out successfully" },
@@ -18,7 +18,7 @@ export async function POST() {
       maxAge: 0, // expires immediately
     });
 
-    console.log("Server logging user out...")
+   // console.log("Server logging user out...")
 
     return res;
   } catch (error) {

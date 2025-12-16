@@ -9,6 +9,7 @@ import { useApp } from '@/context/AppContext'
 import NButton from '../native/NButton'
 import {OnPayNow} from "@/lib/helpers";
 import {getUserFromCookie} from "@/lib/auth";
+import {toast} from "sonner";
 
 type Props = {
     ticketsToPurchase: any[];
@@ -28,14 +29,24 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
         amount: totalPrice,
         eventId
     }
-
-    useEffect(() => {
-        console.log({ ticketsToPurchase, eventId, userId: user?.id })
-    }, [])
+    //
+    // useEffect(() => {
+    //     console.log({ ticketsToPurchase, eventId, userId: user?.id })
+    // }, [])
 
     const payNow = async () => {
         setLoading(true)
         try {
+            const totalTickets = ticketsToPurchase.reduce(
+                (sum, ticket) => sum + ticket.quantity,
+                0
+            );
+            
+            if (totalTickets > 5) {
+                toast.error('You can\'t buy more than 5 tickets')
+                return
+            }
+            
             await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
         } catch (error: any) {
             console.error('Error making payment', error.message)

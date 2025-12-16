@@ -105,7 +105,7 @@ const CreateEventForm = () => {
             eventDate: eventDate,
             eventTime: eventTime.value,
         }
-        console.log({ eventDetails })
+      //  console.log({ eventDetails })
 
         // const filterPayload = currentEventType === "sports" ? . eventDetails
 
@@ -119,7 +119,7 @@ const CreateEventForm = () => {
             formData = data
         }
 
-        console.log({ formData, eventDetails })
+      //  console.log({ formData, eventDetails })
 
         try {
             const res = await fetch("/api/events", {
@@ -129,7 +129,7 @@ const CreateEventForm = () => {
             })
 
             const data = await res.json()
-            console.log("Event createed: ", data)
+           // console.log("Event createed: ", data)
             toast.success('🥳 Event created successfully')
         } catch (error) {
             console.error('Error submitting  form:', error)

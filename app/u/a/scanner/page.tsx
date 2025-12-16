@@ -180,17 +180,17 @@ const AdminTicketScanner = () => {
 
     useEffect(() => {
         setComputedStatus(extractTicketStatus(currentTicket.checkInLogs))
-        console.log({computedStatus})
-        console.log({currentTicket})
+        //onsole.log({computedStatus})
+        //console.log({currentTicket})
     }, [currentTicket]);
 
-    useEffect(() => {
-        console.log({events})
-    }, [events]);
+    // useEffect(() => {
+    //     console.log({events})
+    // }, [events]);
 
     const getEventStats = async () => {
         const stats = await fetchEventStats(selectedEvent)
-        console.log({stats})
+        //console.log({stats})
         setEventStats(stats.eventTicketStats)
     }
     
@@ -199,17 +199,17 @@ const AdminTicketScanner = () => {
         getEventStats()
     }, [selectedEvent]);
 
-    useEffect(() => {
-        console.log({eventStatsChange: eventStats})
-    }, [eventStats]);
+    // useEffect(() => {
+    //     console.log({eventStatsChange: eventStats})
+    // }, [eventStats]);
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-out`)
-        console.log({data})
+       // console.log({data})
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
         // setEventStats(data.result.ticket.eventTicketStats)
-        console.log({statusOut: data.result})
+        //console.log({statusOut: data.result})
         setEventStats(data.result.eventTicketStats)
         //getEventStats()
         setIsCheckingUserOut(false)
@@ -218,15 +218,15 @@ const AdminTicketScanner = () => {
     const handleBlockingTicket = async () => {
         setIsBlockingTicket(true)
         const blockedTicket = await api.post(`/tickets/${targetHash}/block-ticket`)
-        console.log('Blocking Ticket', {blockedTicket})
+        //console.log('Blocking Ticket', {blockedTicket})
         setIsBlockingTicket(false)
     }
     const handleCheckingUserIn = async () => {
         setLoading(true)
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-in`)
-        console.log({data, ticket: data.result.ticket})
+        //console.log({data, ticket: data.result.ticket})
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-        console.log({statusIn: data.result})
+        //console.log({statusIn: data.result})
         //setCurrentTicket(data.ticket)
         //getEventStats()
         setEventStats(data.result.eventTicketStats)
