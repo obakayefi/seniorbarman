@@ -42,7 +42,7 @@ function FootballMatch({isNextMatch, match}: { isNextMatch?: boolean, match: {} 
                 </div>
 
                 <div
-                    className={'text-sm flex flex-col lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
+                    className={'text-sm flex flex-col max-w-fit lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
                     <p className={'text-slate-500 hidden lg:flex'}>From</p>
                     <h4 className={'text-2xl text-green-500 font-bold'}>₦500</h4>
                     <p className={'text-slate-500'}>30,000 tickets left</p>
