@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
     try {
         await connectDB()
-        //await verifyAuth()
+        // await verifyAuth()
         let _events = await Event.find().sort({date: -1});
         if (upcoming) {
             _events = _events.filter((event) => {
@@ -22,16 +22,17 @@ export async function GET(req: Request) {
                 eventStart.setHours(Number(hours));
                 eventStart.setMinutes(Number(minutes));
                 eventStart.setSeconds(0);
-
-                console.log({eventStart, cutoff})
-                return eventStart >= cutoff;
+                const eventEnd = new Date(eventStart.getTime() + 24 * 60 * 60 * 1000);
+                return eventEnd >= cutoff;
             })
         }
 
         const events = await Event.find().sort({date: -1})
         const filteredEvents = await Event.find(filter).sort({date: -1})
-        console.log({filteredEvents, events, _events})
-        return NextResponse.json(_events)
+        return NextResponse.json(
+            {events: _events.reverse(), totalEvents: events.length, upcomingEvents: _events.length},
+            {status: 200}
+        )
     } catch
         (error: any) {
         return NextResponse.json({
@@ -94,11 +95,7 @@ export async function POST(req: Request) {
             time,
             venue
         }
-
-        console.log({newEvent})
-
         const event = await Event.create(newEvent)
-
         return NextResponse.json(
             {
                 success: true,

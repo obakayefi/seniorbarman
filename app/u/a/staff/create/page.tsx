@@ -66,24 +66,25 @@ export default function CreateAdmin() {
 
     return (
         <div className="flex items-center justify-center h-screen">
-            <Card className="w-full mx-4 md:mx-0 max-w-lg">
+            <Card className="w-full mx-4 md:mx-0 border-zinc-800 max-w-lg">
                 <CardHeader className="mb-10">
-                    <h1 className="md:text-3xl text-2xl">Create Admin</h1>
+                    <h1 className="md:text-3xl text-white text-2xl">Create Admin</h1>
                     <p className="text-gray-400 md:text-normal text-sm">
                         Forge a new admin and bless them with rights
                     </p>
                     <CardAction>
-                        <Button variant="link" onClick={() => redirect('/auth/login')} >Login</Button>
+                        <Button className={'text-zinc-400'} variant="link" onClick={() => redirect('/auth/login')} >Login</Button>
                     </CardAction>
                 </CardHeader>
                 <form onSubmit={onAdminCreate}>
                     <CardContent>
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-6 text-zinc-400">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">First Name</Label>
                                 <Input
                                     id="firstName"
                                     type="text"
+                                    className={'border-zinc-800'}
                                     autoComplete="false"
                                     placeholder="John"
                                     value={firstName.value}
@@ -91,21 +92,23 @@ export default function CreateAdmin() {
                                     required
                                 />
                             </div>
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 ">
                                 <Label htmlFor="email">Last Name</Label>
                                 <Input
                                     id="firstName"
                                     type="text"
+                                    className={'border-zinc-800'}
                                     placeholder="Doe"
                                     value={lastName.value}
                                     onChange={lastName.onChange}
                                     required
                                 />
                             </div>
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 ">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
+                                    className={'border-zinc-800'}
                                     type="email"
                                     placeholder="johndoe@example.com"
                                     value={email.value}
@@ -135,10 +138,10 @@ export default function CreateAdmin() {
                                     value={roleType}
                                     onValueChange={(value: 'bouncer' | 'admin') => { setRoleType(value); }}
                                 >
-                                    <SelectTrigger className="w-full">
+                                    <SelectTrigger className="w-full border-zinc-800">
                                         <SelectValue placeholder="Select Event Type" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className={'border-zinc-800'}>
                                         <SelectItem value="bouncer">Bouncer</SelectItem>
                                         <SelectItem value="admin">Admin</SelectItem>
                                     </SelectContent>

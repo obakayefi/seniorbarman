@@ -33,10 +33,44 @@ export function getInitials(fullName: string): string {
         .slice(0, 2); // Optional: limit to 2 letters (e.g. JD)
 }
 
+export function giveTeamLogo(teamName: string) {
+    const teamLogo = CLUBS.filter(club => (club.name === teamName))[0]?.icon
+    console.log({teamLogo, teamName})
+    return teamLogo ?? "https://placehold.co/600x400?font=roboto"
+}
+
+export function formatEvent(event: EventType) {
+    const {day, month, year} = formatDate(event.date)
+    const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
+    const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
+
+    return {
+        day,
+        month,
+        year,
+        awayLogo,
+        homeLogo,
+        awayTeam: event.awayTeam,
+        homeTeam: event.homeTeam,
+        venue: event.venue,
+        time: event.time
+    }
+}
+
+export function formatDate(date: Date) {
+    const _date = new Date(date);
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+    return {
+        month: months[_date.getMonth()],
+        day: String(_date.getDate()).padStart(2, "0"),
+        year: String(_date.getFullYear())
+    };
+}
 
 export const CLUBS = [
     {
-        name: "Awka United FC",
+        name: "Akwa United FC",
         icon: "/clubs/awka.png"
     },
     {
@@ -123,6 +157,14 @@ export const CLUBS = [
         name: "Sunshine Stars FC",
         icon: "/clubs/sunshine-stars.png"
     },
+    {
+        name: "Warri Wolves FC",
+        icon: "/clubs/warri-wolves.jpeg" 
+    },
+    {
+        name: "Wikki Tourists FC",
+        icon: "/clubs/wikki-tourists.webp"
+    },
 ]
 
 export const STADIUMS = [
@@ -195,6 +237,99 @@ export const STADIUMS = [
         state: "Bauchi"
     },
 ]
+
+
+export function giveLogo(clubName: string) {
+    const _club = CLUBS.filter(club => club.name === clubName)[0]
+    const data = _club ? _club.icon : '/club/rangers-logo.png'
+    return data
+}
+
+export const STATUS_TEXT = ["Checked In", "Checked Out", "Not Checked In"]
+
+export function extractTicketStatus(checkInLogs: []) {
+    let result;
+
+    if (checkInLogs && checkInLogs.length === 0) {
+        //console.log('Not Checked In!!!')
+        return STATUS_TEXT[2]
+    }
+
+    const lastGateAction = checkInLogs?.[checkInLogs?.length - 1]
+    // console.log({extractorLogs: checkInLogs, lastGateAction})
+
+    if (lastGateAction?.action?.toLowerCase() === "entry") {
+        result = STATUS_TEXT[0]
+    } else if (lastGateAction?.action?.toLowerCase() === "exit") {
+        result = STATUS_TEXT[1]
+    }
+
+    // console.log({resultfromExtractor: result, lastGateAction})
+
+    return result;
+}
+
+export const PrepareEventStats = (tickets: any[]) => {
+    let totalTicketsBought;
+    let totalPeopleCheckedIn;
+    let totalPeopleInside;
+    let totalPeopleOutside;
+
+    totalTicketsBought = tickets.length
+    totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
+    totalPeopleInside = tickets.filter(ticket => {
+        const logs = ticket.checkInLogs
+        if (!logs || logs.length === 0) {
+            return false
+        }
+
+        const lastLog = logs[logs.length - 1]
+
+        if (lastLog.action === "entry") {
+            return true
+        }
+
+        if (lastLog.action === "exit") {
+            return false
+        }
+
+        return false
+    }).length
+
+    totalPeopleOutside = tickets.filter(ticket => {
+        const logs = ticket.checkInLogs
+        if (!logs || logs.length === 0) {
+            return false
+        }
+
+        const lastLog = logs[logs.length - 1]
+
+        if (lastLog.action === "entry") {
+            return false
+        }
+
+        if (lastLog.action === "exit") {
+            return true
+        }
+    }).length
+
+    return {
+        totalPeopleInside,
+        totalPeopleOutside,
+        totalTicketsBought,
+        totalPeopleCheckedIn
+    }
+}
+
+export const formattedDate = (_date: Date) => {
+    // console.log({formatted: _date})
+    const date = new Date(_date)
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+}
+
 
 export const sitemap = {
     user: {

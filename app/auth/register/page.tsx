@@ -41,7 +41,7 @@ export default function Register() {
             }
             console.log({ newUser })
             const createdUser = await axios.post('/api/auth/register', {...newUser}, { withCredentials: true })
-            console.log({createdUser})
+            // onsole.log({createdUser})
             // empty the form
             firstName.reset()
             lastName.reset()
@@ -65,14 +65,17 @@ export default function Register() {
 
 
     return (
-        <Card className="w-full mx-4 md:mx-0 max-w-lg">
+        <Card className="w-full text-neutral-300 mx-4 border-neutral-800 md:mx-0 max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="md:text-3xl text-2xl">Create an account</h1>
+                <h1 className="md:text-3xl text-white text-2xl">Create an account</h1>
                 <p className="text-gray-400 md:text-normal text-sm">
                     Put in your details to get a new account
                 </p>
                 <CardAction>
-                    <Button variant="link" onClick={() => redirect('/auth/login')} >Login</Button>
+                    <Button 
+                        variant="link" 
+                        className={'text-neutral-400'}
+                        onClick={() => redirect('/auth/login')} >Login</Button>
                 </CardAction>
             </CardHeader>
             <form onSubmit={onRegisterSubmit}>

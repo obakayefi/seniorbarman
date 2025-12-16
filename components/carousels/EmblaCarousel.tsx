@@ -8,7 +8,7 @@ export function EmblaCarousel() {
 
     useEffect(() => {
         if (emblaApi) {
-            console.log(emblaApi.slideNodes()) // Access API
+          //   console.log(emblaApi.slideNodes()) // Access API
         }
     }, [emblaApi])
 

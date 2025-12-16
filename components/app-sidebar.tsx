@@ -16,6 +16,9 @@ import { Avatar, AvatarFallback } from "./ui/avatar"
 import { NavUser } from "./ui/nav-user"
 import SidebarFooterWrap from "./ui/SidebarFooterWrap"
 import { useApp } from "@/context/AppContext"
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
 // const items = [
 //   {
@@ -54,14 +57,21 @@ type SidebarLink = {
 
 export function AppSidebar({ links }: { links: SidebarLink[] }) {
   return (
-    <Sidebar>
+    <Sidebar className={'bg-amber-500'}>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <div className="pt-2 pb-0 p-2 border-b-2 border-zinc-900 bg-zinc-950 flex items-center justify-center">
+              <Link href={'/'}>
+                  <div>
+                      <Image src={'/logo-clear.svg'} alt='logo' height={75} width={200} />
+                  </div>
+              </Link>
+          </div>
+        <SidebarGroup className={'text-zinc-600'}>
+          <SidebarGroupLabel className={'text-zinc-500'}>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {links.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className={'text-zinc-200'}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
                       <item.icon />

@@ -58,16 +58,16 @@ export function NavUser(
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent p-1 data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-zinc-800 p-1 text-zinc-200  data-[state=open]:text-zinc-200"
             >
               <section className="flex flex-col">
                 <Avatar className="h-12 w-12 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg text-zinc-900">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
 
               </section>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-zinc-200 text-left text-sm leading-tight">
                 <div className="flex items-center gap-1">
                   <span className="truncate font-medium">{user.name}</span>
                   {((user?.role === 'bouncer') || (user?.role === 'admin')) ? <span className="truncate text-[10px] bg-slate-800 p-1 px-2 rounded text-gray-400 uppercase">{user.role}</span> : null}
@@ -78,7 +78,7 @@ export function NavUser(
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) bg-zinc-800 border-zinc-800 text-zinc-200 min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -87,7 +87,7 @@ export function NavUser(
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg text-zinc-900">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

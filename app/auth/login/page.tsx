@@ -58,19 +58,19 @@ export default function Login() {
     }
 
     return (
-        <Card className="w-full mx-6 max-w-lg">
+        <Card className="w-full mx-6 max-w-lg border-neutral-800">
             <CardHeader className="mb-10">
-                <h1 className="md:text-3xl text-2xl">Login to your account</h1>
+                <h1 className="md:text-3xl text-slate-100 text-2xl">Login to your account</h1>
                 <p className="text-gray-400 text-sm md:text-normal">
                     Enter your email below to login to your account
                 </p>
                 <CardAction>
-                    <Button variant="link" onClick={() => router.push('/auth/register')} >Sign Up</Button>
+                    <Button className={'text-neutral-400'} variant="link" onClick={() => router.push('/auth/register')} >Sign Up</Button>
                 </CardAction>
             </CardHeader>
             <form onSubmit={onLoginSubmit}>
-                <CardContent>
-                    <div className="flex flex-col gap-6">
+                <CardContent className={'text-neutral-700'}>
+                    <div className="flex flex-col text-neutral-400 gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
                             <Input

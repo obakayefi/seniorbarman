@@ -8,7 +8,7 @@ const CheckIn = () => {
 
     const onNewScanResult = (decodedText: any, decodedResult: any) => {
         // handle decoded results here
-        console.log({ decodedResult, decodedText })
+        // console.log({ decodedResult, decodedText })
     };
 
     return (

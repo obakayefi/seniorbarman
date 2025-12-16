@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { CircleCheckBig, CircleX, Hourglass } from "lucide-react";
 import NButton from "@/components/native/NButton";
+import {sitemap} from "@/lib/utils";
 
 type VerifyStatus = "loading" | "success" | "pending" | "failed";
 
@@ -83,7 +84,7 @@ export default function VerifyPageClient() {
 
                     <p className="mt-2 text-gray-600">
                         Your payment for{" "}
-                        <strong>{ticket?.event?.name || "your event"}</strong> is confirmed.
+                        <strong>{ticket?.event?.name || "event"}</strong> is confirmed.
                     </p>
 
                     <div className="border-t mt-4 pt-4">
@@ -97,7 +98,7 @@ export default function VerifyPageClient() {
                                 <p className="mb-2">
                                     Your tickets have been generated and emailed to you.
                                 </p>
-                                <NButton onClick={() => redirect("/user/tickets")}>
+                                <NButton onClick={() => redirect(sitemap.user.tickets)}>
                                     Go to Tickets
                                 </NButton>
                             </div>

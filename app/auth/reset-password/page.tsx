@@ -19,14 +19,14 @@ export default function ResetPassword() {
     const email = useInput('')
 
     return (
-        <Card className="w-full mx-4 md:mx-0  max-w-lg">
+        <Card className="w-full mx-4 md:mx-0 border-neutral-800 max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="text-3xl md:text-3xl text-2xl">Reset your account</h1>
+                <h1 className="lg:text-3xl md:text-3xl text-white text-2xl">Reset your account</h1>
                 <p className="text-gray-400 md:text-normal text-sm">
                     With your email you can easily recover your account
                 </p>
                 <CardAction>
-                    <Button variant="link" onClick={() => redirect('/auth/register')} >Sign Up</Button>
+                    <Button className={'text-white'} variant="link" onClick={() => redirect('/auth/register')} >Sign Up</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>

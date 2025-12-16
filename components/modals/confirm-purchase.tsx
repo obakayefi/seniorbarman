@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
@@ -6,6 +7,9 @@ import useUser from '@/hooks/useUser'
 import api from '@/lib/axios'
 import { useApp } from '@/context/AppContext'
 import NButton from '../native/NButton'
+import {OnPayNow} from "@/lib/helpers";
+import {getUserFromCookie} from "@/lib/auth";
+import {toast} from "sonner";
 
 type Props = {
     ticketsToPurchase: any[];
@@ -15,37 +19,34 @@ type Props = {
     eventId: string;
 }
 
-export const OnPayNow = async (payload: {}, ticketsToPrint: any[], eventId: string) => {
-    // setLoading(true)
-    // try {
-    const result = await api.post("/payment", payload, { withCredentials: true })
-    console.log({ result: result.data })
-    const paymentUrl = result.data.redirectTo
-    console.log({ paymentUrl });
-    const flattenedOrder = ticketsToPrint.filter(ticket => ticket.quantity > 0)
-    const orderPayload = { tickets: flattenedOrder, eventId, reference: result.data.reference, isGenerated: false }
-    const savedTicketOrder = await api.post('/ticket-order', orderPayload)
-    console.log({ orderPayload, response: savedTicketOrder })
-    setTimeout(() => window.location.assign(paymentUrl), 1000)
-}
 
 const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId }: Props) => {
     const [loading, setLoading] = useState(false)
     const { user, loading: userLoading } = useApp()
-
+    
     const paymentPayload = {
         email: user?.email,
         amount: totalPrice,
         eventId
     }
-
-    useEffect(() => {
-        console.log({ ticketsToPurchase, eventId, userId: user?.id })
-    }, [])
+    //
+    // useEffect(() => {
+    //     console.log({ ticketsToPurchase, eventId, userId: user?.id })
+    // }, [])
 
     const payNow = async () => {
         setLoading(true)
         try {
+            const totalTickets = ticketsToPurchase.reduce(
+                (sum, ticket) => sum + ticket.quantity,
+                0
+            );
+            
+            if (totalTickets > 5) {
+                toast.error('You can\'t buy more than 5 tickets')
+                return
+            }
+            
             await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
         } catch (error: any) {
             console.error('Error making payment', error.message)
@@ -55,7 +56,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
     }
 
     return (
-        <>
+        <div className={''}>
             <DialogHeader>
                 <div>
                     <DialogTitle className="text-2xl text-orange-400">Confirm Ticket Purchase</DialogTitle>
@@ -63,13 +64,17 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                         Verify the quantities you want.
                     </DialogDescription>
                 </div>
-                <div className="flex gap-2 flex-col mt-5 justify-between">
+                <div className="flex flex-col mt-5 gap-10 md:gap-3 justify-between">
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="">
-                                <div className="flex justify-between">
-                                    <h5>{ticket.name} <span className="text-sm text-gray-500">(₦{ticket.price.toLocaleString()})</span></h5> <p className="text-lg text-orange-500">₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-700 text-sm">{ticket.quantity} tickets</span> </p>
+                            <section className="border-b-2 border-zinc-950">
+                                <div className="flex flex-col sm:flex-row justify-between">
+                                    <h5>{ticket.name}
+                                    </h5> 
+                                    <p className="text-lg text-orange-500">
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span> 
+                                    </p>
                                 </div>
                             </section>
                         )
@@ -81,7 +86,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
             </DialogHeader>
             <DialogFooter className='items-center flex justify-center'>
                 {/* <DialogClose asChild > */}
-                <Button variant="outline" onClick={goBack}>Go back</Button>
+                <Button variant="outline" className={'text-zinc-800'} onClick={goBack}>Go back</Button>
                 {/* </DialogClose> */}
                 <NButton
                     onClick={payNow}
@@ -91,7 +96,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     Pay Now
                 </NButton>
             </DialogFooter>
-        </>
+        </div>
     )
 }
 

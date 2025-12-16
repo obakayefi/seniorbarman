@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         const paystackPayload = {
             email,
             amount: amount * 100, // convert from KOBO to naira,
-            callback_url: `https://tamia-uninitialed-ernestina.ngrok-free.dev/verify`
+            callback_url: `https://sbmdev.netlify.app/verify`
         }
 
         const headers = {
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
 
         const response = (await axios.post("https://api.paystack.co/transaction/initialize", paystackPayload, { headers })).data.data
 
-        console.log({ authorization_url: response.authorization_url })
+        // console.log({ authorization_url: response.authorization_url })
 
         // const { authorization_url, reference } = response.data
 
