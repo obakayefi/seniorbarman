@@ -28,44 +28,44 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
     * else if the action is entry increase totalinside
     * */
     
-    if (gateAction.action === 'entry') {
-        totalInsideStadium += 1
-    } else if (gateAction.action === 'exit') {
-        totalOutsideStadium += 1
-    }
+    // if (gateAction.action === 'entry') {
+    //     totalInsideStadium += 1
+    // } else if (gateAction.action === 'exit') {
+    //     totalOutsideStadium += 1
+    // }
     
     
-    for (let ticket of _ticketsCheckedIn) {
-        const lastLog = ticket.checkInLogs[ticket.checkInLogs.length - 1];
-        const beforeLast = ticket.checkInLogs[ticket.checkInLogs.length - 2];
-                
-        if (lastLog.action === "entry") {
-           //  console.log({entry: lastLog.action})
-            totalInsideStadium += 1
-            if (beforeLast && beforeLast.action === "exit") {
-                totalOutsideStadium -= 1
-            }
-        }
-        
-        if (lastLog.action === "exit") {
-            if (beforeLast && beforeLast.action === "entry") {
-                totalInsideStadium -= 1;
-            }
-            totalOutsideStadium += 1
-        }
-        
-    }
+    // for (let ticket of _ticketsCheckedIn) {
+    //     const lastLog = ticket.checkInLogs[ticket.checkInLogs.length - 1];
+    //     const beforeLast = ticket.checkInLogs[ticket.checkInLogs.length - 2];
+    //            
+    //     // if (lastLog.action === "entry") {
+    //     //    //  console.log({entry: lastLog.action})
+    //     //     totalInsideStadium += 1
+    //     //     if (beforeLast && beforeLast.action === "exit") {
+    //     //         totalOutsideStadium -= 1
+    //     //     }
+    //     // }
+    //     //
+    //     // if (lastLog.action === "exit") {
+    //     //     if (beforeLast && beforeLast.action === "entry") {
+    //     //         totalInsideStadium -= 1;
+    //     //     }
+    //     //     totalOutsideStadium += 1
+    //     // }
+    //    
+    // }
 
     // console.log({ totalInsideStadium, totalOutsideStadium, allTickets: tickets.length });
     
-    const eventTicketStats = PrepareEventStats(tickets);
+    // const eventTicketStats = PrepareEventStats(tickets);
    
     return {
         allPurchasedTickets: tickets.length,
-        eventTicketStats,
-        totalOutsideStadium,
-        totalInsideStadium,
-        totalCheckedIn,
+        // eventTicketStats,
+        // totalOutsideStadium,
+        // totalInsideStadium,
+        // totalCheckedIn,
     };
 }
 
@@ -82,7 +82,7 @@ export async function POST(req: Request, {params}: Params) {
             );
         }
         let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-        let user = await User.findById(ticket.createdBy)
+        //let user = await User.findById(ticket.createdBy)
         let event;
         
         if (!ticket) {
@@ -122,12 +122,12 @@ export async function POST(req: Request, {params}: Params) {
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
         let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
-        const ticketsForEvent = await Ticket.find({event: ticket.event})
-        const eventTicketStats = PrepareEventStats(ticketsForEvent);
+        // const ticketsForEvent = await Ticket.find({event: ticket.event})
+        // const eventTicketStats = PrepareEventStats(ticketsForEvent);
         // console.log({eventTicketStats})
         return NextResponse.json({
             message: "Ticket successfully checked in",
-            result: {ticket: updatedTicket, user, eventTicketStats},
+            result: {ticket: updatedTicket},
         });
     } catch (error) {
         console.error("Error checking in ticket:", error);

@@ -31,10 +31,10 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
             className={`flex flex-col md:flex-row items-start bg-white hover:bg-gray-100/50 duration-200 border-2 border-zinc-400 rounded ${toPrint ? 'h-80 p-0': 'h-auto p-2' } gap-4`}>
             <section className='flex  gap-0 items-center flex-col md:flex-col overflow-hidden'>
                 <div>
-                    <div className='bg-[#F5F5F5] flex justify-center items-center gap-1 px-4 py-2'>
+                    <div className='bg-[#F5F5F5] text-zinc-600 flex justify-center items-center gap-1 px-4 py-2'>
                         <span><TicketStandIcon size={24}/></span>
                         <span className={'text-sm'}>{ticket.stand}</span>
-                    </div>
+                    </div>  
                     <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
                         <h2 className="text-sm">{ticket.event.homeTeam}</h2>
                         <h2 className="text-sm bg-gray-200  rounded-full text-center h-6 w-6 flex items-center justify-center ">

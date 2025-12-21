@@ -66,7 +66,7 @@ export default function VerifyPageClient() {
     }, [reference]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-900 p-6 text-center">
             {status === "loading" && (
                 <div>
                     <Spinner />
@@ -75,19 +75,19 @@ export default function VerifyPageClient() {
             )}
 
             {status === "success" && (
-                <div className="bg-white shadow-md rounded-lg p-6 max-w-md w-full">
+                <div className="bg-zinc-800 shadow-md rounded-lg p-6 max-w-md w-full">
                     <CircleCheckBig className="text-green-400 mx-auto" size={80} />
 
                     <h2 className="mt-4 text-2xl font-bold text-green-600">
                         Payment Successful
                     </h2>
 
-                    <p className="mt-2 text-gray-600">
+                    <p className="mt-2 text-zinc-500">
                         Your payment for{" "}
                         <strong>{ticket?.event?.name || "event"}</strong> is confirmed.
                     </p>
 
-                    <div className="border-t mt-4 pt-4">
+                    <div className="border-t-2 text-zinc-300 border-t-zinc-700 mt-4 pt-4">
                         {ticketGen === "pending" || ticketGen === "generating" ? (
                             <div className="flex items-center gap-2 justify-center">
                                 <h3>Generating your tickets…</h3>
@@ -98,7 +98,7 @@ export default function VerifyPageClient() {
                                 <p className="mb-2">
                                     Your tickets have been generated and emailed to you.
                                 </p>
-                                <NButton onClick={() => redirect(sitemap.user.tickets)}>
+                                <NButton className={'bg-orange-500'} onClick={() => redirect(sitemap.user.tickets)}>
                                     Go to Tickets
                                 </NButton>
                             </div>

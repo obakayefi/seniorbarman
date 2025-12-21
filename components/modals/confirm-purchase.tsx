@@ -23,6 +23,7 @@ type Props = {
 const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId }: Props) => {
     const [loading, setLoading] = useState(false)
     const { user, loading: userLoading } = useApp()
+    const [maxTickets, setMaxTickets] = useState(400)
     
     const paymentPayload = {
         email: user?.email,
@@ -42,8 +43,8 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                 0
             );
             
-            if (totalTickets > 5) {
-                toast.error('You can\'t buy more than 5 tickets')
+            if (totalTickets > maxTickets) {
+                toast.error(`You can\'t buy more than ${maxTickets} tickets`)
                 return
             }
             

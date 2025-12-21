@@ -59,8 +59,7 @@ export async function GET(req: Request) {
         const createdTickets = await Ticket.create(_ticketsToPrint)
 
         ticketOrders.isGenerated = true
-        ticketOrders.save()
-
+        await ticketOrders.save()
         // return NextResponse.json({ message: "Hello" }, { status: 200 })
         return NextResponse.json({ createdTickets }, { status: 200 })
     } catch (error: any) {

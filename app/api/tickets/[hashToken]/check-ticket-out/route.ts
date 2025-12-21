@@ -32,7 +32,7 @@ export async function POST(req: Request, {params}: Params) {
 
         let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event")
         let user = await User.findById(ticket.createdBy)
-        let event;
+        // let event;
 
         if (!ticket) {
             return NextResponse.json(
@@ -42,25 +42,18 @@ export async function POST(req: Request, {params}: Params) {
         }
 
         ticket.isInside = false;
-
-        event = await Event.findByIdAndUpdate(ticket.event._id, {
-            $inc: {
-                // peopleInside: -1,
-                peopleOutside: 1
-            }
-        })
-
+        
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
         //console.log({ticketOnOut: ticket, modifiedEvent: event})
         const updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-        const ticketsForEvent = await Ticket.find({event: ticket.event})
-        const eventTicketStats = PrepareEventStats(ticketsForEvent);
+        // const ticketsForEvent = await Ticket.find({event: ticket.event})
+        //const eventTicketStats = PrepareEventStats(ticketsForEvent);
        //  console.log({eventTicketStats})
         return NextResponse.json(
             {
                 message: "Checking User Out",
-                result: {ticket: updatedTicket, user, eventTicketStats}
+                result: {ticket: updatedTicket}
             },
             {status: 200}
         )
