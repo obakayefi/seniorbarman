@@ -2,7 +2,7 @@ import api from "@/lib/axios";
 
 export async function getUpcomingEvents() {
     try {
-        return await api.get('/events?upcoming=true/')
+        return await api.get('/events/')
     } catch (error: any) {
         console.error(error)
     }

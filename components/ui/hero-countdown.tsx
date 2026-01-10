@@ -1,7 +1,7 @@
 "use client"
 import {useEffect, useState} from "react";
 
-function TimeBlock({ value, label }: { value: number; label: string }) {
+function TimeBlock({value, label}: { value: number; label: string }) {
     return (
         <section className="flex flex-col items-center">
       <span className="text-xl lg:text-3xl">
@@ -13,16 +13,17 @@ function TimeBlock({ value, label }: { value: number; label: string }) {
 }
 
 function Divider() {
-    return <div className="h-12 bg-gray-300/10 w-0.5" />;
+    return <div className="h-12 bg-gray-300/10 w-0.5"/>;
 }
 
 
 function getTimeLeft(target: Date) {
+    console.log({target});
     const now = new Date().getTime();
-    const diff = target.getTime() - now;
+    const diff = new Date(target).getTime() - now;
 
     if (diff <= 0) {
-        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+        return {days: 0, hours: 0, minutes: 0, seconds: 0};
     }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -34,32 +35,34 @@ function getTimeLeft(target: Date) {
     );
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    return { days, hours, minutes, seconds };
+    return {days, hours, minutes, seconds};
 }
 
-const TARGET_DATE = new Date("2025-12-21T16:00:00");
 
-export default function HeroCountdown() {
+export default function HeroCountdown({targetDate}: { targetDate: Date }) {
+    const TARGET_DATE = new Date(targetDate).getTime() + 16 * 60 * 60 * 1000;
     const [timeLeft, setTimeLeft] = useState(() =>
-        getTimeLeft(TARGET_DATE)
-    );
+        getTimeLeft(TARGET_DATE));
+    const [loadingCountdown, setLoadingCountdown] = useState(true);
 
     useEffect(() => {
         const interval = setInterval(() => {
             setTimeLeft(getTimeLeft(TARGET_DATE));
+            setLoadingCountdown(false);
         }, 1000);
 
         return () => clearInterval(interval);
     }, []);
     return (
         <div className="gap-5 items-center rounded flex pt-3">
-            <TimeBlock value={timeLeft.days} label="Days" />
-            <Divider />
-            <TimeBlock value={timeLeft.hours} label="Hours" />
-            <Divider />
-            <TimeBlock value={timeLeft.minutes} label="Minutes" />
-            <Divider />
-            <TimeBlock value={timeLeft.seconds} label="Seconds" />
+            <TimeBlock value={timeLeft.days} label="Days"/>
+            <Divider/>
+            <TimeBlock value={timeLeft.hours} label="Hours"/>
+
+            <Divider/>
+            <TimeBlock value={timeLeft.minutes} label="Minutes"/>
+            <Divider/>
+            <TimeBlock value={timeLeft.seconds} label="Seconds"/>
         </div>
     )
 }

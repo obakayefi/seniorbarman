@@ -25,6 +25,7 @@ import {useApp} from "@/context/AppContext";
 
 export function BookEventModal({eventId}: { eventId: string }) {
     const [selectedTicketType, setSelectedTicketType] = useState(2)
+    const [maxTickets, setMaxTickets] = useState(400)
     const ticketTypes = [
         {id: 432, name: "Popular Stand", icon: Users, price: 500, color: "text-red-500", max: 22000},
         {id: 521, name: "Cover Stand Regular", icon: Ticket, price: 2000, color: "text-blue-500", max: 2000},
@@ -91,8 +92,8 @@ export function BookEventModal({eventId}: { eventId: string }) {
             toast.info(`You can't buy more than ${max.toLocaleString()} tickets for the ${name}`);
         }
         
-        if (totalTickets > 5) {
-            toast.info(`You can't buy more than 5 tickets`);
+        if (totalTickets > maxTickets) {
+            toast.info(`You can't buy more than ${maxTickets} tickets`);
         }
 
         setTicketsToPurchase((prev) => {

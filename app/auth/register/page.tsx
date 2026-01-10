@@ -67,16 +67,28 @@ export default function Register() {
     return (
         <Card className="w-full text-neutral-300 mx-4 border-neutral-800 md:mx-0 max-w-lg">
             <CardHeader className="mb-10">
-                <h1 className="md:text-3xl text-white text-2xl">Create an account</h1>
-                <p className="text-gray-400 md:text-normal text-sm">
-                    Put in your details to get a new account
-                </p>
-                <CardAction>
-                    <Button 
-                        variant="link" 
-                        className={'text-neutral-400'}
-                        onClick={() => redirect('/auth/login')} >Login</Button>
-                </CardAction>
+                {/*<h1 className="md:text-3xl text-white text-2xl">Create an account</h1>*/}
+                {/*<p className="text-gray-400 md:text-normal text-sm">*/}
+                {/*    Put in your details to get a new account*/}
+                {/*</p>*/}
+                {/*<CardAction className={'border border-zinc-900'}>*/}
+                {/*    <Button */}
+                {/*        variant="link" */}
+                {/*        className={'text-neutral-400 '}*/}
+                {/*        onClick={() => redirect('/auth/login')} >Login</Button>*/}
+                {/*</CardAction>*/}
+                <div className={'flex sm:flex-row-reverse justify-between flex-col'}>
+                    <div className={'border border-zinc-900 mb-4'}>
+                        <Button className={'text-neutral-400  bg-transparent w-full px-2'} variant="link"
+                                onClick={() => redirect('/auth/login')}>Login to your account</Button>
+                    </div>
+                    <div>
+                        <h1 className="md:text-3xl text-slate-100 text-2xl">Create an account</h1>
+                        <p className="text-gray-400 text-sm md:text-normal">
+                            Put in your details to get a new account
+                        </p>
+                    </div>
+                </div>
             </CardHeader>
             <form onSubmit={onRegisterSubmit}>
                 <CardContent>
@@ -120,7 +132,7 @@ export default function Register() {
                                 <Label htmlFor="password">Password</Label>
                                 <Link
                                     href="/auth/reset-password"
-                                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                                    className="ml-auto inline-block text-zinc-700 text-underline text-sm underline-offset-4 hover:underline"
                                 >
                                     Forgot your password?
                                 </Link>

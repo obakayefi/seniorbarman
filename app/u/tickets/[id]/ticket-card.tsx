@@ -13,6 +13,8 @@ import {BsFillCalendarDateFill} from "react-icons/bs";
 import NButton from "@/components/native/NButton";
 import {log} from "node:util";
 import MatchTicket from "@/components/ui/match-ticket";
+import BulkTicketView from "@/app/u/tickets/BulkTicketView";
+import RegularTicketView from "@/app/u/tickets/RegularTicketView";
 
 export default function TicketCard () {
     const [tickets, setTickets] = useState([])
@@ -96,20 +98,18 @@ export default function TicketCard () {
                     </div>
 
                     <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
-                        {ticketSummary?.map((summary, index) => (
+                        {tickets.length < 5 ? ticketSummary?.map((summary, index) => (
                             <div
                                 key={index}
                                 className='text-center bg-zinc-800 w-full p-2 px-3 lg:max-w-fit rounded cursor-pointer hover:bg-zinc-700 duration-100'>
                                 <h4 className='text-zinc-400'>{summary.name}</h4>
                                 <span className='text-2xl text-zinc-200'>{summary.value}</span>
                             </div>
-                        ))}
+                        )): null}
                     </section>
 
                 <section className="flex flex-col flex-wrap md:flex-row xl:grid grid-cols-4 lg:grid-cols-4 md:justify-between gap-4 mt-4">
-                    {tickets.map((ticket, index) => (
-                        <MatchTicket ticket={ticket} />
-                    ))}
+                    {loading ? (<div>Loading events...</div>) : tickets.length && tickets.length > 4  ? <BulkTicketView id={params.id} tickets={tickets}/> : <RegularTicketView tickets={tickets}/>}
                 </section>
 
                     {/*<div className={'flex items-center justify-center py-2'}>*/}

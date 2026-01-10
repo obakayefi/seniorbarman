@@ -1,8 +1,23 @@
+"use client"
 import Hero from "@/components/ui/hero";
 import HowItWorks from "@/components/ui/how-it-works";
 import UpcomingMatches from "@/components/ui/upcoming-matches";
+import {useEffect, useState} from "react";
+import api from "@/lib/axios";
 
 export default function RangersPage() {
+    const [nextMatch, setNextMatch] = useState({})
+    const [upcomingMatches, setUpcomingMatches] = useState({})
+
+    useEffect(() => {
+        async function loadMatches() {
+            const {data} = await api.get("/general/upcoming-matches")
+            setUpcomingMatches(data.upcomingMatches)
+            setNextMatch(data.nextMatch)
+        }
+        loadMatches()
+    }, [])
+    
     return (
         <section className={''}>
             {/*<FloatingNav navItems={navItems}/>*/}
@@ -16,11 +31,11 @@ export default function RangersPage() {
 
                 {/* content */}
                 <div className="relative z-20 flex py-20 mx-4 lg:mx-60 h-full">
-                    <Hero/>
+                    <Hero nextMatch={nextMatch}/>
                 </div>
             </div>
             <HowItWorks/>
-            <UpcomingMatches/>
+            <UpcomingMatches upcomingMatches={upcomingMatches} />
             {/*<UpcomingEvents/>*/}
         </section>
     )

@@ -104,7 +104,7 @@ const BuyTicket = ({
                     loading={loading}
                     className={`bg-orange-500 ${totalTickets === 0 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                     onClick={handleOnBuyTicket}
-                    disabled={(loading || (totalTickets < 1) || totalTickets > 5)}>
+                    disabled={(loading || (totalTickets < 1) || totalTickets > 400)}>
                     {(totalTickets > 1) ? 'Purchase Summary' : 'Pay Now'}
                 </NButton>
             </DialogFooter>
