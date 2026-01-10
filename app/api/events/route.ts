@@ -26,11 +26,14 @@ export async function GET(req: Request) {
                 return eventEnd >= cutoff;
             })
         }
-
-        const events = await Event.find().sort({date: -1})
-        const filteredEvents = await Event.find(filter).sort({date: -1})
+        const today = new Date()
+        const upcomingMatches = await Event.find({
+            date: {$gt: today}
+        })
+            .sort({date: 1})
+            .lean()
         return NextResponse.json(
-            {events: _events.reverse(), totalEvents: events.length, upcomingEvents: _events.length},
+            {events: upcomingMatches, totalEvents: upcomingMatches.length},
             {status: 200}
         )
     } catch
