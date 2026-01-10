@@ -7,6 +7,7 @@ import {cookies} from "next/headers";
 import jwt, {JwtPayload} from "jsonwebtoken";
 import User from "@/models/User";
 import {PrepareEventStats} from "@/lib/utils";
+import {emitWebhook} from "@/services/webhookService";
 
 type Params = {
     params: Promise<{ hashToken: string }>;
@@ -27,45 +28,9 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
     * pick the last log on each ticket and if the action is exit add count of those outsideStadium
     * else if the action is entry increase totalinside
     * */
-    
-    // if (gateAction.action === 'entry') {
-    //     totalInsideStadium += 1
-    // } else if (gateAction.action === 'exit') {
-    //     totalOutsideStadium += 1
-    // }
-    
-    
-    // for (let ticket of _ticketsCheckedIn) {
-    //     const lastLog = ticket.checkInLogs[ticket.checkInLogs.length - 1];
-    //     const beforeLast = ticket.checkInLogs[ticket.checkInLogs.length - 2];
-    //            
-    //     // if (lastLog.action === "entry") {
-    //     //    //  console.log({entry: lastLog.action})
-    //     //     totalInsideStadium += 1
-    //     //     if (beforeLast && beforeLast.action === "exit") {
-    //     //         totalOutsideStadium -= 1
-    //     //     }
-    //     // }
-    //     //
-    //     // if (lastLog.action === "exit") {
-    //     //     if (beforeLast && beforeLast.action === "entry") {
-    //     //         totalInsideStadium -= 1;
-    //     //     }
-    //     //     totalOutsideStadium += 1
-    //     // }
-    //    
-    // }
-
-    // console.log({ totalInsideStadium, totalOutsideStadium, allTickets: tickets.length });
-    
-    // const eventTicketStats = PrepareEventStats(tickets);
    
     return {
         allPurchasedTickets: tickets.length,
-        // eventTicketStats,
-        // totalOutsideStadium,
-        // totalInsideStadium,
-        // totalCheckedIn,
     };
 }
 
@@ -82,8 +47,6 @@ export async function POST(req: Request, {params}: Params) {
             );
         }
         let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-        //let user = await User.findById(ticket.createdBy)
-        let event;
         
         if (!ticket) {
             return NextResponse.json(
@@ -98,33 +61,22 @@ export async function POST(req: Request, {params}: Params) {
             method: "QR Code",
             location: "Gate 1"
         }
-        // console.log({gateAction, logs: ticket.checkInLogs})
         ticket.isInside = true;
-        //
-        // if (ticket.checkInLogs?.length < 1) {
-        //     console.log('Log below 1')
-        //     // event = await Event.findByIdAndUpdate(ticket.event._id, {
-        //     //     $inc: {
-        //     //         peopleInside: 1,
-        //     //         totalPeople: 1,
-        //     //     }
-        //     // })
-        // } else { 
-        //     console.log('Log above 1')
-        //     // event = await Event.findByIdAndUpdate(ticket.event._id, {
-        //     //     $inc: {
-        //     //         peopleInside: 1,
-        //     //         // peopleOutside: -1
-        //     //     }
-        //     // })
-        // }
         
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
+        
+        emitWebhook("ticket.check_in", {
+            ticketId: ticket._id,
+            userId: ticket,
+            eventId: ticket.event,
+            stand: ticket.stand,
+            location: gateAction.location,
+            method: gateAction.method,
+        })
+        
         let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
-        // const ticketsForEvent = await Ticket.find({event: ticket.event})
-        // const eventTicketStats = PrepareEventStats(ticketsForEvent);
-        // console.log({eventTicketStats})
+        
         return NextResponse.json({
             message: "Ticket successfully checked in",
             result: {ticket: updatedTicket},
