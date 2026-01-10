@@ -156,7 +156,7 @@ const Events = () => {
                 upcoming: _events.upcomingEvents,
                 total: _events.totalEvents,
             }
-            setData(_events.events.reverse())
+            setData(_events.events)
             setEventStats(stats)
             setIsLoading(false)
         }
