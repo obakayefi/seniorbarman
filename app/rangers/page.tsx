@@ -35,7 +35,9 @@ export default function RangersPage() {
                 </div>
             </div>
             <HowItWorks/>
-            <UpcomingMatches upcomingMatches={upcomingMatches} />
+            <UpcomingMatches 
+                upcomingMatches={upcomingMatches} 
+            />
             {/*<UpcomingEvents/>*/}
         </section>
     )

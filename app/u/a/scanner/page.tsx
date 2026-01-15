@@ -19,6 +19,7 @@ import {Spinner} from "@/components/ui/spinner";
 import {STATUS_TEXT} from "@/lib/utils"
 import {IEventStats} from "@/types/data";
 import {extractTicketStatus} from "@/lib/utils";
+import TicketScanner from "@/components/widgets/TicketScanner";
 
 type TicketSummary = {
     event: {
@@ -40,7 +41,7 @@ type PreCheckInActionsProps = {
     eventMismatch: boolean;
 }
 
-const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}: PreCheckInActionsProps) => {
+export const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}: PreCheckInActionsProps) => {
     if (eventMismatch) return null
 
     return (
@@ -75,7 +76,7 @@ type PostCheckInActionsProps = {
     eventMismatch: boolean;
 }
 
-const PostCheckInActions = ({
+export const PostCheckInActions = ({
                                 loading,
                                 eventMismatch,
                                 handleCheckingUserOut,
@@ -108,8 +109,12 @@ const PostCheckInActions = ({
 }
 
 
+export type TicketOperationType = 'check-in' | 'check-out' | 'suspend' | 'scan' | undefined
+
 const AdminTicketScanner = () => {
     const {SVG} = useQRCode()
+    // const [canScan, setCanScan] = useState(true)
+    const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [openApprovalModal, setOpenApprovalModal] = useState(false)
     const [currentTicket, setCurrentTicket] = useState<TicketSummary>({} as TicketSummary)
     const [targetHash, setTargetHash] = useState<string>('')
@@ -118,32 +123,18 @@ const AdminTicketScanner = () => {
     const [ticketStatus, setTicketStatus] = useState('')
     const [isCheckingUserOut, setIsCheckingUserOut] = useState(false)
     const [isBlockingTicket, setIsBlockingTicket] = useState(false)
-    const [canScan, setCanScan] = useState(true)
+    const [canScan, setCanScan] = useState(false)
     const [selectedEvent, setSelectedEvent] = useState('')
     const [computedStatus, setComputedStatus] = useState('')
-    const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [events, setEvents] = useState<[]>([])
     const [eventStats, setEventStats] = useState<IEventStats>({} as IEventStats)
-    // const [totalInStadium]
+    const [ticketOperation, setTicketOperation] = useState<'check-in' | 'check-out' | 'suspend' | 'scan' | undefined>(undefined)
+    
 
-    const toggleMonitorMode = () => setMonitorMode(!monitorMode)
-
-    const toggleScanMode = () => setCanScan(scan => !scan)
-
-
-    const statusBadgeStyle = () => {
-        switch (computedStatus) {
-            case STATUS_TEXT[0]:
-                return "bg-green-200 text-green-600"
-            case STATUS_TEXT[1]:
-                return "bg-red-200 text-red-600"
-            case STATUS_TEXT[2]:
-                return "bg-orange-200 text-orange-600"
-            default:
-                return "bg-slate-200 text-slate-600"
-        }
-    }
-
+    const selectTicketOperation = (operation: TicketOperationType) => setTicketOperation(operation)
+    
+    const resetTicketOperation = () => setTicketOperation(undefined)
+    
     useEffect(() => {
         async function loadEvents() {
             setLoadingTickets(true)
@@ -151,13 +142,15 @@ const AdminTicketScanner = () => {
             if (_events) setEvents(_events.events)
             setLoadingTickets(false)
         }
+
         loadEvents()
     }, [])
 
     // useEffect(() => {
     //     // console.log({eventsLogged: events})
     // }, [events]);
-
+    const toggleScanMode = () => setCanScan(scan => !scan)
+    const toggleMonitorMode = () => setMonitorMode(!monitorMode)
 
     const handleScan = async (detectedCodes: any) => {
         const qrValue = (detectedCodes[0].rawValue).split('/')
@@ -181,20 +174,12 @@ const AdminTicketScanner = () => {
 
     useEffect(() => {
         setComputedStatus(extractTicketStatus(currentTicket.checkInLogs))
-        //onsole.log({computedStatus})
-        //console.log({currentTicket})
     }, [currentTicket]);
-
-    // useEffect(() => {
-    //     console.log({events})
-    // }, [events]);
-
     const getEventStats = async () => {
         const stats = await fetchEventStats(selectedEvent)
-        //console.log({stats})
         setEventStats(stats.eventTicketStats)
     }
-    
+
     useEffect(() => {
         if (!selectedEvent) return
         getEventStats()
@@ -207,7 +192,6 @@ const AdminTicketScanner = () => {
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-out`)
-       // console.log({data})
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
         // setEventStats(data.result.ticket.eventTicketStats)
         //console.log({statusOut: data.result})
@@ -226,29 +210,32 @@ const AdminTicketScanner = () => {
         setLoading(true)
         const {data} = await api.post(`/tickets/${targetHash}/check-ticket-in`)
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-       
+
         setEventStats(data.result.eventTicketStats)
         setLoading(false)
     }
 
-    const cleanupDialogState = () => {
-        console.log('Cleanup dialog state') 
-    }
     
+    const cleanupDialogState = () => {
+        console.log('Cleaning up dialog state')
+    }
+   
+
     return (
         <div className='p-15 h-screen overflow-y-auto'>
             <h2 className='text-4xl flex text-orange-400 items-center gap-2'>
                 <span>Ticket Scanner</span> <span><QrCode className='text-orange-400 mt-0.5'/></span>
             </h2>
             <div className="flex lg:flex-row flex-col-reverse gap-2">
-                <section className='w-4/4'>
-                    <div className="flex lg:flex-row flex-col gap-1 w-full">
+                <section className='w-4/4 mt-1'>
+                    <div className="flex lg:flex-row bg-zinc-900 p-2 px-4 rounded-lg gap-4 flex-col items-end w-full">
                         {selectedEvent ? (
-                            <section className="flex mt-2 lg:mt-10 w-1/2 mb-4 flex-col">
-                                <h2 className="text-xl mb-4 text-slate-600">Monitoring Mode</h2>
+                            <section className="flex mt-2 lg:mt-1 max-w-fit mb-4 flex-col">
+                                <h2 className="text-lg mb-1 text-zinc-600">Monitoring Mode</h2>
                                 <div
-                                    className="bg-amber-100 gap-2 h-full flex pl-2 p-2 px-6 rounded items-center max-w-fit lg:w-full">
-                                    <Switch checked={monitorMode} onCheckedChange={toggleMonitorMode}/>
+                                    className="bg-zinc-800 gap-2 h-full flex pl-2 p-1.5 px-6 rounded items-center max-w-fit lg:w-full">
+                                    <Switch className={'text-zinc-500'} checked={monitorMode}
+                                            onCheckedChange={toggleMonitorMode}/>
                                     <span
                                         className={'text-zinc-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
                                 </div>
@@ -256,7 +243,7 @@ const AdminTicketScanner = () => {
                         ) : null}
 
                         <section className="flex mt-2 lg:mt-10 mb-4 w-full flex-col">
-                            <h2 className="text-xl mb-4 text-slate-600">Pick Event To Monitor</h2>
+                            <h2 className="text-lg mb-1 text-zinc-600">Pick Event To Monitor</h2>
                             <div className="bg-zinc-800 rounded w-full">
                                 {events.length > 0 ? (
                                     <Select
@@ -265,13 +252,16 @@ const AdminTicketScanner = () => {
                                             setSelectedEvent(value);
                                         }}
                                     >
-                                        <SelectTrigger className="w-full grow-0 flex">
+                                        <SelectTrigger
+                                            className="w-full grow-0 bg-zinc-800 text-zinc-100 py-1 outline-none border-2 border-zinc-800 flex">
                                             <SelectValue placeholder="Pick an event to scan for"/>
                                         </SelectTrigger>
                                         <SelectContent className={'w-full'}>
                                             {events.map(event => (
-                                                <SelectItem key={event._id} value={event._id}
-                                                            className={'w-full outline'}>
+                                                <SelectItem
+                                                    key={event._id}
+                                                    value={event._id}
+                                                    className={'w-full outline'}>
                                                     {/*<span className={'text-xs bg-green-400 text-white p-1 rounded'}>(Home)</span> {event.homeTeam} vs {event.awayTeam} <span className={'bg-orange-400 text-white p-1 rounded text-xs'}>(Away)</span> | {new Date(event.date).toDateString()}*/}
                                                     <span
                                                         className={'text-xs bg-green-500 text-white p-1 rounded'}>Home</span> {event.homeTeam} vs {event.awayTeam}
@@ -294,7 +284,16 @@ const AdminTicketScanner = () => {
                             </div>
                         </section>
 
-
+                        <div>
+                            <h2 className='text-lg text-zinc-600'>Total Tickets</h2>
+                            <section className="bg-zinc-800 p-1.5 px-2 mb-4 rounded lg:w-54">
+                                {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
+                                <span className='text-xl text-zinc-400'>
+                                        {/*{Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
+                                    340 / 1,200
+                                    </span>
+                            </section>
+                        </div>
                     </div>
 
                     {/*MOBILE SCANNER */}
@@ -315,26 +314,107 @@ const AdminTicketScanner = () => {
 
                     {selectedEvent ? (
                         <div className="flex mt-10 flex-col gap-2 w-full">
-                            <h2 className='text-3xl text-slate-600'>Fan Stats</h2>
-                            <div className='flex gap-4 flex-col md:flex-row'>
-                                <section className="bg-orange-300 p-2 rounded lg:w-54">
-                                    <h2 className='text-sm text-slate-500'>Total Allotted Tickets</h2>
-                                    {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
-                                    <span className='text-5xl text-slate-800'>
-                                        {Number(eventStats?.totalTicketsBought)?.toLocaleString()}
-                                    </span>
+                            <h2 className='text-3xl text-zinc-400'>Fan Stats</h2>
+                            <div className='flex gap-4 flex-col'>
+
+                                <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-2/2">
+                                    {/* stand header */}
+                                    <div className={'flex items-center justify-between'}>
+                                        <section className={'flex items-center gap-2'}>
+                                            <div className="h-3 w-3 rounded-full bg-indigo-800"/>
+                                            <h2 className='text-xl text-indigo-200'>Popular Stand</h2>
+                                        </section>
+                                        <span className={'text-zinc-500'}>2,000 / 2,500</span>
+                                    </div>
+
+                                    {/* stand overall progress */}
+                                    <div className={'flex items-center justify-between gap-2'}>
+                                        <div className={'w-[80%] bg-indigo-800 h-2 rounded-lg'}/>
+                                        <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                    </div>
+
+                                    <div className={'flex items-center justify-between gap-2'}>
+                                        <section className={'text-center'}>
+                                            <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
+                                            <p className={'text-2xl text-left text-indigo-200'}>425</p>
+                                        </section>
+                                        <section className={'text-center'}>
+                                            <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
+                                            <p className={'text-2xl text-right text-blue-200'}>239</p>
+                                        </section>
+                                    </div>
+
+                                    {/*<span className='text-2xl text-zinc-300'>*/}
+                                    {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
+                                    {/*</span>*/}
                                 </section>
-                                <section className="bg-emerald-300 p-2 rounded lg:w-54">
-                                    <h2 className='text-sm text-slate-500'>Total Check In</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleCheckedIn}</span>
-                                </section>
-                                <section className="bg-purple-300 p-2 rounded lg:w-54">
-                                    <h2 className='text-sm text-slate-500'>Inside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleInside}</span>
-                                </section>
-                                <section className="bg-amber-300 p-2 rounded lg:w-54">
-                                    <h2 className='text-sm text-slate-800'>Outside Stadium</h2>
-                                    <span className='text-5xl text-slate-800'>{eventStats?.totalPeopleOutside}</span>
+                                {/*STAND ROW*/}
+                                <section className={'w-full flex gap-2'}>
+                                    {/* STAND */}
+                                    <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-1/2">
+                                        {/* stand header */}
+                                        <div className={'flex items-center justify-between'}>
+                                            <section className={'flex items-center gap-2'}>
+                                                <div className="h-3 w-3 rounded-full bg-teal-800"/>
+                                                <h2 className='text-xl text-teal-200'>Regular Stand</h2>
+                                            </section>
+                                            <span className={'text-zinc-500'}>2,000 / 2,500</span>
+                                        </div>
+
+                                        {/* stand overall progress */}
+                                        <div className={'flex items-center justify-between gap-2'}>
+                                            <div className={'w-[80%] bg-teal-800 h-2 rounded-lg'}/>
+                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                        </div>
+
+                                        <div className={'flex items-center justify-between gap-2'}>
+                                            <section className={'text-center'}>
+                                                <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
+                                                <p className={'text-2xl text-left text-teal-200'}>425</p>
+                                            </section>
+                                            <section className={'text-center'}>
+                                                <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
+                                                <p className={'text-2xl text-right text-teal-200'}>239</p>
+                                            </section>
+                                        </div>
+
+                                        {/*<span className='text-2xl text-zinc-300'>*/}
+                                        {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
+                                        {/*</span>*/}
+                                    </section>
+
+                                    {/* STAND */}
+                                    <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-1/2">
+                                        {/* stand header */}
+                                        <div className={'flex items-center justify-between'}>
+                                            <section className={'flex items-center gap-2'}>
+                                                <div className="h-3 w-3 rounded-full bg-orange-800"/>
+                                                <h2 className='text-xl text-orange-200'>Executive Stand</h2>
+                                            </section>
+                                            <span className={'text-zinc-500'}>2,000 / 2,500</span>
+                                        </div>
+
+                                        {/* stand overall progress */}
+                                        <div className={'flex items-center justify-between gap-2'}>
+                                            <div className={'w-[80%] bg-orange-800 h-2 rounded-lg'}/>
+                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                        </div>
+
+                                        <div className={'flex items-center justify-between gap-2'}>
+                                            <section className={'text-center'}>
+                                                <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
+                                                <p className={'text-2xl text-left text-orange-200'}>121</p>
+                                            </section>
+                                            <section className={'text-center'}>
+                                                <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
+                                                <p className={'text-2xl text-right text-orange-200'}>98</p>
+                                            </section>
+                                        </div>
+
+                                        {/*<span className='text-2xl text-zinc-300'>*/}
+                                        {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
+                                        {/*</span>*/}
+                                    </section>
                                 </section>
                             </div>
                         </div>
@@ -342,68 +422,13 @@ const AdminTicketScanner = () => {
 
                     {!selectedEvent ? null : (
                         <div className='mt-10'>
-                            <h2 className="text-3xl text-slate-600 mb-2">Recent Scans</h2>
+                            <h2 className="text-3xl text-zinc-500 mb-2">Recent Scans</h2>
                             <section
-                                className='border border-slate-200 h-76 overflow-y-auto flex flex-col items-center justify-center gap-2 p-2'>
+                                className='border-zinc-900 bg-zinc-900 rounded-md border-2 h-76 overflow-y-auto flex flex-col items-center justify-center gap-2 p-2'>
                                 <MdSecurity size={32} color={'text-orange-300'}/>
-                                <h2 className=" text-slate-500">No one has checked in yet</h2>
+                                <h2 className=" text-zinc-500">No one has checked in yet</h2>
                             </section>
-
-                            {/*<section className='border border-slate-200 max-h-76 overflow-y-auto flex flex-col gap-4 p-2'>*/}
-
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-                            {/*<div className='flex gap-2 items-center justify-between bg-gray-100/50 p-4 rounded'>*/}
-                            {/*    <h3>Rangers vs Enyimba</h3>*/}
-                            {/*    <p className=''>Popular stand</p>*/}
-                            {/*    <p className='text-gray-600'>25 December 2025</p>*/}
-                            {/*    <p className='bg-slate-800 text-slate-300 px-6 p-0.5 rounded-full'>14:00</p>*/}
-                            {/*</div>*/}
-                            {/*</section>*/}
+                            
                         </div>
                     )}
 
@@ -411,103 +436,28 @@ const AdminTicketScanner = () => {
 
 
                 {(monitorMode || !selectedEvent) ? null : (
-                    <section
-                        className='md:border-2 bg-transparent md:bg-zinc-800 rounded p-8 flex items-center justify-center overflow-hidden h-auto md:border-zinc-400 w-full'>
-                        {/* DESKTOP SCANNER */}
-                        <div className="h-auto w-96 hidden md:flex flex-col gap-1">
-                            <section>
-                                {canScan ? (
-                                    <Scanner
-                                        onScan={handleScan}
-                                        onError={(error: any) => console.log(error?.message)}
-                                    />
-                                ) : null}
-
-                            </section>
-                            <NButton className={`${canScan ? 'bg-orange-500' : ''}`} icon={<Power/>}
-                                     onClick={toggleScanMode}>{canScan ? 'Turn Scan Off' : 'Activate Scanner'} </NButton>
-                        </div>
-                        <Dialog open={openApprovalModal} onOpenChange={(open) => {
-                            if (!open) {
-                                cleanupDialogState()
-                            }
-                            setOpenApprovalModal(open)
-                        }}>
-                            <DialogContent className={'bg-zinc-900 text-white border-zinc-600'}>
-                                <DialogHeader>
-                                    <DialogTitle className={'text-zinc-500'}>Ticket Information</DialogTitle>
-                                </DialogHeader>
-                                {/*<DialogDescription className='flex flex-col gap-2 justify-between'>*/}
-                                <section className='flex flex-col gap-2 justify-between'>
-                                    <section className='flex flex-col gap-2'>
-                                        {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
-                                            <div className='flex items-center gap-1 text-green-500'>
-                                                <span>Valid</span>
-                                                <RiVerifiedBadgeFill size={24} className='mb-0.5'/>
-                                          `  </div>
-                                        ) : (
-                                            <div className='flex items-center gap-1 text-red-500'>
-                                                <h4 className='m-0'>Event Mismatch</h4>
-                                                <MdReport size={24}/>
-                                            </div>
-                                        )}
-
-                                        <div className='flex flex-col items-start gap-1'>
-                                            <div className={`${statusBadgeStyle()} p-1 px-2 rounded`}>
-                                                {computedStatus ?? "Ah!"}
-                                            </div>
-                                        </div>
-
-                                        <div className='flex items-center gap-1'>
-                                            <span
-                                                className='text-lg text-slate-200'>{currentTicket.event?.homeTeam}</span>
-                                            <span>vs</span>
-                                            <span
-                                                className='text-lg text-slate-200'>{currentTicket.event?.awayTeam}</span>
-                                        </div>
-                                    </section>
-                                </section>
-                                {/*</DialogDescription>*/}
-
-                                <section className='flex items-center w-full justify-between'>
-                                    <div className={'flex items-center text-slate-600 gap-1'}>
-                                        <h5 className='text-sm text-slate-300'>{currentTicket.stand}</h5>
-                                        <span>
-                                            <MdStadium size={21}/>
-                                        </span>
-
-                                    </div>
-
-                                    <div
-                                        className='text-slate-300 px-2 py-1 rounded text-sm flex items-center justify-center gap-1 bg-slate-800 w-max-fit'>
-                                        <span
-                                            className='flex items-center gap-1'>{`${currentTicket?.createdBy?.firstName}`}</span>
-                                        <span
-                                            className='mb-0.5'><User2Icon size={16}/></span>
-                                    </div>
-                                </section>
-
-
-                                {/* ACTIONS */}
-                                {
-                                    computedStatus === "Checked In" ?
-                                        <PostCheckInActions
-                                            eventMismatch={(selectedEvent !== currentTicket.event?._id)}
-                                            handleCheckingUserOut={handleCheckingUserOut}
-                                            handleBlockingTicket={handleBlockingTicket}
-                                            loading={isCheckingUserOut}
-                                        />
-                                        : <PreCheckInActions
-                                            handleCheckingUserIn={handleCheckingUserIn}
-                                            eventMismatch={(selectedEvent !== currentTicket.event?._id)}
-                                            loading={loading}
-                                        />
-                                }
-                            </DialogContent>
-                        </Dialog>
-                    </section>
+                   <TicketScanner 
+                       resetTicketOperationAction={resetTicketOperation}
+                       selectTicketOperationAction={selectTicketOperation}
+                       ticketOperation={ticketOperation}
+                       canScan={canScan}
+                       cleanupDialogStateAction={cleanupDialogState}
+                       selectedEvent={selectedEvent}
+                       currentTicket={currentTicket}
+                       loading={loading}
+                       toggleScanModeAction={toggleScanMode}
+                       handleScanAction={handleScan}
+                       openApprovalModalAction={openApprovalModal}
+                       computedStatus={computedStatus}
+                       handleBlockingTicketAction={handleBlockingTicket}
+                       handleCheckingUserInAction={handleCheckingUserIn}
+                       handleCheckingUserOutAction={handleCheckingUserOut}
+                       isCheckingUserOut={isCheckingUserOut}
+                       updateOpenApprovalModalAction={setOpenApprovalModal}
+                   />
                 )}
             </div>
+            
         </div>
     )
 }
