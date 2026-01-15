@@ -330,6 +330,18 @@ export const formattedDate = (_date: Date) => {
     return `${day}/${month}/${year}`;
 }
 
+export const statusBadgeStyle = (computedStatus: string) => {
+    switch (computedStatus) {
+        case STATUS_TEXT[0]:
+            return "bg-green-200 text-green-600"
+        case STATUS_TEXT[1]:
+            return "bg-red-200 text-red-600"
+        case STATUS_TEXT[2]:
+            return "bg-orange-200 text-orange-600"
+        default:
+            return "bg-slate-200 text-slate-600"
+    }
+}
 
 export const sitemap = {
     user: {
