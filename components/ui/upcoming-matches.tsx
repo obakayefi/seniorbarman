@@ -11,7 +11,7 @@ function FootballMatch({isNextMatch, match}: { isNextMatch?: boolean, match: {} 
         <div
             className={`${isNextMatch ? "border-green-400 pt-4" : "border-slate-900"} border-2 relative flex flex-col items-start justify-start gap-3 px-6 py-2 rounded-lg`}>
             {isNextMatch ? (
-                <div className="absolute -top-3 -left-4">
+                <div className="absolute -top-3 left-[40%] lg:-left-1">
                     <span className={'bg-green-500 px-2 py-1  text-white text-xs mt-5 rounded'}>Next Match</span>
                 </div>
             ) : null}
@@ -64,7 +64,7 @@ export default function UpcomingMatches({upcomingMatches}: { upcomingMatches: []
             </div>
 
             <section className={'flex flex-col md:grid grid-cols-2 lg:flex gap-4 mt-10'}>
-                {upcomingMatches.length ? upcomingMatches.reverse().map((match, index) => (
+                {upcomingMatches.length ? upcomingMatches.map((match, index) => (
                     <FootballMatch match={match} isNextMatch={index === 0}/>
                 )) : <div><h3 className={'text-zinc-600'}>Loading upcoming matches</h3></div>}
             </section>
