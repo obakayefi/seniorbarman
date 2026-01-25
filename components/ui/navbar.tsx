@@ -1,7 +1,7 @@
 "use client";
-import React, {useEffect, useState} from "react";
-import {FloatingNav} from "../ui/floating-navbar";
-import {IconHome, IconMessage, IconUser} from "@tabler/icons-react";
+import React, { useEffect, useState } from "react";
+import { FloatingNav } from "../ui/floating-navbar";
+import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
 import {
     MobileNav,
     MobileNavHeader, MobileNavMenu, MobileNavToggle,
@@ -11,15 +11,15 @@ import {
     NavBody,
     NavItems
 } from "@/components/ui/resizable-navbar";
-import {redirect} from "next/navigation";
+import { redirect } from "next/navigation";
 import useUser from "@/hooks/useUser";
 import User from "@/models/User";
 import NButton from "@/components/native/NButton";
 import Link from "next/link";
-import {useApp} from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 
 export default function NativeNavbar
-() {
+    () {
     // const navItems = [
     //     {
     //         name: "Home",
@@ -42,16 +42,16 @@ export default function NativeNavbar
 
     const navItems = [
         {
-            name: "How It Works",
-            link: "#howItWorks",
-        },
-        {
-            name: "Matches",
-            link: "#upcomingMatches",
+            name: "Ranger's Tickets",
+            link: "/rangers",
         },
         {
             name: "Events",
-            link: "#upcomingEvents",
+            link: "/events",
+        },
+        {
+            name: "How It Works",
+            link: "/rangers#howItWorks",
         },
     ];
 
@@ -64,7 +64,7 @@ export default function NativeNavbar
         setIsMobileMenuOpen(false)
         redirect("/auth/login")
     }
-    
+
     const registerUser = () => {
         setIsMobileMenuOpen(false)
         redirect("/auth/register")
@@ -77,8 +77,8 @@ export default function NativeNavbar
             <Navbar>
                 {/* Desktop Navigation */}
                 <NavBody>
-                    <NavbarLogo/>
-                    <NavItems items={navItems}/>
+                    <NavbarLogo />
+                    <NavItems items={navItems} />
                     {isAuthenticated ? (
                         <div className="flex items-center z-10 gap-4">
                             <Link href={"/auth/logout"}>
@@ -90,7 +90,7 @@ export default function NativeNavbar
                     ) : (
                         <div className="flex items-center gap-4">
                             <NavbarButton onClick={() => redirect('/auth/login')}
-                                          variant="secondary">Login</NavbarButton>
+                                variant="secondary">Login</NavbarButton>
                             <NavbarButton
                                 onClick={() => redirect('/auth/register')}
                                 variant="primary"
@@ -104,7 +104,7 @@ export default function NativeNavbar
                 {/* Mobile Navigation */}
                 <MobileNav>
                     <MobileNavHeader>
-                        <NavbarLogo/>
+                        <NavbarLogo />
                         <MobileNavToggle
                             isOpen={isMobileMenuOpen}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

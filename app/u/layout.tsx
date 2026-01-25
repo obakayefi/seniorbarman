@@ -2,24 +2,33 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import {CalendarDays, CalendarPlus, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound} from 'lucide-react'
+import { CalendarDays, CalendarPlus, PartyPopper, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
+import { GiSoccerField } from "react-icons/gi";
+import { TbSoccerField } from 'react-icons/tb'
+import { BiParty } from 'react-icons/bi'
+
 
 
 const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     // if (!user.authenticated) redirect('/auth/login')
 
     const user = await getUserFromCookie()
-    
+
     // if no token - logout to terminate session
     if (!user) redirect('/auth/logout')
-    
+
     const userLinks = [
         {
-            title: "Upcoming Events",
-            url: sitemap.user.dashboard,
-            icon: CalendarDays,
+            title: "Browse Upcoming Events",
+            url: sitemap.user.eventsTicketPurchase,
+            icon: BiParty,
+        },
+        {
+            title: "Buy Ranger's Ticket",
+            url: sitemap.user.rangersTicketPurchase,
+            icon: TbSoccerField,
         },
         {
             title: "Tickets",
@@ -29,16 +38,17 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     ]
 
     const bouncerLinks = [
+        ...userLinks,
         {
             title: "Scanner",
             url: sitemap.bouncer.scanner,
             roles: ["bouncer", "admin"],
             icon: ScanQrCode,
         },
-        ...userLinks,
     ]
 
     const adminLinks = [
+        ...bouncerLinks,
         {
             title: "Create Admin",
             url: sitemap.admin.createAdmin,
@@ -51,13 +61,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             roles: ["admin"],
             icon: CalendarPlus,
         },
-        {
-            title: "Users",
-            url: sitemap.admin.users,
-            roles: ["bouncer", "admin"],
-            icon: UsersRound,
-        },
-        ...bouncerLinks,
+        // {
+        //     title: "Users",
+        //     url: sitemap.admin.users,
+        //     roles: ["bouncer", "admin"],
+        //     icon: UsersRound,
+        // },
     ]
 
     const navlinks = user?.role === "admin" ? adminLinks : user?.role === "bouncer" ? bouncerLinks : userLinks
@@ -69,7 +78,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
                 <SidebarTrigger />
                 {children}
             </main>
-        </SidebarProvider> 
+        </SidebarProvider>
     )
 }
 

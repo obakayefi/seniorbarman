@@ -1,5 +1,5 @@
-import {clsx, type ClassValue} from "clsx"
-import {twMerge} from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -35,12 +35,12 @@ export function getInitials(fullName: string): string {
 
 export function giveTeamLogo(teamName: string) {
     const teamLogo = CLUBS.filter(club => (club.name === teamName))[0]?.icon
-    console.log({teamLogo, teamName})
+    console.log({ teamLogo, teamName })
     return teamLogo ?? "https://placehold.co/600x400?font=roboto"
 }
 
 export function formatEvent(event: EventType) {
-    const {day, month, year} = formatDate(event.date)
+    const { day, month, year } = formatDate(event.date)
     const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
     const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
 
@@ -159,7 +159,7 @@ export const CLUBS = [
     },
     {
         name: "Warri Wolves FC",
-        icon: "/clubs/warri-wolves.jpeg" 
+        icon: "/clubs/warri-wolves.jpeg"
     },
     {
         name: "Wikki Tourists FC",
@@ -347,6 +347,8 @@ export const sitemap = {
     user: {
         dashboard: "/u/events",
         tickets: "/u/tickets",
+        rangersTicketPurchase: "/rangers",
+        eventsTicketPurchase: "/events"
     },
     bouncer: {
         scanner: "/u/a/scanner",

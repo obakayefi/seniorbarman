@@ -42,7 +42,8 @@ import { ApplyDatePicker } from "./ApplyDatePicker"
 import { Spinner } from "../ui/spinner"
 import { CLUBS, STADIUMS } from "@/lib/utils"
 import Image from "next/image"
-import {redirect} from "next/navigation";
+import { redirect } from "next/navigation";
+import { FileUpload } from "../ui/file-upload";
 
 function formatDate(date: Date | undefined) {
     if (!date) {
@@ -70,31 +71,44 @@ const CreateEventForm = () => {
     const [month, setMonth] = React.useState<Date | undefined>(eventDate)
     const [dateValue, setDateValue] = React.useState<Date | undefined>(new Date(formatDate(eventDate)))
     const [isLoading, setIsLoading] = React.useState(false)
-    const [homeTeam, setHomeTeam] = React.useState('')
+    const [homeTeam, setHomeTeam] = React.useState('Rangers International FC')
     const [awayTeam, setAwayTeam] = React.useState('')
-    const [eventVenue, setEventVenue] = React.useState('')
+    const [eventVenue, setEventVenue] = React.useState('Nnamdi Azikiwe Stadium')
+    const [files, setFiles] = React.useState<File[]>([])
     // const [eventTime, setEventTime] = React.useState("16:00")
     // const [awayTeam, setAwayTeam] = React.useState('')
     const eventType = useInput('')
     // const homeTeam = useInput('')
     // const awayTeam = useInput('')
     const eventTitle = useInput('')
-    const eventTime = useInput('')
+    const eventTime = useInput('16:00')
     // const eventDate = useInput('')
     // const eventVenue = useInput('')
 
-    const formReset = () => {
-        setHomeTeam('')
+    const formReset = (type: string = currentEventType) => {
         setAwayTeam('')
-        setEventVenue('')
         eventTime.reset()
         setEventDate(new Date(Date.now()))
+        setFiles([])
+
+        if (type === 'sports') {
+            setHomeTeam('Rangers International FC')
+            setEventVenue('Nnamdi Azikiwe Stadium')
+        } else {
+            setHomeTeam('')
+            setEventVenue('')
+        }
     }
 
     const onFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
         let formData;
+
+        // TODO: Handle file upload
+        // 1. Upload `files[0]` to your storage service (e.g., S3, Uploadthing, Cloudinary)
+        // 2. Get the returned URL
+        // 3. Add the URL to `eventDetails` as `bannerUrl`
 
         const eventDetails = {
             eventType: currentEventType ?? "N/A",
@@ -105,9 +119,6 @@ const CreateEventForm = () => {
             eventDate: eventDate,
             eventTime: eventTime.value,
         }
-      //  console.log({ eventDetails })
-
-        // const filterPayload = currentEventType === "sports" ? . eventDetails
 
         if (currentEventType === "sports") {
             const { eventTitle, ...data } = eventDetails
@@ -119,17 +130,18 @@ const CreateEventForm = () => {
             formData = data
         }
 
-      //  console.log({ formData, eventDetails })
-
         try {
-            const res = await fetch("/api/events", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
-            })
+            // const res = await fetch("/api/events", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify(formData)
+            // })
 
-            const data = await res.json()
-           // console.log("Event createed: ", data)
+            console.log({ formData });
+
+
+            // const data = await res.json()
+            // console.log("Event createed: ", data)
             toast.success('🥳 Event created successfully')
         } catch (error) {
             console.error('Error submitting  form:', error)
@@ -146,7 +158,7 @@ const CreateEventForm = () => {
 
                     <Select
                         value={currentEventType}
-                        onValueChange={(value) => { formReset(); setCurrentEventType(value); }}
+                        onValueChange={(value) => { formReset(value); setCurrentEventType(value); }}
                     >
                         <SelectTrigger className="w-full text-white border-zinc-800">
                             <SelectValue placeholder="Select Event Type" />
@@ -167,9 +179,9 @@ const CreateEventForm = () => {
                                         <SelectTrigger className="w-full text-white border-zinc-800">
                                             <SelectValue placeholder='Home' />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="border-red-800">
                                             {CLUBS.map(club => (
-                                                <SelectItem value={club.name}>
+                                                <SelectItem value={club.name} className="border-red-500">
                                                     <Image src={club.icon} alt="club icon" width={32} height={100} />
                                                     <span>{club.name}</span>
                                                 </SelectItem>
@@ -197,12 +209,41 @@ const CreateEventForm = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label className="text-gray-400">Stadium</Label>
+                                    <Select onValueChange={value => setEventVenue(value)} value={eventVenue}>
+                                        <SelectTrigger className="w-full text-white border-zinc-800">
+                                            <SelectValue placeholder='Pick the stadium' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {STADIUMS.map(stadium => (
+                                                <SelectItem className="flex gap-10" value={stadium.name}>
+                                                    <span>{stadium.name}</span>
+                                                    <span className="bg-slate-200 py-1 px-3 rounded text-xs text-slate-900">{stadium.state}</span>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </>
                         ) : (
                             <>
                                 <div className="flex flex-col gap-2 border-zinc-800">
                                     <Label className="text-gray-400">Title</Label>
                                     <Input type="text" className={'text-white'} value={eventTitle.value} onChange={eventTitle.onChange} />
+                                </div>
+
+                                <div className="flex flex-col gap-2 border-zinc-800">
+                                    <Label className="text-gray-400">Venue</Label>
+                                    <Input type="text" className={'text-white'} value={eventVenue} onChange={(e) => setEventVenue(e.target.value)} />
+                                </div>
+
+                                <div className="flex flex-col gap-2 border-zinc-800">
+                                    <Label className="text-gray-400">Event Banner</Label>
+                                    <div className="w-full max-w-4xl mx-auto min-h-30 border border-dashed bg-black border-zinc-800 rounded-lg">
+                                        <FileUpload onChange={setFiles} />
+                                    </div>
                                 </div>
                             </>
                         )}
@@ -212,10 +253,10 @@ const CreateEventForm = () => {
                             <Input type="text" value={eventVenue.value} onChange={eventVenue.onChange} />
                         </div> */}
 
-                        <div className="flex flex-col gap-2">
+                        {/* <div className="flex flex-col gap-2">
                             <Label className="text-gray-400">Venue</Label>
                             {/* <Input type="text" value={homeTeam.value} onChange={homeTeam.onChange} /> */}
-                            <Select onValueChange={value => setEventVenue(value)} value={eventVenue}>
+                        {/* <Select onValueChange={value => setEventVenue(value)} value={eventVenue}>
                                 <SelectTrigger className="w-full text-white border-zinc-800">
                                     <SelectValue placeholder='Pick the stadium' />
                                 </SelectTrigger>
@@ -227,8 +268,8 @@ const CreateEventForm = () => {
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
-                            </Select>
-                        </div>
+                            </Select> 
+                        </div> */}
 
                         <div className="flex flex-col gap-2">
                             <ApplyDatePicker

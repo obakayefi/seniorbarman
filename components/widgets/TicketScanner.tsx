@@ -8,6 +8,8 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/
 import {RiVerifiedBadgeFill} from "react-icons/ri";
 import {MdReport, MdStadium} from "react-icons/md";
 import {PostCheckInActions, PreCheckInActions, TicketOperationType} from "@/app/u/a/scanner/page";
+import {Spinner} from "@/components/ui/spinner";
+import {TicketOperationStatus} from "@/components/ui/ticket-operation-status";
 
 
 type TicketSummary = {
@@ -49,6 +51,8 @@ type Props = {
     resetTicketOperationAction: () => void;
     ticketOperation: TicketOperationType;
 }
+
+
 export default function TicketScanner({
                                           canScan,
                                           handleScanAction,
@@ -72,7 +76,7 @@ export default function TicketScanner({
 
     return (
         <section
-            className='md:border-2 bg-transparent md:bg-zinc-900 rounded-lg mt-1 p-8 py-0 flex items-center justify-center overflow-hidden h-auto md:border-zinc-900 w-4/6'>
+            className='md:border-2 bg-transparent md:bg-zinc-900 rounded-lg mt-1 p-8 py-0 flex items-center justify-center overflow-hidden h-auto   border-zinc-900 w-4/6'>
             {/* DESKTOP SCANNER */}
             <div className="w-full  hidden md:flex flex-col gap-2">
                 <div className={'mb-1'}>
@@ -141,7 +145,7 @@ export default function TicketScanner({
                 }
                 updateOpenApprovalModalAction(open)
             }}>
-                <DialogContent className={'bg-zinc-900 text-white border-zinc-600'}>
+                <DialogContent className={'bg-zinc-900 text-white border-zinc-800'}>
                     <DialogHeader>
                         <DialogTitle className={'text-zinc-500'}>Ticket Information</DialogTitle>
                     </DialogHeader>
@@ -152,7 +156,7 @@ export default function TicketScanner({
                                 <div className='flex items-center gap-1 text-green-500'>
                                     <span>Valid</span>
                                     <RiVerifiedBadgeFill size={24} className='mb-0.5'/>
-                                    ` </div>
+                                </div>
                             ) : (
                                 <div className='flex items-center gap-1 text-red-500'>
                                     <h4 className='m-0'>Event Mismatch</h4>
@@ -195,22 +199,8 @@ export default function TicketScanner({
                         </div>
                     </section>
 
-
-                    {/* ACTIONS */}
-                    {
-                        computedStatus === "Checked In" ?
-                            <PostCheckInActions
-                                eventMismatch={(selectedEvent !== currentTicket.event?._id)}
-                                handleCheckingUserOut={handleCheckingUserOutAction}
-                                handleBlockingTicket={handleBlockingTicketAction}
-                                loading={isCheckingUserOut}
-                            />
-                            : <PreCheckInActions
-                                handleCheckingUserIn={handleCheckingUserInAction}
-                                eventMismatch={(selectedEvent !== currentTicket.event?._id)}
-                                loading={loading}
-                            />
-                    }
+                    {loading &&  <TicketOperationStatus ticketOperation={ticketOperation} />}
+                    
                 </DialogContent>
             </Dialog>
         </section>
