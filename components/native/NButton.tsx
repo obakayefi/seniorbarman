@@ -8,13 +8,14 @@ type Props = {
     onClick?: MouseEventHandler<HTMLButtonElement>;
     children: React.ReactNode;
     className?: string;
-    icon?: React.ReactNode
+    icon?: React.ReactNode;
+    iconClassName?: string;
 }
 
-const NButton = ({ disabled, loading, onClick, children, className, icon }: Props) => {
+const NButton = ({ disabled, loading, onClick, children, className, icon, iconClassName }: Props) => {
     return (
-        <Button onClick={onClick} disabled={disabled} className={`py-1 px-3 disabled:bg-slate-400 ${className}`}>
-            {children} {loading ? <Spinner /> : icon}
+        <Button onClick={onClick} disabled={disabled} className={`py-1 px-3 disabled:bg-slate-400 cursor-pointer ${className}`}>
+            {children} <div className={iconClassName}>{loading ? <Spinner /> : icon}</div>
         </Button>
     )
 }

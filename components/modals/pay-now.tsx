@@ -19,7 +19,7 @@ const PayNow = ({ goBack, ticketsToPurchase, eventId }: Props) => {
         try {
             setLoading(true)
             const result = await api.post("/tickets", { ticketsToPurchase, eventId })
-            console.log({ result })
+            // console.log({ result })
             toast.success('Tickets purchased!')
             // setTimeout(() => setLoading(false), 3000)
         } catch (error: any) {

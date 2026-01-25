@@ -8,7 +8,7 @@ import { verifyToken } from "@/lib/jwt";
 export async function GET() {
     try {
         await connectDB()
-        await verifyAuth()
+        // await verifyAuth()
 
         const token = (await cookies()).get('token')?.value
 

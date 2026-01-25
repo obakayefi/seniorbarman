@@ -15,7 +15,7 @@ const AdminLayout = async ({ children }: Props) => {
         redirect('/no-access')
 
     return (
-        <div>{children}</div>
+        <div className={'bg-[#020202]'}>{children}</div>
     )
 }
 

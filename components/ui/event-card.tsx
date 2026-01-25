@@ -1,46 +1,17 @@
 "use client"
-import { AlarmClock, MapPin } from 'lucide-react';
+import {AlarmClock, MapPin} from 'lucide-react';
 import Image from 'next/image';
-import { Button } from './button';
-import { EventType, IEvent } from '@/types/components';
-import { Dialog, DialogTrigger } from './dialog';
-import { BookEventModal } from '../modals/book-event';
-import { redirect } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { CLUBS } from '@/lib/utils';
+import {Button} from './button';
+import {EventType, IEvent} from '@/types/components';
+import {Dialog, DialogTrigger} from './dialog';
+import {BookEventModal} from '../modals/book-event';
+import {redirect} from 'next/navigation';
+import {useEffect, useState} from 'react';
+import {CLUBS, formatEvent} from '@/lib/utils';
 
-export const EventCard = ({ event }: { event: EventType }) => {
+export const EventCard = ({event}: { event: EventType }) => {
     const [matchInformation, setMatchInformation] = useState<EventType>({} as EventType)
     // export const EventCard = ({ event: { date, time, type, awayLogo, awayTeam, homeLogo, homeTeam, venue, id } }: { event: IEvent }) => {
-
-    function formatDate(date: Date) {
-        const _date = new Date(date);
-        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-
-        return {
-            month: months[_date.getMonth()],
-            day: String(_date.getDate()).padStart(2, "0"),
-            year: String(_date.getFullYear())
-        };
-    }
-
-    function formatEvent(event: EventType) {
-        const { day, month, year } = formatDate(event.date)
-        const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
-        const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
-
-        return {
-            day,
-            month,
-            year,
-            awayLogo,
-            homeLogo,
-            awayTeam: event.awayTeam,
-            homeTeam: event.homeTeam,
-            venue: event.venue,
-            time: event.time
-        }
-    }
 
     useEffect(() => {
         const _event = formatEvent(event) as EventType
@@ -48,30 +19,31 @@ export const EventCard = ({ event }: { event: EventType }) => {
     }, [event])
 
     return (
-        <section className='flex flex-col outline w-full items-center   duration-200 hover:bg-gray-100/50 border border-gray-200 gap-3 justify-center rounded-lg p-4'>
+        <section
+            className='flex flex-col outline w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-800 gap-3 justify-center rounded-lg p-4'>
             <div className='flex items-center justify-center gap-1'>
                 <span className=''>{matchInformation.day}</span>
                 <span className=' uppercase'>{matchInformation.month}</span>
                 <span className='text-gray-400'>{matchInformation.year}</span>
             </div>
-            <section className='flex justify-between w-full items-center justify-center'>
+            <section className='flex w-full items-center flex-col justify-center'>
 
-                <div className='flex items-center flex-col gap-2'>
-                    <div className="flex items-center gap-2">
-                        <section className='flex h-40 justify-between items-center gap-1'>
+                <div className='flex items-center  flex-col gap-2'>
+                    <div className="flex lg:flex-row flex-col items-center gap-2">
+                        <section className='flex flex-col lg:flex-row h-20 lg:h-40 justify-between items-center gap-1'>
                             <span className='text-center'>{matchInformation.homeTeam}</span>
                             <Image
-                                src={matchInformation.homeLogo}
+                                src={matchInformation.homeLogo ?? "https://placehold.co/400"}
                                 alt='home logo'
                                 className='h-14 lg:h-24 lg:w-24 h w-14'
                                 height={100}
                                 width={100}
                             />
                         </section>
-                        <p>VS</p>
-                        <section className='flex h-40 justify-center items-center gap-1'>
+                        <p className={'text-zinc-500'}>VS</p>
+                        <section className='flex flex-col h-20  lg:flex-row lg:h-40 justify-center items-center gap-1'>
                             <Image
-                                src={matchInformation.awayLogo}
+                                src={matchInformation.awayLogo ?? "https://placehold.co/400"}
                                 alt='away logo'
                                 height={100}
                                 objectFit='cover'
@@ -82,7 +54,7 @@ export const EventCard = ({ event }: { event: EventType }) => {
                         </section>
                     </div>
 
-                    <div className='flex flex-col items-center w-full'>                    
+                    <div className='flex flex-col items-center w-full'>
                         <Dialog>
                             <div className='flex flex-col w-full mt-1'>
                                 <DialogTrigger asChild>
@@ -93,17 +65,18 @@ export const EventCard = ({ event }: { event: EventType }) => {
                                 </DialogTrigger>
 
                             </div>
-                            <BookEventModal eventId={event._id} />
+                            <BookEventModal eventId={event._id}/>
                         </Dialog>
                         <section className='mt-2 text-center'>
                             <span className='text-gray-400 flex items-center gap-1'>
-                                <span className='text-red-400 font-bold'>{matchInformation.time}</span> @ <span className='text-sm'>{matchInformation.venue}</span>
+                                <span className='text-red-400 font-bold'>{matchInformation.time}</span> @ <span
+                                className='text-sm'>{matchInformation.venue}</span>
                             </span>
 
                         </section>
                     </div>
                 </div>
-            </section>          
+            </section>
 
         </section>
     )

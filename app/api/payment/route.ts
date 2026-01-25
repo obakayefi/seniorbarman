@@ -24,11 +24,6 @@ const PAYSTACK_API_KEY = process.env.PAYSTACK_API_KEY as string;
 // }
 
 export async function POST(req: Request) {
-    // const user = verifyToken(req)
-
-    // if (!user)
-    //     return NextResponse.json({ error: "Unauthorized, you need to log in" }, { status: 401 })
-
     const { eventId, ticketId, email, amount } = await req.json();
     // const body = await req.json();
     try {
@@ -46,12 +41,12 @@ export async function POST(req: Request) {
                 { status: 400 }
             )
         }
-        const foundEvent = await Event.findById(eventId)
+        //const foundEvent = await Event.findById(eventId)
 
         const paystackPayload = {
             email,
             amount: amount * 100, // convert from KOBO to naira,
-            callback_url: `https://tamia-uninitialed-ernestina.ngrok-free.dev/verify`
+            callback_url: process.env.NODE_ENV == "production" ? process.env.PAYSTACK_CALLBACK_URL_PROD : process.env.PAYSTACK_CALLBACK_URL_TEST
         }
 
         const headers = {
@@ -60,20 +55,7 @@ export async function POST(req: Request) {
         }
 
         const response = (await axios.post("https://api.paystack.co/transaction/initialize", paystackPayload, { headers })).data.data
-
-        console.log({ authorization_url: response.authorization_url })
-
-        // const { authorization_url, reference } = response.data
-
-        // foundEvent.payment = { reference, authorizationUrl: authorization_url, status: 'pending'}
-
-        // foundEvent.
-
-        // await foundEvent.save()
-
-
-        // if (!ticket) return NextResponse.json({ tick })
-
+        
         return NextResponse.json(
             {
                 message: "Payment initialized successfully",

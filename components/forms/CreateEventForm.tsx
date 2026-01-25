@@ -42,6 +42,7 @@ import { ApplyDatePicker } from "./ApplyDatePicker"
 import { Spinner } from "../ui/spinner"
 import { CLUBS, STADIUMS } from "@/lib/utils"
 import Image from "next/image"
+import {redirect} from "next/navigation";
 
 function formatDate(date: Date | undefined) {
     if (!date) {
@@ -104,7 +105,7 @@ const CreateEventForm = () => {
             eventDate: eventDate,
             eventTime: eventTime.value,
         }
-        console.log({ eventDetails })
+      //  console.log({ eventDetails })
 
         // const filterPayload = currentEventType === "sports" ? . eventDetails
 
@@ -118,7 +119,7 @@ const CreateEventForm = () => {
             formData = data
         }
 
-        console.log({ formData, eventDetails })
+      //  console.log({ formData, eventDetails })
 
         try {
             const res = await fetch("/api/events", {
@@ -128,7 +129,7 @@ const CreateEventForm = () => {
             })
 
             const data = await res.json()
-            console.log("Event createed: ", data)
+           // console.log("Event createed: ", data)
             toast.success('🥳 Event created successfully')
         } catch (error) {
             console.error('Error submitting  form:', error)
@@ -139,7 +140,7 @@ const CreateEventForm = () => {
     }
 
     return (
-        <Card className="w-full sm:max-w-xl">
+        <Card className="w-full border-zinc-800 sm:max-w-xl">
             <form onSubmit={onFormSubmit}>
                 <CardContent className="flex flex-col gap-4">
 
@@ -147,10 +148,10 @@ const CreateEventForm = () => {
                         value={currentEventType}
                         onValueChange={(value) => { formReset(); setCurrentEventType(value); }}
                     >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full text-white border-zinc-800">
                             <SelectValue placeholder="Select Event Type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className={'text-white border-zinc-800'}>
                             <SelectItem value="sports">Sports</SelectItem>
                             <SelectItem value="event">Event</SelectItem>
                         </SelectContent>
@@ -163,7 +164,7 @@ const CreateEventForm = () => {
                                     <Label className="text-gray-400">Home Team</Label>
                                     {/* <Input type="text" value={homeTeam.value} onChange={homeTeam.onChange} /> */}
                                     <Select onValueChange={(value) => setHomeTeam(value)} value={homeTeam}>
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className="w-full text-white border-zinc-800">
                                             <SelectValue placeholder='Home' />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -181,7 +182,7 @@ const CreateEventForm = () => {
                                     <Label className="text-gray-400">Away Team</Label>
                                     {/* <Input type="text" value={homeTeam.value} onChange={homeTeam.onChange} /> */}
                                     <Select onValueChange={value => setAwayTeam(value)} value={awayTeam}>
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className="w-full text-white border-zinc-800">
                                             <SelectValue placeholder='Away' />
                                         </SelectTrigger>
                                         <SelectContent className="w-full">
@@ -199,9 +200,9 @@ const CreateEventForm = () => {
                             </>
                         ) : (
                             <>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 border-zinc-800">
                                     <Label className="text-gray-400">Title</Label>
-                                    <Input type="text" value={eventTitle.value} onChange={eventTitle.onChange} />
+                                    <Input type="text" className={'text-white'} value={eventTitle.value} onChange={eventTitle.onChange} />
                                 </div>
                             </>
                         )}
@@ -215,7 +216,7 @@ const CreateEventForm = () => {
                             <Label className="text-gray-400">Venue</Label>
                             {/* <Input type="text" value={homeTeam.value} onChange={homeTeam.onChange} /> */}
                             <Select onValueChange={value => setEventVenue(value)} value={eventVenue}>
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full text-white border-zinc-800">
                                     <SelectValue placeholder='Pick the stadium' />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -241,17 +242,17 @@ const CreateEventForm = () => {
                             />
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 border-zinc-800">
                             <Label className="text-gray-400">Time</Label>
-                            <Input onChange={eventTime.onChange} value={eventTime.value} type="time" step={1} defaultValue={"12:00:00"} />
+                            <Input className={'text-white'} onChange={eventTime.onChange} value={eventTime.value} type="time" step={1} defaultValue={"12:00:00"} />
                         </div>
                     </section>
 
                 </CardContent>
 
-                <CardFooter className="mt-10 border-t-2 border-gray-100 pt-8 flex items-end jusify-end">
+                <CardFooter className="mt-10 border-t-2 border-zinc-800 pt-8 flex items-end jusify-end">
                     <Field orientation="horizontal" className="flex justify-end">
-                        <Button type="button" variant="outline" onClick={() => console.warn('Event creation cancelled')}>
+                        <Button type="button" variant="outline" onClick={() => redirect('/u/events')}>
                             Cancel
                         </Button>
                         <Button disabled={isLoading} type="submit">

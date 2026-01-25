@@ -1,5 +1,5 @@
 "use client"
-import { Button } from "@/components/ui/button"
+import {Button} from "@/components/ui/button"
 import {
     Card,
     CardAction,
@@ -9,24 +9,24 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Spinner } from "@/components/ui/spinner"
-import { useApp } from "@/context/AppContext"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Spinner} from "@/components/ui/spinner"
+import {useApp} from "@/context/AppContext"
 import useInput from "@/hooks/useInput"
-import { sitemap } from "@/lib/utils"
+import {sitemap} from "@/lib/utils"
 import axios from "axios"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { FormEvent, useState } from "react"
-import { toast } from "sonner"
+import {useRouter} from "next/navigation"
+import {FormEvent, useState} from "react"
+import {toast} from "sonner"
 
 export default function Login() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const email = useInput('')
     const password = useInput('')
-    const { setUser } = useApp()
+    const {setUser} = useApp()
 
     const formFilled = email.value && password.value
 
@@ -39,9 +39,9 @@ export default function Login() {
                 password: password.value
             }
 
-            const { data } = await axios.post(
+            const {data} = await axios.post(
                 "/api/auth/login",
-                { ...payload },
+                {...payload},
                 {
                     withCredentials: true
                 }
@@ -50,7 +50,7 @@ export default function Login() {
             toast.success('Welcome back ' + data.user.firstName)
             router.replace(sitemap.user.dashboard)
         } catch (error: any) {
-            console.error('Error signing player in', { error: error.message })
+            console.error('Error signing player in', {error: error.message})
             toast.error('Invalid email or password')
         } finally {
             setIsLoading(false)
@@ -58,19 +58,25 @@ export default function Login() {
     }
 
     return (
-        <Card className="w-full mx-6 max-w-lg">
+        <Card className="w-full mx-6 max-w-lg border-neutral-800">
             <CardHeader className="mb-10">
-                <h1 className="md:text-3xl text-2xl">Login to your account</h1>
-                <p className="text-gray-400 text-sm md:text-normal">
-                    Enter your email below to login to your account
-                </p>
-                <CardAction>
-                    <Button variant="link" onClick={() => router.push('/auth/register')} >Sign Up</Button>
-                </CardAction>
+                <div className={'flex sm:flex-row-reverse justify-between flex-col'}>
+                    <div className={'border border-zinc-900 mb-4'}>
+                        <Button className={'text-neutral-400  bg-transparent w-full px-2'} variant="link"
+                                onClick={() => router.push('/auth/register')}>Create an account</Button>
+                    </div>
+                    <div>
+                        <h1 className="md:text-3xl text-slate-100 text-2xl">Login to your account</h1>
+                        <p className="text-gray-400 text-sm md:text-normal">
+                            Enter your email below to login to your account
+                        </p>
+                    </div>
+
+                </div>
             </CardHeader>
             <form onSubmit={onLoginSubmit}>
-                <CardContent>
-                    <div className="flex flex-col gap-6">
+                <CardContent className={'text-neutral-700'}>
+                    <div className="flex flex-col text-neutral-400 gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
                             <Input
@@ -103,8 +109,9 @@ export default function Login() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
-                    <Button type="submit" disabled={isLoading || !formFilled} className="mt-6 disabled:bg-slate-400 w-full">
-                        Login {isLoading ? <Spinner /> : null}
+                    <Button type="submit" disabled={isLoading || !formFilled}
+                            className="mt-6 disabled:bg-slate-600 w-full">
+                        Login {isLoading ? <Spinner/> : null}
                     </Button>
                     {/* <Button variant="outline" className="w-full">
                     Login with Google

@@ -59,7 +59,7 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
           id="date"
           value={String(dateValue)}
           placeholder="July 01, 2025"
-          className="bg-background pr-10"
+          className="border-zinc-800 bg-black text-white pr-10"
           onChange={(e) => {
             const date = new Date(e.target.value)
             setDateValue(new Date(e.target.value))

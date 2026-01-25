@@ -14,7 +14,7 @@ export default function Logout() {
         const handleLogout = async () => {
             try {
                 const result = await api.post("/auth/logout")
-                console.log({ result })
+                // console.log({ result })
                 setUser({} as IUser)
                 router.replace('/auth/login') // or wherever you want to send them
             } catch (error) {

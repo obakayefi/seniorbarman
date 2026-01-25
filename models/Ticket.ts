@@ -9,9 +9,13 @@ const CheckInLogSchema = new Schema({
     location: {
         type: String
     },
+    action: {
+        type: String
+    },
     method: {
         type: String // e.g "QR Scan" or "Manual Scan"
-    }
+    },
+    
 })
 
 const ticketSchema = new Schema({
@@ -23,6 +27,10 @@ const ticketSchema = new Schema({
             enum: ['pending', 'success', 'failed'],
             default: 'pending'
         }
+    },
+    isInside: {
+        type: Boolean,
+        default: false,
     },
     event: {
         type: Schema.Types.ObjectId,
@@ -51,9 +59,6 @@ const ticketSchema = new Schema({
     price: {
         type: Number,
         required: true,
-    },
-    qrCode: {
-        type: String
     },
     issuedAt: {
         type: Date,
