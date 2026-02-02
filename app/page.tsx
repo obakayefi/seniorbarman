@@ -104,7 +104,9 @@ export default function Home() {
                         data-alt="Exciting concert crowd with stage lights and energetic atmosphere"
                         style={{
                             backgroundImage:
-                                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3QkG6n5mz6Qtb2RkXK8bLZR4hnUP43ybLbME0im-BRwJTHvc05-Im2yMpsu3OiYP_0JAsgEJJPBiJVJ3HPtR-8jea-_Ob_TeVFnawUgMJ1TqacJFHN7xkDKixX-vc8nADw0-9NiVs4csDia2271glzRjhbgC_bWUQND9C6taJD0rpNq0_o1gbB3ixM30daBkn-xpwVFQkw5Sp_YTR5gKFutoa9n1eIZr38uIZkqyLg5Z5j8ivW2GvcybIFFXaMFxi-Fj0TbQvM7k")',
+                                'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("/party-in-the-park.jpeg")',
+                            backgroundSize: 'cover'
+
                         }}
                     />
 
