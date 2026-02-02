@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
 import { verifyAuth } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const upcoming = searchParams.get("upcoming");
