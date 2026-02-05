@@ -3,23 +3,23 @@ import React, {useEffect, useState} from 'react'
 import {useQRCode} from 'next-qrcode'
 import {Switch} from "@/components/ui/switch"
 import {MdSecurity, MdStadium} from "react-icons/md";
+import NButton from '@/components/native/NButton';
 import {Scanner} from '@yudiel/react-qr-scanner';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {fetchEventStats, getUpcomingEvents} from "@/services/actions";
+import {Spinner} from "@/components/ui/spinner";
 import api from '@/lib/axios';
+import {IEventStats} from "@/types/data";
+import {extractTicketStatus} from "@/lib/utils";
+import TicketScanner from "@/components/widgets/TicketScanner";
 import {Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon} from 'lucide-react';
 import {Button} from '@/components/ui/button';
-import NButton from '@/components/native/NButton';
 import {TbSoccerField} from "react-icons/tb";
 import {toast} from 'sonner';
 import {RiVerifiedBadgeFill} from "react-icons/ri";
 import {MdReport} from "react-icons/md";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {fetchEventStats, getUpcomingEvents} from "@/services/actions";
-import {Spinner} from "@/components/ui/spinner";
 import {STATUS_TEXT} from "@/lib/utils"
-import {IEventStats} from "@/types/data";
-import {extractTicketStatus} from "@/lib/utils";
-import TicketScanner from "@/components/widgets/TicketScanner";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 
 type TicketSummary = {
     event: {
@@ -45,7 +45,7 @@ export const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}
     if (eventMismatch) return null
 
     return (
-        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+        <section className='border-t-1 flex justify-between gap-2 border-zinc-800 pt-4'>
             <NButton
                 loading={loading}
                 disabled={loading}
@@ -86,7 +86,7 @@ export const PostCheckInActions = ({
     if (eventMismatch) return null
 
     return (
-        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+        <section className='border-t-1 flex justify-between gap-2 border-zinc-800 pt-4'>
             <NButton
                 loading={loading}
                 disabled={loading}
@@ -108,6 +108,10 @@ export const PostCheckInActions = ({
     )
 }
 
+// const buildTicketOperationUrl = (operation: string, hash: string) => {
+//    
+//    
+// }
 
 export type TicketOperationType = 'check-in' | 'check-out' | 'suspend' | 'scan' | undefined
 
@@ -155,13 +159,24 @@ const AdminTicketScanner = () => {
     const handleScan = async (detectedCodes: any) => {
         const qrValue = (detectedCodes[0].rawValue).split('/')
         const ticketHash = qrValue[qrValue.length - 2]
-        const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
+        let operationUrl;
+        if (ticketOperation === 'check-in') {
+            operationUrl = `/tickets/${ticketHash}/check-ticket-in`
+        }
+        
+        if (ticketOperation === 'check-out') {
+            operationUrl = `/tickets/${ticketHash}/check-ticket-out`
+        }
+        // const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
+        if (!operationUrl || !ticketHash) throw Error('Could not get operation url or ticket Hash')
+        console.log({operationUrl})
+        const {data} = await api.post(operationUrl)
         const ticket = data.result.ticket
-        const user = data.result.createdBy
         const ticketData = {
             ...ticket,
-            createdBy: user
+            createdBy: data.result.createdBy
         }
+        console.log({currentOperation: ticketOperation, data})
         setCurrentTicket(ticketData)
         const stringData = JSON.stringify(ticketData)
         localStorage.setItem('currentTicket', stringData)
@@ -256,7 +271,7 @@ const AdminTicketScanner = () => {
                                             className="w-full grow-0 bg-zinc-800 text-zinc-100 py-1 outline-none border-2 border-zinc-800 flex">
                                             <SelectValue placeholder="Pick an event to scan for"/>
                                         </SelectTrigger>
-                                        <SelectContent className={'w-full'}>
+                                        <SelectContent className={'w-full border-zinc-800 bg-zinc-800'}>
                                             {events.map(event => (
                                                 <SelectItem
                                                     key={event._id}
@@ -286,9 +301,9 @@ const AdminTicketScanner = () => {
 
                         <div>
                             <h2 className='text-lg text-zinc-600'>Total Tickets</h2>
-                            <section className="bg-zinc-800 p-1.5 px-2 mb-4 rounded lg:w-54">
+                            <section className="bg-zinc-800 p-1 px-2 mb-4 rounded lg:w-54">
                                 {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
-                                <span className='text-xl text-zinc-400'>
+                                <span className='text-zinc-400 text-lg'>
                                         {/*{Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
                                     340 / 1,200
                                     </span>

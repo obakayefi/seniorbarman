@@ -66,6 +66,7 @@ export default function Home() {
                     <div
                         className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
 
+
                     {/* Content */}
                     <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
                         <div className="mb-auto">
@@ -78,6 +79,7 @@ export default function Home() {
 
                         <h3 className="text-white text-2xl font-bold leading-tight mb-2">
                             <span className="text-3xl text-green-500">Enugu Rangers</span><br />Home Matches
+
                         </h3>
 
                         <p className="text-gray-300 text-sm mb-6 line-clamp-2">
@@ -86,10 +88,12 @@ export default function Home() {
 
                         <Link href={'/rangers'}>
                             <button
-                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-primary text-background-dark text-base font-bold transition-transform hover:bg-red-500 cursor-pointer active:scale-95">
+                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-red-500 text-background-dark text-base font-bold transition-transform hover:bg-zinc-900 hover:text-red-500 cursor-pointer active:scale-95">
                                 <span>Get Rangers Tickets</span>
                                 <span className="material-symbols-outlined text-lg"><MoveRight /></span>
+
                             </button>
+
 
                         </Link>
                     </div>
@@ -97,7 +101,7 @@ export default function Home() {
 
                 {/* Events Card */}
                 <div
-                    className="group relative overflow-hidden rounded-xl h-[400px] md:h-[500px] shadow-2xl shadow-black/50 cursor-not-allowed transition-all duration-300 hover:shadow-purple-500/20 hover:-translate-y-1">
+                    className="group relative overflow-hidden rounded-xl h-[400px] md:h-[500px] shadow-2xl shadow-black/50 transition-all duration-300 hover:shadow-purple-500/20 hover:-translate-y-1">
 
                     {/* Background Image */}
                     <div
@@ -127,18 +131,20 @@ export default function Home() {
 
                         <h3 className="text-white text-3xl font-bold leading-tight mb-2">
                             Concerts &amp;<br />Parties
+
                         </h3>
 
                         <p className="text-gray-300 text-sm mb-6 line-clamp-2">
                             From Afrobeats concerts to exclusive nightlife events across the city.
                         </p>
 
-                        <button
-                            className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-surface-dark text-white border border-white/10 hover:bg-zinc-900 cursor-not-allowed hover:text-background-dark text-base font-bold transition-colors active:scale-95">
-                            <span>Browse Events</span>
-                            <span className="material-symbols-outlined text-lg"><MoveRight /></span>
-                        </button>
-
+                        <Link href={'/events'}>
+                            <button
+                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-yellow-500 text-zinc-800 hover:bg-zinc-200 hover:text-yellow-500 cursor-pointer hover:text-background-dark text-base font-bold transition-colors active:scale-95">
+                                <span>Browse Events</span>
+                                <span className="material-symbols-outlined text-lg"><MoveRight /></span>
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </div>

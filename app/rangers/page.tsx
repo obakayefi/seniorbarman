@@ -7,13 +7,14 @@ import api from "@/lib/axios";
 
 export default function RangersPage() {
     const [nextMatch, setNextMatch] = useState({})
-    const [upcomingMatches, setUpcomingMatches] = useState({})
+    const [upcomingMatches, setUpcomingMatches] = useState([])
 
     useEffect(() => {
         async function loadMatches() {
-            const { data } = await api.get("/general/upcoming-matches")
-            setUpcomingMatches(data.upcomingMatches)
-            setNextMatch(data.nextMatch)
+            const { data } = await api.get("/events?type=sports")
+            console.log({ data })
+            setUpcomingMatches(data.events)
+            setNextMatch(data.events[0])
         }
         loadMatches()
     }, [])

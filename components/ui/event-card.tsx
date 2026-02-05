@@ -1,15 +1,15 @@
 "use client"
-import {AlarmClock, MapPin} from 'lucide-react';
+import { AlarmClock, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import {Button} from './button';
-import {EventType, IEvent} from '@/types/components';
-import {Dialog, DialogTrigger} from './dialog';
-import {BookEventModal} from '../modals/book-event';
-import {redirect} from 'next/navigation';
-import {useEffect, useState} from 'react';
-import {CLUBS, formatEvent} from '@/lib/utils';
+import { Button } from './button';
+import { EventType, IEvent } from '@/types/components';
+import { Dialog, DialogTrigger } from './dialog';
+import { BookEventModal } from '../modals/book-event';
+import { redirect } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CLUBS, formatEvent } from '@/lib/utils';
 
-export const EventCard = ({event}: { event: EventType }) => {
+export const EventCard = ({ event }: { event: EventType }) => {
     const [matchInformation, setMatchInformation] = useState<EventType>({} as EventType)
     // export const EventCard = ({ event: { date, time, type, awayLogo, awayTeam, homeLogo, homeTeam, venue, id } }: { event: IEvent }) => {
 
@@ -20,7 +20,7 @@ export const EventCard = ({event}: { event: EventType }) => {
 
     return (
         <section
-            className='flex flex-col outline w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-800 gap-3 justify-center rounded-lg p-4'>
+            className='flex flex-col w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-900 gap-3 justify-center rounded-lg p-4'>
             <div className='flex items-center justify-center gap-1'>
                 <span className=''>{matchInformation.day}</span>
                 <span className=' uppercase'>{matchInformation.month}</span>
@@ -65,12 +65,12 @@ export const EventCard = ({event}: { event: EventType }) => {
                                 </DialogTrigger>
 
                             </div>
-                            <BookEventModal eventId={event._id}/>
+                            <BookEventModal eventId={event._id} />
                         </Dialog>
                         <section className='mt-2 text-center'>
                             <span className='text-gray-400 flex items-center gap-1'>
                                 <span className='text-red-400 font-bold'>{matchInformation.time}</span> @ <span
-                                className='text-sm'>{matchInformation.venue}</span>
+                                    className='text-sm'>{matchInformation.venue}</span>
                             </span>
 
                         </section>
