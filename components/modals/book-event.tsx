@@ -112,6 +112,11 @@ export function BookEventModal({ eventId }: { eventId: string }) {
     }
 
     const handleOnBuyTicket = async () => {
+        if (!user) {
+            toast.error("Please login to buy tickets");
+            window.location.assign('/auth/login');
+            return;
+        }
         const paymentPayload = {
             email: user?.email,
             amount: totalPrice,

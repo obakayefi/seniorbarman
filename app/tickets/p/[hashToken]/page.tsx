@@ -62,23 +62,36 @@ export default function PublicTicketView() {
             </div>
 
             <div className='bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm rounded-2xl justify-center flex flex-col items-center py-10 shadow-2xl'>
-                <section className='flex flex-col md:flex-row items-center gap-8 md:gap-16'>
-                    <div className='flex flex-col items-center gap-4'>
-                        <Image src={currentTicket.homeLogo} loading={'eager'} alt='home logo' height={100} width={100}
-                            className={'w-20 md:w-32 hover:scale-105 duration-300'} />
-                        <h2 className="text-xl md:text-2xl font-semibold text-zinc-100">{currentTicket?.event?.homeTeam}</h2>
-                    </div>
+                {currentTicket?.event?.type === 'sports' ? (
+                    <section className='flex flex-col md:flex-row items-center gap-8 md:gap-16'>
+                        <div className='flex flex-col items-center gap-4'>
+                            <Image src={currentTicket.homeLogo || "/clubs/rangers-logo.png"} loading={'eager'} alt='home logo' height={100} width={100}
+                                className={'w-20 md:w-32 hover:scale-105 duration-300'} />
+                            <h2 className="text-xl md:text-2xl font-semibold text-zinc-100">{currentTicket?.event?.homeTeam}</h2>
+                        </div>
 
-                    <div className="flex flex-col items-center">
-                        <span className='text-2xl font-bold text-orange-500 bg-orange-500/10 px-4 py-2 rounded-full border border-orange-500/20'>VS</span>
-                    </div>
+                        <div className="flex flex-col items-center">
+                            <span className='text-2xl font-bold text-orange-500 bg-orange-500/10 px-4 py-2 rounded-full border border-orange-500/20'>VS</span>
+                        </div>
 
-                    <div className='flex flex-col items-center gap-4'>
-                        <Image src={currentTicket.awayLogo} loading={'eager'} alt='away logo' height={100} width={100}
-                            className={'w-20 md:w-32 hover:scale-105 duration-300'} />
-                        <h2 className="text-xl md:text-2xl font-semibold text-zinc-100">{currentTicket?.event?.awayTeam}</h2>
-                    </div>
-                </section>
+                        <div className='flex flex-col items-center gap-4'>
+                            <Image src={currentTicket.awayLogo || "/clubs/rangers-logo.png"} loading={'eager'} alt='away logo' height={100} width={100}
+                                className={'w-20 md:w-32 hover:scale-105 duration-300'} />
+                            <h2 className="text-xl md:text-2xl font-semibold text-zinc-100">{currentTicket?.event?.awayTeam}</h2>
+                        </div>
+                    </section>
+                ) : (
+                    <section className="flex flex-col items-center gap-6 px-10 text-center">
+                        {currentTicket?.event?.image && (
+                            <div className="w-full max-w-md h-48 rounded-xl overflow-hidden mb-4 border border-zinc-800">
+                                <img src={currentTicket.event.image} alt="event poster" className="w-full h-full object-cover" />
+                            </div>
+                        )}
+                        <h2 className="text-2xl md:text-4xl font-bold text-zinc-100 uppercase tracking-tight">
+                            {currentTicket?.event?.title}
+                        </h2>
+                    </section>
+                )}
 
                 <section className='grid grid-cols-1 md:grid-cols-3 gap-10 mt-16 w-full px-10'>
                     <div className="flex flex-col items-center bg-zinc-800/30 p-4 rounded-xl border border-zinc-700/30">

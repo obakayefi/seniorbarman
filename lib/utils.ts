@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { EventType } from "@/types/components"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -35,14 +36,13 @@ export function getInitials(fullName: string): string {
 
 export function giveTeamLogo(teamName: string) {
     const teamLogo = CLUBS.filter(club => (club.name === teamName))[0]?.icon
-    console.log({ teamLogo, teamName })
     return teamLogo ?? "https://placehold.co/600x400?font=roboto"
 }
 
 export function formatEvent(event: EventType) {
     const { day, month, year } = formatDate(event.date)
-    const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
-    const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
+    const homeLogo = event.homeTeam ? (CLUBS.find(club => club.name === event.homeTeam)?.icon || "/clubs/rangers-logo.png") : "/clubs/rangers-logo.png"
+    const awayLogo = event.awayTeam ? (CLUBS.find(club => club.name === event.awayTeam)?.icon || "/clubs/rangers-logo.png") : "/clubs/rangers-logo.png"
 
     return {
         day,
@@ -50,8 +50,8 @@ export function formatEvent(event: EventType) {
         year,
         awayLogo,
         homeLogo,
-        awayTeam: event.awayTeam,
-        homeTeam: event.homeTeam,
+        awayTeam: event.awayTeam || "",
+        homeTeam: event.homeTeam || "",
         venue: event.venue,
         time: event.time
     }
@@ -247,7 +247,7 @@ export function giveLogo(clubName: string) {
 
 export const STATUS_TEXT = ["Checked In", "Checked Out", "Not Checked In"]
 
-export function extractTicketStatus(checkInLogs: []) {
+export function extractTicketStatus(checkInLogs: any[]) {
     let result;
 
     if (checkInLogs && checkInLogs.length === 0) {
