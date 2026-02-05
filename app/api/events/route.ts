@@ -1,46 +1,66 @@
-import {NextResponse} from "next/server";
-import {connectDB} from "@/lib/mongodb";
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
-import {verifyAuth} from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-    const {searchParams} = new URL(req.url);
+    const { searchParams } = new URL(req.url);
     const upcoming = searchParams.get("upcoming");
-    let filter = {}
-    let sort = {date: -1};
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - 120 * 60 * 1000);
 
     try {
         await connectDB()
-        // await verifyAuth()
-        let _events = await Event.find().sort({date: -1});
-        if (upcoming) {
-            _events = _events.filter((event) => {
-                const [hours, minutes] = event.time.split(":");
-                const eventStart = new Date(event.date);
-                eventStart.setHours(Number(hours));
-                eventStart.setMinutes(Number(minutes));
-                eventStart.setSeconds(0);
-                const eventEnd = new Date(eventStart.getTime() + 24 * 60 * 60 * 1000);
-                return eventEnd >= cutoff;
-            })
-        }
+
         const today = new Date()
-        const upcomingMatches = await Event.find({
-            date: {$gt: today}
+        today.setHours(0, 0, 0, 0)
+
+        const upcomingMatchesRaw = await Event.find({
+            date: { $gte: today }
         })
-            .sort({date: 1})
+            .sort({ date: 1 })
             .lean()
+
+        // Filter logic:
+        // 1. If date > today (future), keep it.
+        // 2. If date == today, keep only if time < 3:30 PM WAT (15:30).
+
+        const upcomingMatches = upcomingMatchesRaw.filter((event: any) => {
+            const eventDate = new Date(event.date)
+            // Normalize event date to midnight for comparison
+            const eventMidnight = new Date(eventDate)
+            eventMidnight.setHours(0, 0, 0, 0)
+
+            // Check if future date
+            if (eventMidnight.getTime() > today.getTime()) {
+                return true
+            }
+
+            // It's today. Check WAT cutoff.
+            // Get current time in WAT
+            const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+            const nowInWat = new Date(watTime);
+
+            const currentHour = nowInWat.getHours();
+            const currentMinute = nowInWat.getMinutes();
+
+            // Cutoff is 15:30
+            if (currentHour < 15) return true;
+            if (currentHour === 15 && currentMinute < 30) return true;
+
+            return false;
+        })
+
+        console.log({ upcomingMatchesCount: upcomingMatches.length })
         return NextResponse.json(
-            {events: upcomingMatches, totalEvents: upcomingMatches.length},
-            {status: 200}
+            { events: upcomingMatches, totalEvents: upcomingMatches.length },
+            { status: 200 }
         )
     } catch
-        (error: any) {
+    (error: any) {
         return NextResponse.json({
-                error: "Can't fetch events:: " + error.message
-            },
+            error: "Can't fetch events:: " + error.message
+        },
             {
                 status: 401
             }
@@ -72,15 +92,15 @@ export async function POST(req: Request) {
         // console.log({body})
         if (type === "event" && !title) {
             return NextResponse.json(
-                {error: "Events require titles"},
-                {status: 400}
+                { error: "Events require titles" },
+                { status: 400 }
             )
         }
 
         if (type === "sports" && (!homeTeam || !awayTeam)) {
             return NextResponse.json(
-                {error: "Sports events require home and away teams"},
-                {status: 400}
+                { error: "Sports events require home and away teams" },
+                { status: 400 }
             )
         }
 
@@ -112,8 +132,8 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Error creating event", error)
         return NextResponse.json(
-            {error: "Failed to create event.", details: error.message},
-            {status: 500}
+            { error: "Failed to create event.", details: error.message },
+            { status: 500 }
         )
     }
 }

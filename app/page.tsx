@@ -1,13 +1,21 @@
 import About from "@/components/About";
 import BusinessCard, { IBusiness } from "@/components/widgets/BusinessCard";
 import { Calendar1, MoveRight, User } from "lucide-react";
+import BusinessCard, { IBusiness } from "@/components/widgets/BusinessCard";
+import { Calendar1, MoveRight, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { FaLocationPin, FaLocationPinLock } from "react-icons/fa6";
+import { BiLocationPlus } from "react-icons/bi";
 import { FaLocationPin, FaLocationPinLock } from "react-icons/fa6";
 import { BiLocationPlus } from "react-icons/bi";
 import NButton from "@/components/native/NButton";
 import Hero from "@/components/ui/hero";
 import HowItWorks from "@/components/ui/how-it-works";
+import { MdCelebration } from "react-icons/md";
+import { GiSoccerBall } from "react-icons/gi";
+import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
+import { FloatingNav } from "@/components/ui/floating-navbar";
 import { MdCelebration } from "react-icons/md";
 import { GiSoccerBall } from "react-icons/gi";
 import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
@@ -57,12 +65,14 @@ export default function Home() {
                         data-alt="Enugu Rangers football stadium during a match with green grass"
                         style={{
                             backgroundImage:
-                                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDuWVW9t9DqpEWhE2E31YB0RnoiyEXs-jWjewMPtQ-qsXOuDY7Qc5h8W0r8eoMNoEALKZj4sfa1S1MzeV6W-E-vYH7pTG_OMH3ZGDC9TNOHo3himD7ujgiCuadh5e2vqevSHJ4fVy3sPDe9eJIHYiIgP0BYJTjc0RdRaNyjHGbnbLJoWHXJSFbUQvS0bW-NFvneQNMTvNA-jxqoXTtAghPY_bPJ_jUnDyCzB6fUV1zEiE8B5HmKyqaf7eS9y3SQGI29UfnC_dkodCc")',
+                                'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("/nnamdi-azikiwe-stadium.jpg")',
+                            backgroundSize: 'cover'
                         }}
                     />
 
                     {/* Gradient Overlay */}
                     <div
+                        className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
                         className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
 
                     {/* Content */}
@@ -73,9 +83,15 @@ export default function Home() {
                                 <span className="material-symbols-outlined text-sm"><GiSoccerBall /></span>
                                 Sports
                             </span>
+                            <span
+                                className="inline-flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs font-bold text-primary border border-primary/20">
+                                <span className="material-symbols-outlined text-sm"><GiSoccerBall /></span>
+                                Sports
+                            </span>
                         </div>
 
                         <h3 className="text-white text-2xl font-bold leading-tight mb-2">
+                            <span className="text-3xl text-green-500">Enugu Rangers</span><br />Home Matches
                             <span className="text-3xl text-green-500">Enugu Rangers</span><br />Home Matches
                         </h3>
 
@@ -88,7 +104,9 @@ export default function Home() {
                                 className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-primary text-background-dark text-base font-bold transition-transform hover:bg-red-500 cursor-pointer active:scale-95">
                                 <span>Get Rangers Tickets</span>
                                 <span className="material-symbols-outlined text-lg"><MoveRight /></span>
+                                <span className="material-symbols-outlined text-lg"><MoveRight /></span>
                             </button>
+
 
                         </Link>
                     </div>
@@ -104,12 +122,15 @@ export default function Home() {
                         data-alt="Exciting concert crowd with stage lights and energetic atmosphere"
                         style={{
                             backgroundImage:
-                                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3QkG6n5mz6Qtb2RkXK8bLZR4hnUP43ybLbME0im-BRwJTHvc05-Im2yMpsu3OiYP_0JAsgEJJPBiJVJ3HPtR-8jea-_Ob_TeVFnawUgMJ1TqacJFHN7xkDKixX-vc8nADw0-9NiVs4csDia2271glzRjhbgC_bWUQND9C6taJD0rpNq0_o1gbB3ixM30daBkn-xpwVFQkw5Sp_YTR5gKFutoa9n1eIZr38uIZkqyLg5Z5j8ivW2GvcybIFFXaMFxi-Fj0TbQvM7k")',
+                                'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("/party-in-the-park.jpeg")',
+                            backgroundSize: 'cover'
+
                         }}
                     />
 
                     {/* Gradient Overlay */}
                     <div
+                        className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
                         className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
 
                     {/* Content */}
@@ -120,9 +141,15 @@ export default function Home() {
                                 <span className="material-symbols-outlined text-sm"><MdCelebration /></span>
                                 Coming Soon
                             </span>
+                            <span
+                                className="inline-flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white border border-white/20">
+                                <span className="material-symbols-outlined text-sm"><MdCelebration /></span>
+                                Coming Soon
+                            </span>
                         </div>
 
                         <h3 className="text-white text-3xl font-bold leading-tight mb-2">
+                            Concerts &amp;<br />Parties
                             Concerts &amp;<br />Parties
                         </h3>
 
