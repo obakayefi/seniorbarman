@@ -52,7 +52,7 @@ const Ticket = ({ ticket, toPrint }: { ticket: any, toPrint: boolean }) => {
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
                 <div className={'md:-mt-4  mt-0 bg-transparent'}>
                     <Image
-                        text={`${getBaseUrl()}/u/tickets/preview/${ticket.checkInToken}/`}
+                        text={`${getBaseUrl()}/tickets/p/${ticket.checkInToken}/`}
                         options={{
                             type: 'image/jpeg',
                             quality: 0.3,

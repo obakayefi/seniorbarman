@@ -1,5 +1,6 @@
 "use client"
 import React, { ChangeEvent, useState } from 'react'
+import { useRouter } from 'next/navigation';
 import { DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card';
@@ -102,10 +103,16 @@ const BuyTicket = ({
                 </DialogClose>
                 <NButton
                     loading={loading}
-                    className={`bg-orange-500 ${totalTickets === 0 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                    onClick={handleOnBuyTicket}
-                    disabled={(loading || (totalTickets < 1) || totalTickets > 400)}>
-                    {(totalTickets > 1) ? 'Purchase Summary' : 'Pay Now'}
+                    className={`bg-orange-500 ${(!user || totalTickets === 0) ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    onClick={() => {
+                        if (!user) {
+                            window.location.assign('/auth/login');
+                            return;
+                        }
+                        handleOnBuyTicket();
+                    }}
+                    disabled={(loading || (user && totalTickets < 1) || totalTickets > 400)}>
+                    {!user ? 'Login to Purchase' : (totalTickets > 1) ? 'Purchase Summary' : 'Pay Now'}
                 </NButton>
             </DialogFooter>
         </section>
