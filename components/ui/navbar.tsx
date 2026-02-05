@@ -50,6 +50,10 @@ export default function NativeNavbar
             link: "/events",
         },
         {
+            name: "Tickets",
+            link: "/u/tickets",
+        },
+        {
             name: "How It Works",
             link: "/rangers#howItWorks",
         },

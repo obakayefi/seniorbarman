@@ -1,21 +1,13 @@
 import About from "@/components/About";
 import BusinessCard, { IBusiness } from "@/components/widgets/BusinessCard";
 import { Calendar1, MoveRight, User } from "lucide-react";
-import BusinessCard, { IBusiness } from "@/components/widgets/BusinessCard";
-import { Calendar1, MoveRight, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaLocationPin, FaLocationPinLock } from "react-icons/fa6";
-import { BiLocationPlus } from "react-icons/bi";
 import { FaLocationPin, FaLocationPinLock } from "react-icons/fa6";
 import { BiLocationPlus } from "react-icons/bi";
 import NButton from "@/components/native/NButton";
 import Hero from "@/components/ui/hero";
 import HowItWorks from "@/components/ui/how-it-works";
-import { MdCelebration } from "react-icons/md";
-import { GiSoccerBall } from "react-icons/gi";
-import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
-import { FloatingNav } from "@/components/ui/floating-navbar";
 import { MdCelebration } from "react-icons/md";
 import { GiSoccerBall } from "react-icons/gi";
 import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
@@ -73,7 +65,7 @@ export default function Home() {
                     {/* Gradient Overlay */}
                     <div
                         className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
-                        className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
+
 
                     {/* Content */}
                     <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
@@ -83,16 +75,11 @@ export default function Home() {
                                 <span className="material-symbols-outlined text-sm"><GiSoccerBall /></span>
                                 Sports
                             </span>
-                            <span
-                                className="inline-flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs font-bold text-primary border border-primary/20">
-                                <span className="material-symbols-outlined text-sm"><GiSoccerBall /></span>
-                                Sports
-                            </span>
                         </div>
 
                         <h3 className="text-white text-2xl font-bold leading-tight mb-2">
                             <span className="text-3xl text-green-500">Enugu Rangers</span><br />Home Matches
-                            <span className="text-3xl text-green-500">Enugu Rangers</span><br />Home Matches
+
                         </h3>
 
                         <p className="text-gray-300 text-sm mb-6 line-clamp-2">
@@ -101,10 +88,10 @@ export default function Home() {
 
                         <Link href={'/rangers'}>
                             <button
-                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-primary text-background-dark text-base font-bold transition-transform hover:bg-red-500 cursor-pointer active:scale-95">
+                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-red-500 text-background-dark text-base font-bold transition-transform hover:bg-zinc-900 hover:text-red-500 cursor-pointer active:scale-95">
                                 <span>Get Rangers Tickets</span>
                                 <span className="material-symbols-outlined text-lg"><MoveRight /></span>
-                                <span className="material-symbols-outlined text-lg"><MoveRight /></span>
+
                             </button>
 
 
@@ -131,7 +118,6 @@ export default function Home() {
                     {/* Gradient Overlay */}
                     <div
                         className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
-                        className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent opacity-90" />
 
                     {/* Content */}
                     <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
@@ -141,16 +127,11 @@ export default function Home() {
                                 <span className="material-symbols-outlined text-sm"><MdCelebration /></span>
                                 Coming Soon
                             </span>
-                            <span
-                                className="inline-flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white border border-white/20">
-                                <span className="material-symbols-outlined text-sm"><MdCelebration /></span>
-                                Coming Soon
-                            </span>
                         </div>
 
                         <h3 className="text-white text-3xl font-bold leading-tight mb-2">
                             Concerts &amp;<br />Parties
-                            Concerts &amp;<br />Parties
+
                         </h3>
 
                         <p className="text-gray-300 text-sm mb-6 line-clamp-2">
@@ -159,7 +140,7 @@ export default function Home() {
 
                         <Link href={'/events'}>
                             <button
-                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-surface-dark text-white border border-white/10 hover:bg-zinc- cursor-pointer hover:text-background-dark text-base font-bold transition-colors active:scale-95">
+                                className="w-full md:w-auto flex items-center justify-center gap-2 rounded-full h-12 px-8 bg-yellow-500 text-zinc-800 hover:bg-zinc-200 hover:text-yellow-500 cursor-pointer hover:text-background-dark text-base font-bold transition-colors active:scale-95">
                                 <span>Browse Events</span>
                                 <span className="material-symbols-outlined text-lg"><MoveRight /></span>
                             </button>

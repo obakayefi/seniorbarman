@@ -330,6 +330,22 @@ export const formattedDate = (_date: Date) => {
     return `${day}/${month}/${year}`;
 }
 
+export function formatTime(time: string) {
+    if (!time) return "";
+    const parts = time.split(':');
+    if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return time;
+}
+
+export function getBaseUrl() {
+    if (process.env.NODE_ENV === "development") {
+        return "https://sbmdev.netlify.app";
+    }
+    return "https://seniorbarman.com";
+}
+
 export const statusBadgeStyle = (computedStatus: string) => {
     switch (computedStatus) {
         case STATUS_TEXT[0]:

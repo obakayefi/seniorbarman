@@ -17,20 +17,22 @@ import { Card } from "../ui/card"
 import { ChangeEvent, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { sanitizeTicketValue, STAND_TYPE } from "@/lib/utils"
-import PayNow from "./pay-now"
+// import PayNow from "./pay-now"
 import ConfirmTicketPurchase from "./confirm-purchase"
 import BuyTicket from "./buy-ticket"
 import { OnPayNow } from "@/lib/helpers";
 import { useApp } from "@/context/AppContext";
 
-export function BookEventModal({ eventId }: { eventId: string }) {
+export function BookRegularEventModal({ event }: { event: any }) {
     const [selectedTicketType, setSelectedTicketType] = useState(2)
     const [maxTickets, setMaxTickets] = useState(400)
+
+    // Construct ticket types dynamically
     const ticketTypes = [
-        { id: 432, name: "Popular Stand", icon: Users, price: 500, color: "text-red-500", max: 22000 },
-        { id: 521, name: "Cover Stand Regular", icon: Ticket, price: 2000, color: "text-blue-500", max: 2000 },
-        { id: 251, name: "Cover Stand Executive", price: 10000, icon: Crown, color: "text-yellow-500", max: 50 },
+        { id: 1, name: "Regular", icon: Ticket, price: Number(event.regularPrice || 0), color: "text-blue-500", max: 20000 },
+        { id: 2, name: "VIP", price: Number(event.vipPrice || 0), icon: Crown, color: "text-yellow-500", max: 500 },
     ]
+
     const [payNowLoading, setPayNowLoading] = useState(false)
     const { user } = useApp()
     const [ticketQty, setTicketQty] = useState<Record<string, number>>({});
@@ -56,10 +58,6 @@ export function BookEventModal({ eventId }: { eventId: string }) {
     const totalPrice = useMemo(() =>
         ticketsToPurchase.reduce((total, t) => total + t.price * t.quantity, 0)
         , [ticketsToPurchase])
-
-    // const totalTickets = useMemo(() => {
-    //     ticketsToPurchase.reduce((total, t) => total + t.quantity, 0)
-    // }, [ticketsToPurchase])
 
 
     const updateTicketQty = ({ name, max, id, delta }: { id: number, delta: number, name: string; max: number }) => {
@@ -115,13 +113,13 @@ export function BookEventModal({ eventId }: { eventId: string }) {
         const paymentPayload = {
             email: user?.email,
             amount: totalPrice,
-            eventId
+            eventId: event._id
         }
         if (totalTickets > 1) {
             setModalState(1)
         } else {
             setPayNowLoading(true)
-            await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
+            await OnPayNow(paymentPayload, ticketsToPurchase, event._id)
             setPayNowLoading(false)
         }
     }
@@ -150,16 +148,10 @@ export function BookEventModal({ eventId }: { eventId: string }) {
                     ) : modalState === 1 ? (
                         <ConfirmTicketPurchase
                             goBack={goBack}
-                            eventId={eventId}
+                            eventId={event._id}
                             redirectToPayNow={redirectToPayNowModal}
                             ticketsToPurchase={ticketsToPurchase}
                             totalPrice={totalPrice}
-                        />
-                    ) : modalState === 2 ? (
-                        <PayNow
-                            goBack={goBack}
-                            eventId={eventId}
-                            ticketsToPurchase={ticketsToPurchase}
                         />
                     ) : null}
                 </DialogContent>

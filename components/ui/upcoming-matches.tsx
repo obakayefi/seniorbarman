@@ -1,12 +1,10 @@
-import NButton from "@/components/native/NButton";
-import { Calendar1Icon, Clock, MapPin, Timer } from "lucide-react";
+import { Calendar1Icon, Clock, MapPin } from "lucide-react";
 import { FaLocationPin } from "react-icons/fa6";
-import { useEffect, useState } from "react";
-import { getEvents } from "@/app/u/events/page";
-import { formattedDate } from "@/lib/utils";
-import { redirect } from "next/navigation";
+import { Dialog, DialogTrigger } from "./dialog";
+import { BookEventModal } from "../modals/book-event";
+import NButton from "../native/NButton";
 
-function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: {} }) {
+function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: any }) {
     return (
         <div
             className={`${isNextMatch ? "border-green-400 pt-4" : "border-zinc-900"} border-2 relative flex flex-col bg-zinc-950 items-start justify-start gap-3 px-6 py-2 rounded-lg`}>
@@ -43,7 +41,12 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: {
                         <h4 className={'text-2xl text-green-500 font-bold'}>₦500</h4>
                         <p className={'text-slate-500'}>30,000 tickets left</p>
                         <div className={'w-full flex items-center justify-center pt-5'}>
-                            <NButton className={'bg-green-500 w-full'} onClick={() => redirect('/u/events')}>Buy Tickets</NButton>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <NButton className={'bg-green-500 w-full'}>Buy Tickets</NButton>
+                                </DialogTrigger>
+                                <BookEventModal eventId={(match as any)._id} />
+                            </Dialog>
                         </div>
                     </div>
 

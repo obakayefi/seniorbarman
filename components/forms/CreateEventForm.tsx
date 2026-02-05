@@ -73,6 +73,8 @@ const CreateEventForm = () => {
     const [isLoading, setIsLoading] = React.useState(false)
     const [homeTeam, setHomeTeam] = React.useState('Rangers International FC')
     const [awayTeam, setAwayTeam] = React.useState('')
+    const [regularPrice, setRegularPrice] = React.useState('')
+    const [vipPrice, setVipPrice] = React.useState('')
     const [eventVenue, setEventVenue] = React.useState('Nnamdi Azikiwe Stadium')
     const [files, setFiles] = React.useState<File[]>([])
     // const [eventTime, setEventTime] = React.useState("16:00")
@@ -85,11 +87,19 @@ const CreateEventForm = () => {
     // const eventDate = useInput('')
     // const eventVenue = useInput('')
 
+    const [resetKey, setResetKey] = React.useState(0)
+
     const formReset = (type: string = currentEventType) => {
         setAwayTeam('')
         eventTime.reset()
-        setEventDate(new Date(Date.now()))
+        eventTitle.reset()
+        setRegularPrice('')
+        setVipPrice('')
+        setEventDate(undefined)
+        setDateValue(undefined)
+        setMonth(undefined)
         setFiles([])
+        setResetKey(prev => prev + 1)
 
         if (type === 'sports') {
             setHomeTeam('Rangers International FC')
@@ -103,13 +113,6 @@ const CreateEventForm = () => {
     const onFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
-        let formData;
-
-        // TODO: Handle file upload
-        // 1. Upload `files[0]` to your storage service (e.g., S3, Uploadthing, Cloudinary)
-        // 2. Get the returned URL
-        // 3. Add the URL to `eventDetails` as `bannerUrl`
-
         const eventDetails = {
             eventType: currentEventType ?? "N/A",
             homeTeam,
@@ -117,31 +120,67 @@ const CreateEventForm = () => {
             eventVenue,
             eventTitle: eventTitle.value ?? "N/A",
             eventDate: eventDate,
+            imageFile: files[0],
             eventTime: eventTime.value,
+            regularPrice,
+            vipPrice,
+        }
+
+        const formData = new FormData();
+
+        if (eventDetails.imageFile) {
+            formData.append("imageFile", eventDetails.imageFile);
         }
 
         if (currentEventType === "sports") {
-            const { eventTitle, ...data } = eventDetails
-            formData = data
+            const { eventTitle, imageFile, ...data } = eventDetails
+            Object.entries(data).forEach(([key, value]) => {
+                if (value === null || value === undefined) {
+                    return; // Skip null/undefined values
+                }
+                if (value instanceof Date) {
+                    formData.append(key, value.toISOString());
+                } else {
+                    formData.append(key, String(value));
+                }
+            });
         }
 
         if (currentEventType === "event") {
-            const { homeTeam, awayTeam, ...data } = eventDetails
-            formData = data
+            if (!eventDate) {
+                toast.error("Please select an event date");
+                setIsLoading(false);
+                return;
+            }
+
+            if (!eventTitle.value) {
+                toast.error("Please enter an event title");
+                setIsLoading(false);
+                return;
+            }
+
+            const { homeTeam, awayTeam, imageFile, ...data } = eventDetails
+            Object.entries(data).forEach(([key, value]) => {
+                if (value === null || value === undefined) {
+                    return; // Skip null/undefined values
+                }
+                if (value instanceof Date) {
+                    formData.append(key, value.toISOString());
+                } else {
+                    formData.append(key, String(value));
+                }
+            });
         }
 
         try {
-            // const res = await fetch("/api/events", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify(formData)
-            // })
+            const res = await fetch("/api/events", {
+                method: "POST",
+                body: formData
+            })
 
-            console.log({ formData });
-
-
-            // const data = await res.json()
-            // console.log("Event createed: ", data)
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || "Failed to create event");
+            console.log("Event created: ", data)
             toast.success('🥳 Event created successfully')
         } catch (error) {
             console.error('Error submitting  form:', error)
@@ -239,10 +278,21 @@ const CreateEventForm = () => {
                                     <Input type="text" className={'text-white'} value={eventVenue} onChange={(e) => setEventVenue(e.target.value)} />
                                 </div>
 
+                                <div className="flex gap-4 w-full">
+                                    <div className="flex flex-col gap-2 border-zinc-800 w-full">
+                                        <Label className="text-gray-400">Regular Price</Label>
+                                        <Input type="text" className={'text-white'} value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} />
+                                    </div>
+                                    <div className="flex flex-col gap-2 border-zinc-800 w-full">
+                                        <Label className="text-gray-400">VIP Price</Label>
+                                        <Input type="text" className={'text-white'} value={vipPrice} onChange={(e) => setVipPrice(e.target.value)} />
+                                    </div>
+                                </div>
+
                                 <div className="flex flex-col gap-2 border-zinc-800">
                                     <Label className="text-gray-400">Event Banner</Label>
                                     <div className="w-full max-w-4xl mx-auto min-h-30 border border-dashed bg-black border-zinc-800 rounded-lg">
-                                        <FileUpload onChange={setFiles} />
+                                        <FileUpload key={resetKey} onChange={setFiles} />
                                     </div>
                                 </div>
                             </>
@@ -296,7 +346,7 @@ const CreateEventForm = () => {
                         <Button type="button" variant="outline" onClick={() => redirect('/u/events')}>
                             Cancel
                         </Button>
-                        <Button disabled={isLoading} type="submit">
+                        <Button className="bg-orange-500 hover:bg-orange-600" disabled={isLoading} type="submit">
                             {isLoading && <Spinner />}
                             Submit
                         </Button>

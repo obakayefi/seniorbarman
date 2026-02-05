@@ -1,22 +1,21 @@
 "use client"
-import React, {useEffect, useRef, useState} from "react";
-import {useParams} from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import api from "@/lib/axios";
-import {toPng} from "html-to-image";
+import { toPng } from "html-to-image";
 import Link from "next/link";
-import {MoveLeft} from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import Image from "next/image";
-import {giveLogo} from "@/lib/utils";
-import {MdStadium} from "react-icons/md";
-import {FaClock} from "react-icons/fa6";
-import {BsFillCalendarDateFill} from "react-icons/bs";
+import { CLUBS, extractTicketStatus, formatTime, giveLogo } from "@/lib/utils";
+import { MdStadium } from "react-icons/md";
+import { FaClock } from "react-icons/fa6";
+import { BsFillCalendarDateFill } from "react-icons/bs";
 import NButton from "@/components/native/NButton";
-import {log} from "node:util";
 import MatchTicket from "@/components/ui/match-ticket";
 import BulkTicketView from "@/app/u/tickets/BulkTicketView";
 import RegularTicketView from "@/app/u/tickets/RegularTicketView";
 
-export default function TicketCard () {
+export default function TicketCard() {
     const [tickets, setTickets] = useState([])
     const [eventInfo, setEventInfo] = useState({})
     const [ticketSummary, setTicketSummary] = useState<{}[]>([])
@@ -26,7 +25,7 @@ export default function TicketCard () {
 
     useEffect(() => {
         async function getTickets() {
-            const {data} = await api.get(`/tickets/${params.id}`)
+            const { data } = await api.get(`/tickets/${params.id}`)
             setEventInfo(data.response.event)
             setTickets(data.response.tickets.tickets)
             setTicketSummary(data.response.summary)
@@ -45,9 +44,9 @@ export default function TicketCard () {
     }
 
     useEffect(() => {
-        console.log({tickets})
+        console.log({ tickets })
     }, [tickets]);
-    
+
     return (
         <>
             {loading ? (
@@ -56,7 +55,7 @@ export default function TicketCard () {
                 </div>
             ) : tickets.length ? (
                 <div>
-                    <Link href={'/u/tickets'}  className={'text-orange-300 flex items-center mb-3 gap-2'}>
+                    <Link href={'/u/tickets'} className={'text-orange-300 flex items-center mb-3 gap-2'}>
                         <MoveLeft />
                         <span className={'text-orange-500'}>Back to Tickets</span>
                     </Link>
@@ -65,32 +64,32 @@ export default function TicketCard () {
                             <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
                                 <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
                                 <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.homeTeam)} alt='logo'
-                                       height={100}
-                                       width={150}/>
+                                    height={100}
+                                    width={150} />
                             </div>
                             <span
                                 className='text-xl text-orange-400 bg-zinc-900 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
                             <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
                                 <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo'
-                                       height={100}
-                                       width={125}/>
+                                    height={100}
+                                    width={125} />
                                 <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam}</h2>
                             </div>
                         </section>
 
                         <section className='flex flex-col md:flex-row gap-10 mt-15 '>
                             <div className="flex-col flex gap items-center">
-                                <MdStadium className='text-slate-400' size={22}/>
+                                <MdStadium className='text-slate-400' size={22} />
                                 <p className='text-slate-500'>Venue</p>
                                 <p className='text-orange-400'>{eventInfo?.venue}</p>
                             </div>
                             <div className="flex-col flex gap items-center">
-                                <FaClock className='text-slate-400'/>
+                                <FaClock className='text-slate-400' />
                                 <p className='text-slate-500'>Time</p>
-                                <p className='text-orange-400'>{eventInfo?.time}</p>
+                                <p className='text-orange-400'>{formatTime(eventInfo?.time)}</p>
                             </div>
                             <div className="flex-col flex gap items-center">
-                                <BsFillCalendarDateFill className='text-slate-400'/>
+                                <BsFillCalendarDateFill className='text-slate-400' />
                                 <p className='text-slate-500'>Date</p>
                                 <p className='text-orange-400'>{new Date(eventInfo?.date).toDateString()}</p>
                             </div>
@@ -105,12 +104,12 @@ export default function TicketCard () {
                                 <h4 className='text-zinc-400'>{summary.name}</h4>
                                 <span className='text-2xl text-zinc-200'>{summary.value}</span>
                             </div>
-                        )): null}
+                        )) : null}
                     </section>
 
-                <section className="flex flex-col flex-wrap md:flex-row xl:grid grid-cols-4 lg:grid-cols-4 md:justify-between gap-4 mt-4">
-                    {loading ? (<div>Loading events...</div>) : tickets.length && tickets.length > 4  ? <BulkTicketView id={params.id} tickets={tickets}/> : <RegularTicketView tickets={tickets}/>}
-                </section>
+                    <section className="flex flex-col flex-wrap md:flex-row xl:grid grid-cols-4 lg:grid-cols-4 md:justify-between gap-4 mt-4">
+                        {loading ? (<div>Loading events...</div>) : tickets.length && tickets.length > 4 ? <BulkTicketView id={params.id} tickets={tickets} /> : <RegularTicketView tickets={tickets} />}
+                    </section>
 
                     {/*<div className={'flex items-center justify-center py-2'}>*/}
                     {/*    <Link href={`/u/tickets/${params.id}/print-tickets`}>*/}

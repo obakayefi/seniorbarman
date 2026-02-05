@@ -7,9 +7,9 @@ import useUser from '@/hooks/useUser'
 import api from '@/lib/axios'
 import { useApp } from '@/context/AppContext'
 import NButton from '../native/NButton'
-import {OnPayNow} from "@/lib/helpers";
-import {getUserFromCookie} from "@/lib/auth";
-import {toast} from "sonner";
+import { OnPayNow } from "@/lib/helpers";
+import { getUserFromCookie } from "@/lib/auth";
+import { toast } from "sonner";
 
 type Props = {
     ticketsToPurchase: any[];
@@ -24,7 +24,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
     const [loading, setLoading] = useState(false)
     const { user, loading: userLoading } = useApp()
     const [maxTickets, setMaxTickets] = useState(400)
-    
+
     const paymentPayload = {
         email: user?.email,
         amount: totalPrice,
@@ -42,12 +42,12 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                 (sum, ticket) => sum + ticket.quantity,
                 0
             );
-            
+
             if (totalTickets > maxTickets) {
                 toast.error(`You can\'t buy more than ${maxTickets} tickets`)
                 return
             }
-            
+
             await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
         } catch (error: any) {
             console.error('Error making payment', error.message)
@@ -69,12 +69,12 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="border-b-2 border-zinc-950">
+                            <section className="border-b-2 border-zinc-800">
                                 <div className="flex flex-col sm:flex-row justify-between">
                                     <h5>{ticket.name}
-                                    </h5> 
+                                    </h5>
                                     <p className="text-lg text-orange-500">
-                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span> 
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span>
                                     </p>
                                 </div>
                             </section>

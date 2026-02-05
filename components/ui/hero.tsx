@@ -1,15 +1,15 @@
 "use client"
-import {Calendar1} from "lucide-react";
-import {FaLocationPinLock} from "react-icons/fa6";
+import { Calendar1 } from "lucide-react";
+import { FaLocationPinLock } from "react-icons/fa6";
 import NButton from "@/components/native/NButton";
-import {redirect} from "next/navigation";
+import { redirect } from "next/navigation";
 import HeroAction from "@/components/ui/hero-action";
 import HeroCountdown from "@/components/ui/hero-countdown";
 import api from "@/lib/axios";
-import {useEffect, useState} from "react";
-import {Spinner} from "@/components/ui/spinner";
+import { useEffect, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function Hero({ nextMatch }: { nextMatch: {}}) {
+export default function Hero({ nextMatch }: { nextMatch: any }) {
     return (
         <header className={'flex flex-col xl:flex-row w-full items-center justify-between'}>
             {nextMatch ? (
@@ -21,7 +21,7 @@ export default function Hero({ nextMatch }: { nextMatch: {}}) {
 
                         <section className={'flex flex-col gap-2'}>
                             <h2 className={'text-3xl font-semibold lg:text-6xl lg:font-bold'}><span className="text-red-600">Enugu Rangers</span>
-                                <br/> Home Matches</h2>
+                                <br /> Home Matches</h2>
                             <div className={'flex text-sm flex-col gap-1'}>
                                 <p>Get your official match tickets for the Flying Antelopes.</p>
                                 <p>Experience the thrill of Nigerian Premier Football League action at the Nnamdi Azikiwe
@@ -33,7 +33,7 @@ export default function Hero({ nextMatch }: { nextMatch: {}}) {
                         <section
                             className={'bg-black/60 px-4 rounded text-white w-full lg:max-w-fit justify-start flex flex-col gap-4 items-center py-4'}>
                             <div className="flex items-center gap-3 lg:border-r-1 border-b-1 w-full border-slate-800 lg:pr-4">
-                                <Calendar1 className={'text-red-600'}/>
+                                <Calendar1 className={'text-red-600'} />
                                 <section className={'flex flex-col'}>
                                     <span className={'text-sm'}>Next Match</span>
                                     <span className="text-lg">{new Date(nextMatch.date).toDateString()}</span>
@@ -41,7 +41,7 @@ export default function Hero({ nextMatch }: { nextMatch: {}}) {
                             </div>
 
                             <div className="flex items-center w-full gap-3 lg:pl-2">
-                                <FaLocationPinLock className={'text-red-600'} size={24}/>
+                                <FaLocationPinLock className={'text-red-600'} size={24} />
                                 <section className={'flex flex-col'}>
                                     <span className={'text-sm'}>Venue</span>
                                     <span className="text-lg">Nnamdi Azikiwe Stadium, Enugu</span>
@@ -50,7 +50,7 @@ export default function Hero({ nextMatch }: { nextMatch: {}}) {
                         </section>
 
                         <section className={'mt-4'}>
-                            <HeroAction/>
+                            <HeroAction eventId={(nextMatch as any)._id} />
                         </section>
                     </div>
 
@@ -64,12 +64,12 @@ export default function Hero({ nextMatch }: { nextMatch: {}}) {
                                     <h2>Enugu Rangers</h2>
                                     <span
                                         className={'text-white h-6 w-6 text-sm rounded-full bg-red-600 flex flex-col items-center justify-center font-normal'}>
-                                vs
-                            </span>
+                                        vs
+                                    </span>
                                     <h2>{nextMatch.awayTeam}</h2>
                                 </div>
                             </div>
-                            {nextMatch.date ? <HeroCountdown targetDate={nextMatch.date}/> : <div className={'w-68'}><span>Loading countdown...</span></div>}
+                            {nextMatch.date ? <HeroCountdown targetDate={nextMatch.date} /> : <div className={'w-68'}><span>Loading countdown...</span></div>}
                         </div>
                     </section>
                 </>

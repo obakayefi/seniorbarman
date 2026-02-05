@@ -1,11 +1,11 @@
-import {TicketStandIcon} from '@/components/icons'
-import {TicketIcon} from 'lucide-react'
+import { TicketStandIcon } from '@/components/icons'
+import { TicketIcon } from 'lucide-react'
 import Image from 'next/image'
-import {useQRCode} from "next-qrcode";
-import {extractTicketStatus} from "@/lib/utils";
+import { useQRCode } from "next-qrcode";
+import { extractTicketStatus, formatTime, getBaseUrl } from "@/lib/utils";
 
-const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
-    const {Image} = useQRCode();
+const Ticket = ({ ticket, toPrint }: { ticket: any, toPrint: boolean }) => {
+    const { Image } = useQRCode();
 
     if (!ticket) return null
 
@@ -15,7 +15,7 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
 
     // console.log({clientTicket: ticket, event: ticket.event, checkInLogs: status_checkedIn})
 
-    const statusBgColor = status_checkedIn ? "bg-green-200 text-green-700" : status_checkedOut ? "bg-red-200 text-red-700 " : status_notCheckedIn ? "bg-slate-800 text-slate-200" : null
+    const statusBgColor = status_checkedIn ? "bg-orange-50 text-orange-600" : status_checkedOut ? "bg-red-50 text-red-700" : status_notCheckedIn ? "bg-slate-800 text-slate-200" : null
 
     const formattedDate = (_date: Date) => {
         // console.log({formatted: _date})
@@ -25,16 +25,16 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
         const year = String(date.getFullYear()).slice(-2);
         return `${day}/${month}/${year}`;
     }
-    
+
     return (
         <div
-            className={`flex flex-col md:flex-row items-start bg-white hover:bg-gray-100/50 duration-200 border-2 border-zinc-400 rounded ${toPrint ? 'h-80 p-0': 'h-auto p-2' } gap-4`}>
+            className={`flex flex-col md:flex-row items-start bg-white hover:bg-gray-100/50 duration-200 border-2 border-zinc-400 rounded ${toPrint ? 'h-80 p-0' : 'h-auto p-2'} gap-4`}>
             <section className='flex  gap-0 items-center flex-col md:flex-col overflow-hidden'>
                 <div>
                     <div className='bg-[#F5F5F5] text-zinc-600 flex justify-center items-center gap-1 px-4 py-2'>
-                        <span><TicketStandIcon size={24}/></span>
+                        <span><TicketStandIcon size={24} /></span>
                         <span className={'text-sm'}>{ticket.stand}</span>
-                    </div>  
+                    </div>
                     <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
                         <h2 className="text-sm">{ticket.event.homeTeam}</h2>
                         <h2 className="text-sm bg-gray-200  rounded-full text-center h-6 w-6 flex items-center justify-center ">
@@ -45,14 +45,14 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
                     <div className='text-slate-700 gap-2 justify-center border-t-1 border-gray-200 pt-2 flex items-center text-center mb-3 '>
                         <h2 className="text-sm">{formattedDate(ticket.event.date)}</h2>
                         <span className={'text-gray-300'}>|</span>
-                        <h2 className="text-sm">16:00</h2>
+                        <h2 className="text-sm">{formatTime(ticket.event.time) || "16:00"}</h2>
                     </div>
                 </div>
 
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
                 <div className={'md:-mt-4  mt-0 bg-transparent'}>
                     <Image
-                        text={`https://seniorbarman.com/u/tickets/preview/${ticket.checkInToken}/`}
+                        text={`${getBaseUrl()}/u/tickets/preview/${ticket.checkInToken}/`}
                         options={{
                             type: 'image/jpeg',
                             quality: 0.3,
@@ -61,7 +61,7 @@ const Ticket = ({ticket, toPrint}: { ticket: any, toPrint: boolean }) => {
                             scale: 3,
                             width: toPrint ? 140 : 200,
                             color: {
-                                dark: '#010599FF',
+                                dark: '#f97316',
                                 light: '#FFF',
                             },
                         }}
