@@ -244,7 +244,7 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                         </div>
                         <div className="text-right">
                             <p className="text-zinc-500 text-xs">Variant</p>
-                            <p className="text-white text-2xl font-bold">{String(currentIndex + 1).padStart(2, '0')} / {String(totalTickets).padStart(2, '0')}</p>
+                            <p className="text-white text-xl font-bold">{String(currentIndex + 1).padStart(2, '0')} / {String(totalTickets).padStart(2, '0')}</p>
                         </div>
                     </div>
                 </div>
@@ -279,23 +279,27 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                 </div>
 
                 {/* Ticket Details */}
-                <div className="grid grid-cols-2 gap-4 border-t border-zinc-800 pt-6">
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Venue</p>
-                        <p className="text-white">{eventInfo?.venue}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
-                        <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
-                        <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
-                        <p className="text-white">{currentTicket.userId?.name || currentTicket.email || 'Guest'}</p>
-                    </div>
+                <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
+                    <section className='flex flex-col gap-4'>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Venue</p>
+                            <p className="text-white">{eventInfo?.venue}</p>
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
+                            <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
+                        </div>
+                    </section>
+                    <section className='flex flex-col gap-4'>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
+                            <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
+                            <p className="text-white">{currentTicket.userId?.name || currentTicket.email || 'Guest'}</p>
+                        </div>
+                    </section>
                 </div>
 
                 {/* Present at Gate Button */}

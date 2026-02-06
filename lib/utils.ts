@@ -340,8 +340,11 @@ export function formatTime(time: string) {
 }
 
 export function getBaseUrl() {
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+        return process.env.NEXT_PUBLIC_BASE_URL;
+    }
     if (process.env.NODE_ENV === "development") {
-        return "https://sbmdev.netlify.app";
+        return "http://localhost:3000";
     }
     return "https://seniorbarman.com";
 }

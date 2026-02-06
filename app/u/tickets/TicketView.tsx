@@ -40,21 +40,19 @@ const TicketsPageView = () => {
 
 
     return (
-        <div className='p-10 w-full'>
+        <div className='p-6 md:p-10 w-full max-w-7xl mx-auto'>
             <PageHeader title='Tickets'>
-                {/* <Button title='Create Ticket' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>Create Ticket <TicketPlus /></Button> */}
-                {""}
                 {/* Toggle Switch */}
-                <div className="flex items-center gap-4 mb-6 mt-2 pb-4">
+                <div className="flex items-center gap-4 mt-2">
                     <button
                         onClick={() => setViewMode('sports')}
-                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'sports' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                        className={`px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'sports' ? 'bg-white text-black font-bold' : 'text-zinc-500 hover:text-white'}`}
                     >
                         Football Matches
                     </button>
                     <button
                         onClick={() => setViewMode('event')}
-                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'event' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                        className={`px-4 sm:px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'event' ? 'bg-white text-black font-bold' : 'text-zinc-500 hover:text-white'}`}
                     >
                         Events
                     </button>
