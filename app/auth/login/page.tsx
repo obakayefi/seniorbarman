@@ -48,7 +48,13 @@ export default function Login() {
             )
             setUser(data.user)
             toast.success('Welcome back ' + data.user.firstName)
-            router.replace(sitemap.user.dashboard)
+
+            // Role-based redirection
+            if (data.user.role === 'admin') {
+                router.replace(sitemap.admin.dashboard)
+            } else {
+                router.replace(sitemap.user.dashboard)
+            }
         } catch (error: any) {
             console.error('Error signing player in', { error: error.message })
             const errorMsg = error.response?.data?.error || "Invalid email or password"

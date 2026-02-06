@@ -64,21 +64,21 @@ export default function Hero({ nextMatch }: { nextMatch: any }) {
                 </section>
             </div>
 
-            <section className={'flex mx-auto border-1 lg:mx-0 border-zinc-950 rounded z-20 items-center mt-11'}>
-                <div className={'bg-black/80 min-w-fit z-50 p-5'}>
-                    <div className="border-b-1  border-gray-800">
-                        <h2 className={'text-xs  lg:text-lg text-gray-400 uppercase'}>Next Match</h2>
+            <section className={'flex mx-auto border-1 lg:mx-0 border-zinc-950 rounded z-20 items-center mt-6 lg:mt-11 w-full lg:w-auto overflow-hidden'}>
+                <div className={'bg-black/80 flex-1 lg:min-w-fit z-50 p-4 lg:p-5'}>
+                    <div className="border-b-1 border-gray-800">
+                        <h2 className={'text-[10px] lg:text-lg text-gray-400 uppercase'}>Next Match</h2>
                         <div
-                            className="flex font-semibold gap-1 text-base md:text-lg pb-2 lg:text-xl items-center justify-between">
-                            <h2>Enugu Rangers</h2>
+                            className="flex font-semibold gap-1 text-sm sm:text-lg pb-2 lg:text-xl items-center justify-between">
+                            <h2 className="line-clamp-1">Enugu Rangers</h2>
                             <span
-                                className={'text-white h-6 w-6 text-sm rounded-full bg-red-600 flex flex-col items-center justify-center font-normal'}>
+                                className={'text-white h-5 w-5 lg:h-6 lg:w-6 text-[10px] lg:text-sm rounded-full bg-red-600 flex flex-col items-center justify-center font-normal shrink-0'}>
                                 vs
                             </span>
                             {nextMatch?.awayTeam ? (
-                                <h2>{nextMatch.awayTeam}</h2>
+                                <h2 className="line-clamp-1">{nextMatch.awayTeam}</h2>
                             ) : (
-                                <div className="h-7 w-24 bg-zinc-800 animate-pulse rounded mx-2" />
+                                <div className="h-7 w-20 lg:w-24 bg-zinc-800 animate-pulse rounded mx-2" />
                             )}
                         </div>
                     </div>

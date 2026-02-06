@@ -343,7 +343,7 @@ const CreateEventForm = () => {
 
                 <CardFooter className="mt-10 border-t-2 border-zinc-800 pt-8 flex items-end jusify-end">
                     <Field orientation="horizontal" className="flex justify-end">
-                        <Button type="button" variant="outline" onClick={() => redirect('/u/events')}>
+                        <Button type="button" variant="outline" onClick={() => redirect('/u/dashboard')}>
                             Cancel
                         </Button>
                         <Button className="bg-orange-500 hover:bg-orange-600" disabled={isLoading} type="submit">

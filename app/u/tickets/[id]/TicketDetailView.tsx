@@ -48,8 +48,8 @@ export default function TicketDetailView() {
 
                     {/* Sport View */}
                     {eventInfo?.type === 'sports' ? (
-                        <>
-                            <div className='bg-zinc-950/90 border-zinc-800 border-1 rounded justify-center flex flex-col items-center mb-4 py-6'>
+                        <div className="rounded-xl overflow-hidden">
+                            <div className='bg-zinc-950/90 border-zinc-900 border-2 rounded-xl justify-center flex flex-col items-center mb-4 py-6'>
                                 <section className='flex flex-col sm:flex-row items-center gap-6 md:gap-10 mr-0 md:mr-5'>
                                     <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
                                         <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
@@ -88,7 +88,7 @@ export default function TicketDetailView() {
                                 </section>
                             </div>
 
-                            <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
+                            {/* <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
                                 {tickets.length < 5 ? ticketSummary?.map((summary: any, index) => (
                                     <div
                                         key={index}
@@ -97,17 +97,17 @@ export default function TicketDetailView() {
                                         <span className='text-2xl text-zinc-200'>{summary.value}</span>
                                     </div>
                                 )) : null}
-                            </section>
+                            </section> */}
 
                             <section className="mt-6">
                                 <TicketCarousel tickets={tickets} eventInfo={eventInfo} />
                             </section>
-                        </>
+                        </div>
                     ) : eventInfo?.type === 'event' ? (
-                        <>
+                        <div className="rounded-xl overflow-hidden">
                             {/* Event View with poster background */}
                             <div
-                                className='relative border-zinc-800 border-1 rounded-xl overflow-hidden min-h-[400px]'
+                                className='relative border-zinc-900 border-2 rounded-xl overflow-hidden transition-all duration-500'
                                 style={{
                                     backgroundImage: `url(${eventInfo.image || 'https://www.vibe.com/wp-content/uploads/2023/10/GettyImages-1502049780.jpg?w=1024'})`,
                                     backgroundSize: 'cover',
@@ -115,37 +115,57 @@ export default function TicketDetailView() {
                                 }}
                             >
                                 {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-zinc-900/70 to-zinc-900/50" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-zinc-900/40 to-black/20" />
 
-                                {/* Glassmorphic Card covering entire jumbotron */}
-                                <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-md border border-white/10">
-                                    <div className="relative z-10 flex flex-col items-center justify-center gap-4 sm:gap-6 p-4 sm:p-6 md:p-8 h-full">
-                                        <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-white text-center px-4'>{eventInfo?.title}</h1>
+                                {/* Glassmorphic Content Card */}
+                                <div className="relative z-10 bg-zinc-950/60 backdrop-blur-2xl border border-white/10 min-h-[450px] flex flex-col items-center justify-center py-12 px-6 sm:px-10 md:px-16 rounded-xl transition-all duration-500">
+                                    <div className="flex flex-col items-center gap-2 mb-2">
+                                        <span className="text-orange-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 drop-shadow-sm">Official Event Pass</span>
+                                        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-black text-white text-center px-4 leading-tight tracking-tighter'>
+                                            {eventInfo?.title}
+                                        </h1>
+                                    </div>
 
-                                        <section className='bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-6 w-full max-w-2xl'>
-                                            <div className='flex flex-col md:flex-row gap-6 sm:gap-10 justify-center'>
-                                                <div className="flex-col flex gap items-center">
-                                                    <MdStadium className='text-orange-400' size={32} />
-                                                    <p className='text-zinc-400'>Venue</p>
-                                                    <p className='text-orange-300'>{eventInfo?.venue}</p>
+                                    <div className='flex flex-col gap-8 w-full max-w-2xl border-t border-white/5 pt-10 mt-6'>
+                                        {/* Date and Time Row */}
+                                        <div className="grid grid-cols-2 gap-8 w-full">
+                                            <div className="flex flex-col gap-3 items-center text-center">
+                                                <div className="p-3 bg-orange-500/10 rounded-full border border-orange-500/20 shadow-inner">
+                                                    <BsFillCalendarDateFill className='text-orange-400' size={22} />
                                                 </div>
-                                                <div className="flex-col flex gap items-center">
-                                                    <FaClock className='text-orange-400' size={28} />
-                                                    <p className='text-zinc-400'>Time</p>
-                                                    <p className='text-orange-300'>{eventInfo?.time}</p>
-                                                </div>
-                                                <div className="flex-col flex gap items-center">
-                                                    <BsFillCalendarDateFill className='text-orange-400' size={28} />
-                                                    <p className='text-zinc-400'>Date</p>
-                                                    <p className='text-orange-300'>{new Date(eventInfo?.date).toDateString()}</p>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <p className='text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em]'>Date</p>
+                                                    <p className='text-white text-base sm:text-xl font-bold'>
+                                                        {eventInfo?.date ? new Date(eventInfo.date).toLocaleDateString('en-GB') : 'N/A'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </section>
+                                            <div className="flex flex-col gap-3 items-center text-center">
+                                                <div className="p-3 bg-orange-500/10 rounded-full border border-orange-500/20 shadow-inner">
+                                                    <FaClock className='text-orange-400' size={22} />
+                                                </div>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <p className='text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em]'>Time</p>
+                                                    <p className='text-white text-base sm:text-xl font-bold'>{eventInfo?.time}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Venue Row (Focused) */}
+                                        <div className="flex flex-col gap-3 items-center text-center w-full bg-white/5 py-6 px-4 rounded-2xl border border-white/[0.03] backdrop-blur-sm">
+                                            <div className="p-3 bg-orange-500/10 rounded-full border border-orange-500/20">
+                                                <MdStadium className='text-orange-400' size={28} />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <p className='text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]'>Venue</p>
+                                                <p className='text-white text-lg sm:text-2xl font-black tracking-tight'>{eventInfo?.venue}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
+                            {/* <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
                                 {tickets.length < 5 ? ticketSummary?.map((summary: any, index) => (
                                     <div
                                         key={index}
@@ -154,12 +174,12 @@ export default function TicketDetailView() {
                                         <span className='text-2xl text-zinc-200'>{summary.value}</span>
                                     </div>
                                 )) : null}
-                            </section>
+                            </section> */}
 
                             <section className="mt-6">
                                 <TicketCarousel tickets={tickets} eventInfo={eventInfo} />
                             </section>
-                        </>
+                        </div>
                     ) : (
                         <div className="text-center py-20">
                             <h2 className="text-2xl text-zinc-600">No Tickets Found</h2>

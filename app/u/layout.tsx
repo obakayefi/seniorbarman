@@ -2,7 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { CalendarDays, CalendarPlus, PartyPopper, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound } from 'lucide-react'
+import { CalendarDays, CalendarPlus, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
 import { GiSoccerField } from "react-icons/gi";
@@ -20,6 +20,11 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     if (!user) redirect('/auth/logout')
 
     const userLinks = [
+        {
+            title: "Dashboard",
+            url: sitemap.user.dashboard,
+            icon: LayoutDashboard,
+        },
         {
             title: "Browse Upcoming Events",
             url: sitemap.user.eventsTicketPurchase,
@@ -48,7 +53,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     ]
 
     const adminLinks = [
-        ...bouncerLinks,
+        {
+            title: "Dashboard",
+            url: sitemap.admin.dashboard,
+            icon: LayoutDashboard,
+        },
+        ...bouncerLinks.filter(link => link.title !== "Dashboard"), // Avoid duplicate dashboard if bouncerLinks starts with userLinks
         {
             title: "Create Admin",
             url: sitemap.admin.createAdmin,

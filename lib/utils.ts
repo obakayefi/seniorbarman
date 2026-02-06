@@ -326,7 +326,7 @@ export const formattedDate = (_date: Date) => {
     const date = new Date(_date)
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = String(date.getFullYear()).slice(-2);
+    const year = String(date.getFullYear());
     return `${day}/${month}/${year}`;
 }
 
@@ -364,7 +364,7 @@ export const statusBadgeStyle = (computedStatus: string) => {
 
 export const sitemap = {
     user: {
-        dashboard: "/u/events",
+        dashboard: "/u/dashboard",
         tickets: "/u/tickets",
         rangersTicketPurchase: "/rangers",
         eventsTicketPurchase: "/events"
@@ -373,6 +373,7 @@ export const sitemap = {
         scanner: "/u/a/scanner",
     },
     admin: {
+        dashboard: "/u/a/dashboard",
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
         createEvent: "/u/a/events/create"
