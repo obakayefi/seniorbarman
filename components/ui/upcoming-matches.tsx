@@ -1,5 +1,6 @@
 import { Calendar1Icon, Clock, MapPin } from "lucide-react";
 import { FaLocationPin } from "react-icons/fa6";
+import { formatTime } from "@/lib/utils";
 import { Dialog, DialogTrigger } from "./dialog";
 import { BookEventModal } from "../modals/book-event";
 import NButton from "../native/NButton";
@@ -29,8 +30,8 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                                 className={'flex min-w-fit text-xs flex-col items-center lg:items-start justify-center lg:justify-start text-gray-400 gap-4'}>
                                 <p className={'flex gap-1'}><Calendar1Icon size={14} />
                                     <span>{new Date(match.date).toDateString()}</span></p>
-                                <p className={'flex gap-1'}><Clock size={14} /> 4:00pm</p>
-                                <p className={'flex gap-1'}><MapPin size={14} /> Nnamdi Azikiwe Stadium, Enugu</p>
+                                <p className={'flex gap-1'}><Clock size={14} /> {formatTime(match.time)}</p>
+                                <p className={'flex gap-1'}><MapPin size={14} /> {match.venue}</p>
                             </div>
                         </div>
                     </div>
@@ -38,7 +39,7 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                     <div
                         className={'text-sm flex flex-col max-w-fit lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
                         <p className={'text-slate-500 hidden lg:flex'}>From</p>
-                        <h4 className={'text-2xl text-green-500 font-bold'}>₦500</h4>
+                        <h4 className={'text-2xl text-green-500 font-bold'}>₦{Number(match.regularPrice || 0).toLocaleString()}</h4>
                         <p className={'text-slate-500'}>30,000 tickets left</p>
                         <div className={'w-full flex items-center justify-center pt-5'}>
                             <Dialog>

@@ -26,43 +26,43 @@ export async function GET(req: Request) {
 
         // Filter logic:
         // 1. If date > today (future), keep it.
-        // 2. If date == today, keep only if time < 3:30 PM WAT (15:30).
+        // 2. If date == today, keep only if it's more than 30 minutes before the event start time.
 
-        let eventsToReturn: any[] = []
+        const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+        const nowInWat = new Date(watTime);
 
-        if (eventType === 'event') {
-            eventsToReturn = upcomingActivities
-        } else if (eventType === 'sports') {
-            const upcomingEvents = upcomingActivities.filter((event: any) => {
-                const eventDate = new Date(event.date)
-                // Normalize event date to midnight for comparison
-                const eventMidnight = new Date(eventDate)
-                eventMidnight.setHours(0, 0, 0, 0)
+        const filteredEvents = upcomingActivities.filter((event: any) => {
+            const eventDate = new Date(event.date)
+            // Normalize event date for midnight comparison
+            const eventMidnight = new Date(eventDate)
+            eventMidnight.setHours(0, 0, 0, 0)
 
-                // Check if future date
-                if (eventMidnight.getTime() > today.getTime()) {
-                    return true
-                }
+            // 1. Check if future date (strictly after today)
+            if (eventMidnight.getTime() > today.getTime()) {
+                return true
+            }
 
-                // It's today. Check WAT cutoff.
-                // Get current time in WAT
-                const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
-                const nowInWat = new Date(watTime);
+            // 2. It's today. Check against start time with 30-minute buffer.
+            try {
+                // event.time is expected to be "HH:mm"
+                const [hours, minutes] = event.time.split(':').map(Number);
+                if (isNaN(hours) || isNaN(minutes)) return false;
 
-                const currentHour = nowInWat.getHours();
-                const currentMinute = nowInWat.getMinutes();
+                const eventStartTime = new Date(eventDate);
+                eventStartTime.setHours(hours, minutes, 0, 0);
 
-                // Cutoff is 15:30
-                if (currentHour < 15) return true;
-                if (currentHour === 15 && currentMinute < 30) return true;
+                // Cutoff is 30 minutes before the event starts
+                const cutoffTime = new Date(eventStartTime.getTime() - 30 * 60 * 1000);
 
-                return false;
-            })
-            eventsToReturn = upcomingEvents
-        }
+                return nowInWat < cutoffTime;
+            } catch (e) {
+                // Fallback for malformed time strings - better to show than hide if date is today
+                return true;
+            }
+        });
 
         return NextResponse.json(
-            { events: eventsToReturn },
+            { events: filteredEvents },
             { status: 200 }
         )
     } catch

@@ -11,14 +11,14 @@ export default function EventHero() {
         //     </section>
         // </header>
         <header className={'flex flex-col xl:flex-row w-full items-start justify-between'}>
-            <section className={'flex flex-col items-center justify-start items-start w-3/5 gap-4 text-neutral-300'}>
-                <p className={'text-xs uppercase text-green-500 border px-4 border-zinc-800 bg-zinc-900 rounded-lg font-bold flex items-end gap-2 p-1.5 pb-2.5'}>
-                    EXPERIENCE THE THRILL <PartyPopper />
+            <section className={'flex flex-col items-start justify-start w-full lg:w-3/5 gap-4 text-neutral-300'}>
+                <p className={'text-[10px] md:text-xs uppercase text-green-500 border px-3 md:px-4 border-zinc-800 bg-zinc-900 rounded-lg font-bold flex items-end gap-2 p-1.5 pb-2.5'}>
+                    EXPERIENCE THE THRILL <PartyPopper size={14} />
                 </p>
-                <h2 className={'text-6xl letter-spacing-1 text-white'}>
-                    FIND YOUR <br /> <span className='text-amber-600 text-7xl font-semibold'>NEXT</span> EVENT
+                <h2 className={'text-4xl lg:text-6xl letter-spacing-1 text-white leading-tight'}>
+                    FIND YOUR <br /> <span className='text-amber-600 text-5xl lg:text-7xl font-semibold'>NEXT</span> EVENT
                 </h2>
-                <p className='text-xl text-zinc-300 w-2/3'>
+                <p className='text-base lg:text-xl text-zinc-300 w-full lg:w-2/3'>
                     The heartbeat of Enugu's nightlife. From high-stakes Rangers matches to underground warehouse parties. Secure your batch tickets today.
                 </p>
 

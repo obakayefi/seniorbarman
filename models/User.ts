@@ -27,7 +27,9 @@ const userSchema = new Schema(
       enum: ["user", "organizer", "bouncer", "admin"],
       type: String,
       default: "user"
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
   },
   { timestamps: true }
 );

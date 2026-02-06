@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 
 export default function RangersPage() {
-    const [nextMatch, setNextMatch] = useState({})
+    const [nextMatch, setNextMatch] = useState<any>(null)
     const [upcomingMatches, setUpcomingMatches] = useState([])
 
     useEffect(() => {

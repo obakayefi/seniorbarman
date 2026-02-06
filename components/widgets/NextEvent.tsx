@@ -1,22 +1,22 @@
 "use client"
 import api from '@/lib/axios'
-import {Swiper, SwiperSlide} from 'swiper/react';
+import { Swiper, SwiperSlide } from 'swiper/react';
 import Image from 'next/image'
-import {redirect} from 'next/navigation'
-import {Keyboard, Pagination, Navigation} from 'swiper/modules';
+import { redirect } from 'next/navigation'
+import { Keyboard, Pagination, Navigation } from 'swiper/modules';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import React, {useEffect} from 'react'
-import {useCountdown} from '@/hooks/useCountdown';
+import React, { useEffect } from 'react'
+import { useCountdown } from '@/hooks/useCountdown';
 
-const EventSlide = ({event}: { event: any }) => {
+const EventSlide = ({ event }: { event: any }) => {
     // const targetDate = React.useMemo(() => {
     //     const now = new Date();
     //     return new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
     // }, []);
-    const {days, hours, minutes, seconds} = useCountdown(event.date)
+    const { days, hours, minutes, seconds } = useCountdown(event.date)
 
     function toAmPm(time24: any) {
         const [h, m] = time24.split(":").map(Number);
@@ -36,7 +36,7 @@ const EventSlide = ({event}: { event: any }) => {
                 </div>
                 {/* Couontdown Timer */}
                 <div className='flex items-start justify-center gap-2 text-slate-700 w-62 p-2'>
-                    <Image className='hidden md:flex' alt='icon' height={100} width={40} src='/clock-icon.svg'/>
+                    <Image className='hidden md:flex' alt='icon' height={100} width={40} src='/clock-icon.svg' />
                     <div className='flex items-start justify-center gap-1'>
                         <section className='flex items-center justify-center flex-col text-center'>
                             <div className='flex items-start gap-3'>
@@ -80,7 +80,7 @@ const EventSlide = ({event}: { event: any }) => {
                     <h3 className='text-2xl'>{event.awayTeam}</h3>
                 </div>
                 <button
-                    onClick={() => redirect("/u/events")}
+                    onClick={() => redirect("/u/dashboard")}
                     disabled={false}
                     className='bg-white disabled:cursor-not-allowed cursor-pointer disabled:bg-slate-400 disabled:text-gray-100 hover:opacity-95 duration-100 active:translate-y-1 text-[#E67A00] text-lg px-4 w-42 p-2 rounded'>
                     Book Match
@@ -136,7 +136,7 @@ const NextEvent = () => {
         >
             {(events && events?.length > 0) && events.map((event: any) => (
                 <SwiperSlide key={event.id}>
-                    <EventSlide event={event}/>
+                    <EventSlide event={event} />
                 </SwiperSlide>
             ))}
         </Swiper>

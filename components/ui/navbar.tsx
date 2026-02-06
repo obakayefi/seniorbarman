@@ -77,7 +77,7 @@ export default function NativeNavbar
     const isAuthenticated = Boolean(user?.user?.id)
 
     return (
-        <div className="relative z-40 text-white border-b-2 border-gray-800 w-full">
+        <div className="relative z-40 text-white border-b-2 border-zinc-900 w-full">
             <Navbar>
                 {/* Desktop Navigation */}
                 <NavBody>

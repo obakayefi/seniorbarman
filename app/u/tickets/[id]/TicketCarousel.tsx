@@ -168,13 +168,13 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                 <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
                     {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
                 </div>
-                <button
+                {/* <button
                     onClick={() => setShowEmailModal(true)}
                     className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Email ticket"
                 >
                     <Mail size={20} className="text-zinc-400" />
-                </button>
+                </button> */}
             </div>
 
             {/* Breadcrumb */}
@@ -216,35 +216,53 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
             )}
 
             {/* Main Ticket Card */}
-            <div ref={ticketRef} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 mb-6">
+            <div ref={ticketRef} className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 mb-6 shadow-2xl">
                 {/* Event Header */}
                 <div className="mb-4 sm:mb-6">
-                    <p className="text-orange-400 text-xs sm:text-sm font-semibold uppercase mb-2">
-                        {eventInfo?.type === 'sports' ? 'Matchday Pass' : 'Event Pass'}
-                    </p>
-                    <h1 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-orange-400 text-[10px] sm:text-sm font-bold uppercase tracking-widest">
+                            {eventInfo?.type === 'sports' ? 'Matchday Pass' : 'Event Pass'}
+                        </p>
+                        <div className="bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded text-[10px] text-orange-400 font-bold uppercase"> Official </div>
+                    </div>
+
+                    <h1 className="text-lg sm:text-2xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
                         {eventInfo?.homeTeam ? `${eventInfo.homeTeam} vs. ${eventInfo.awayTeam}` : eventInfo?.title}
                     </h1>
 
                     {/* Variant/Ticket Number */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
-                        <div className="flex gap-3 sm:gap-6 text-xs sm:text-sm flex-wrap">
-                            <div>
-                                <p className="text-zinc-500 uppercase text-xs">Date</p>
-                                <p className="text-white">{formattedDate(eventInfo?.date)}</p>
+                    <div className="flex flex-col gap-6 bg-zinc-800/50 p-4 sm:p-6 -mx-4 sm:-mx-6 border-y border-zinc-700/30">
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            <div className="flex flex-col gap-1 items-center text-center">
+                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Date</p>
+                                <p className="text-white font-bold text-sm sm:text-lg">
+                                    {eventInfo?.date ? new Date(eventInfo.date).toLocaleDateString('en-GB') : 'N/A'}
+                                </p>
                             </div>
-                            <div>
-                                <p className="text-zinc-500 uppercase text-xs">Kickoff</p>
-                                <p className="text-white">{formatTime(eventInfo?.time) || '17:00'}</p>
-                            </div>
-                            <div>
-                                <p className="text-zinc-500 uppercase text-xs">Gate</p>
-                                <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General'}</p>
+                            <div className="flex flex-col gap-1 items-center text-center">
+                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Kickoff</p>
+                                <p className="text-white font-bold text-sm sm:text-lg">{formatTime(eventInfo?.time) || '17:00'}</p>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-zinc-500 text-xs">Variant</p>
-                            <p className="text-white text-2xl font-bold">{String(currentIndex + 1).padStart(2, '0')} / {String(totalTickets).padStart(2, '0')}</p>
+
+                        <div className="flex flex-col gap-1 items-center text-center w-full pt-4 border-t border-zinc-700/30">
+                            <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Venue</p>
+                            <p className="text-orange-400 font-black text-base sm:text-xl tracking-tight">{eventInfo?.venue}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-zinc-700/30">
+                            <div className="text-center">
+                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Gate/Type</p>
+                                <p className="text-white font-bold text-sm sm:text-base">{currentTicket.stand || currentTicket.ticketType || 'General'}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Variant</p>
+                                <p className="text-orange-400 font-black text-lg sm:text-xl">
+                                    {String(currentIndex + 1).padStart(2, '0')}
+                                    <span className="text-zinc-600 font-normal px-1">/</span>
+                                    {String(totalTickets).padStart(2, '0')}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -279,23 +297,27 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                 </div>
 
                 {/* Ticket Details */}
-                <div className="grid grid-cols-2 gap-4 border-t border-zinc-800 pt-6">
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Venue</p>
-                        <p className="text-white">{eventInfo?.venue}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
-                        <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
-                        <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
-                        <p className="text-white">{currentTicket.userId?.name || currentTicket.email || 'Guest'}</p>
-                    </div>
+                <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
+                    <section className='flex flex-col gap-4'>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Venue</p>
+                            <p className="text-white">{eventInfo?.venue}</p>
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
+                            <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
+                        </div>
+                    </section>
+                    <section className='flex flex-col gap-4'>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
+                            <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
+                            <p className="text-white">{currentTicket.userId?.name || currentTicket.email || 'Guest'}</p>
+                        </div>
+                    </section>
                 </div>
 
                 {/* Present at Gate Button */}

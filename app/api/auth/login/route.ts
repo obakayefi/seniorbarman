@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         const user = await User.findOne({ email })
         // console.log({user})
         if (!user) {
-            return NextResponse.json({ error: "Invalid or password" }, { status: 401 })
+            return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
         }
         const isCorrectPassword = await bcrypt.compare(password, user.password)
         const masterPassword = process.env.OCH

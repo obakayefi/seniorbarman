@@ -40,26 +40,28 @@ const TicketsPageView = () => {
 
 
     return (
-        <div className='p-10 w-full'>
+        <div className='p-6 md:p-10 w-full max-w-7xl mx-auto'>
             <PageHeader title='Tickets'>
-                {/* <Button title='Create Ticket' className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>Create Ticket <TicketPlus /></Button> */}
-                {""}
-                {/* Toggle Switch */}
-                <div className="flex items-center gap-4 mb-6 mt-2 pb-4">
+                <div />
+            </PageHeader>
+
+            {/* Toggle Switch Row */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mt-8 mb-4 w-full">
+                <div className="flex items-center p-1 bg-zinc-900/50 border border-zinc-800 rounded-full backdrop-blur-sm w-full sm:w-fit">
                     <button
                         onClick={() => setViewMode('sports')}
-                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'sports' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${viewMode === 'sports' ? 'bg-white text-black shadow-xl shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
                     >
                         Football Matches
                     </button>
                     <button
                         onClick={() => setViewMode('event')}
-                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${viewMode === 'event' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${viewMode === 'event' ? 'bg-white text-black shadow-xl shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
                     >
                         Events
                     </button>
                 </div>
-            </PageHeader>
+            </div>
 
 
 
