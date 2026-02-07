@@ -3,17 +3,17 @@ import { useEffect, useState } from "react";
 
 function TimeBlock({ value, label }: { value: number; label: string }) {
     return (
-        <section className="flex flex-col items-center">
-            <span className="text-xl lg:text-3xl">
+        <section className="flex flex-col items-center min-w-[40px] sm:min-w-[50px]">
+            <span className="text-lg sm:text-xl lg:text-3xl font-semibold">
                 {String(value).padStart(2, "0")}
             </span>
-            <span className="text-gray-600 text-xs">{label}</span>
+            <span className="text-gray-600 text-[10px] sm:text-xs whitespace-nowrap">{label}</span>
         </section>
     );
 }
 
 function Divider() {
-    return <div className="h-12 bg-gray-300/10 w-0.5" />;
+    return <div className="h-8 sm:h-10 lg:h-12 bg-gray-300/10 w-0.5" />;
 }
 
 
@@ -55,7 +55,7 @@ export default function HeroCountdown({ targetDate }: { targetDate: Date }) {
     if (loadingCountdown) return <div className="h-10 invisible" />; // Placeholder to maintain layout
 
     return (
-        <div className="gap-5 items-center rounded flex pt-3">
+        <div className="gap-2 sm:gap-3 lg:gap-5 items-center rounded flex pt-3 w-full justify-center">
             <TimeBlock value={timeLeft.days} label="Days" />
             <Divider />
             <TimeBlock value={timeLeft.hours} label="Hours" />
