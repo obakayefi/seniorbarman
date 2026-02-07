@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, redirect } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { CircleCheckBig, CircleX, Hourglass } from "lucide-react";
 import NButton from "@/components/native/NButton";
-import {sitemap} from "@/lib/utils";
+import { sitemap } from "@/lib/utils";
 
 type VerifyStatus = "loading" | "success" | "pending" | "failed";
 
 export default function VerifyPageClient() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const reference = searchParams.get("reference");
 
     const [status, setStatus] = useState<VerifyStatus>("loading");
@@ -98,7 +99,7 @@ export default function VerifyPageClient() {
                                 <p className="mb-2">
                                     Your tickets have been generated and emailed to you.
                                 </p>
-                                <NButton className={'bg-orange-500'} onClick={() => redirect(sitemap.user.tickets)}>
+                                <NButton className={'bg-orange-500'} onClick={() => router.push(sitemap.user.tickets)}>
                                     Go to Tickets
                                 </NButton>
                             </div>

@@ -42,7 +42,7 @@ import { ApplyDatePicker } from "./ApplyDatePicker"
 import { Spinner } from "../ui/spinner"
 import { CLUBS, STADIUMS } from "@/lib/utils"
 import Image from "next/image"
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FileUpload } from "../ui/file-upload";
 
 function formatDate(date: Date | undefined) {
@@ -65,11 +65,19 @@ function isValidDate(date: Date | undefined) {
 }
 
 const CreateEventForm = () => {
+    const router = useRouter()
     const [currentEventType, setCurrentEventType] = React.useState('sports')
     // const [eventDate, setEventDate] = React.useState<Date | undefined>(new Date(Date.now()))
-    const [eventDate, setEventDate] = React.useState<Date | undefined>(new Date(Date.now()))
-    const [month, setMonth] = React.useState<Date | undefined>(eventDate)
-    const [dateValue, setDateValue] = React.useState<Date | undefined>(new Date(formatDate(eventDate)))
+    const [eventDate, setEventDate] = React.useState<Date | undefined>(undefined)
+    const [month, setMonth] = React.useState<Date | undefined>(undefined)
+    const [dateValue, setDateValue] = React.useState<Date | undefined>(undefined)
+
+    React.useEffect(() => {
+        const now = new Date()
+        setEventDate(now)
+        setMonth(now)
+        setDateValue(now)
+    }, [])
     const [isLoading, setIsLoading] = React.useState(false)
     const [homeTeam, setHomeTeam] = React.useState('Rangers International FC')
     const [awayTeam, setAwayTeam] = React.useState('')
@@ -219,8 +227,8 @@ const CreateEventForm = () => {
                                             <SelectValue placeholder='Home' />
                                         </SelectTrigger>
                                         <SelectContent className="border-red-800">
-                                            {CLUBS.map(club => (
-                                                <SelectItem value={club.name} className="border-red-500">
+                                            {CLUBS.map((club, idx) => (
+                                                <SelectItem key={club.name + idx} value={club.name} className="border-red-500">
                                                     <Image src={club.icon} alt="club icon" width={32} height={100} />
                                                     <span>{club.name}</span>
                                                 </SelectItem>
@@ -237,8 +245,8 @@ const CreateEventForm = () => {
                                             <SelectValue placeholder='Away' />
                                         </SelectTrigger>
                                         <SelectContent className="w-full">
-                                            {CLUBS.map(club => (
-                                                <SelectItem className="justify-between flex" value={club.name}>
+                                            {CLUBS.map((club, idx) => (
+                                                <SelectItem key={club.name + idx} className="justify-between flex" value={club.name}>
                                                     <div className="flex gap-4 items-center w-full">
                                                         <Image src={club.icon} alt="club icon" width={32} height={100} />
                                                         <span className="">{club.name}</span>
@@ -256,8 +264,8 @@ const CreateEventForm = () => {
                                             <SelectValue placeholder='Pick the stadium' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {STADIUMS.map(stadium => (
-                                                <SelectItem className="flex gap-10" value={stadium.name}>
+                                            {STADIUMS.map((stadium, idx) => (
+                                                <SelectItem key={stadium.name + idx} className="flex gap-10" value={stadium.name}>
                                                     <span>{stadium.name}</span>
                                                     <span className="bg-slate-200 py-1 px-3 rounded text-xs text-slate-900">{stadium.state}</span>
                                                 </SelectItem>
@@ -343,7 +351,7 @@ const CreateEventForm = () => {
 
                 <CardFooter className="mt-10 border-t-2 border-zinc-800 pt-8 flex items-end jusify-end">
                     <Field orientation="horizontal" className="flex justify-end">
-                        <Button type="button" variant="outline" onClick={() => redirect('/u/dashboard')}>
+                        <Button type="button" variant="outline" onClick={() => router.push('/u/dashboard')}>
                             Cancel
                         </Button>
                         <Button className="bg-orange-500 hover:bg-orange-600" disabled={isLoading} type="submit">

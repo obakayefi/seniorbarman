@@ -2,7 +2,7 @@
 
 // import { CheckInIcon, TrashIcon } from "@/components/ui/icons"
 import { ColumnDef } from "@tanstack/react-table"
-import { redirect } from "next/navigation"
+import Link from "next/link"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -23,13 +23,13 @@ export const sportsColumns: ColumnDef<SportsCols>[] = [
         accessorKey: "eventName",
         header: "Teams",
         cell: ({ row }) => (
-            <div 
-            onClick={() => redirect(`/org/events/${row.original.id}`)}
-            className="flex cursor-pointer hover:opacity-80 justify-center items-center flex-col">
+            <Link
+                href={`/org/events/${row.original.id}`}
+                className="flex cursor-pointer hover:opacity-80 justify-center items-center flex-col">
                 <span className="font-medium">{row.original.teamA} </span>
                 <span className="text-center">vs</span>
                 <span className="font-medium">{row.original.teamB}</span>
-            </div>
+            </Link>
         ),
     },
     {
@@ -93,8 +93,8 @@ export const sportsColumns: ColumnDef<SportsCols>[] = [
 
             if (status === "ongoing") {
                 return (
-                    <button 
-                        onClick={() => redirect(`/org/events/${row.original.id}/check-in`)}
+                    <Link
+                        href={`/org/events/${row.original.id}/check-in`}
                         className="text-[#FF6600] flex opacity-80 hover:opacity-100 duration-100 justify-center ml-2 items-center hover:underline flex-col cursor-pointer">
                         <span>
                             {/* <CheckInIcon /> */}
@@ -103,7 +103,7 @@ export const sportsColumns: ColumnDef<SportsCols>[] = [
                         <span className="text-[#FF6600]">
                             LiVE
                         </span>
-                    </button>
+                    </Link>
                 );
             }
         }

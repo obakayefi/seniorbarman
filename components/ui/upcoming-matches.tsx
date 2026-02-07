@@ -1,11 +1,21 @@
+"use client"
 import { Calendar1Icon, Clock, MapPin } from "lucide-react";
 import { FaLocationPin } from "react-icons/fa6";
 import { formatTime } from "@/lib/utils";
 import { Dialog, DialogTrigger } from "./dialog";
 import { BookEventModal } from "../modals/book-event";
 import NButton from "../native/NButton";
+import { useEffect, useState } from "react";
 
 function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: any }) {
+    const [dateString, setDateString] = useState("")
+
+    useEffect(() => {
+        if (match.date) {
+            setDateString(new Date(match.date).toDateString())
+        }
+    }, [match.date])
+
     return (
         <div
             className={`${isNextMatch ? "border-green-400 pt-4" : "border-zinc-900"} border-2 relative flex flex-col bg-zinc-950 items-start justify-start gap-3 px-6 py-2 rounded-lg`}>
@@ -29,7 +39,7 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                             <div
                                 className={'flex min-w-fit text-xs flex-col items-center lg:items-start justify-center lg:justify-start text-gray-400 gap-4'}>
                                 <p className={'flex gap-1'}><Calendar1Icon size={14} />
-                                    <span>{new Date(match.date).toDateString()}</span></p>
+                                    <span>{dateString}</span></p>
                                 <p className={'flex gap-1'}><Clock size={14} /> {formatTime(match.time)}</p>
                                 <p className={'flex gap-1'}><MapPin size={14} /> {match.venue}</p>
                             </div>

@@ -4,9 +4,42 @@ import { SlLocationPin } from "react-icons/sl";
 import { Calendar1 } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
 import { BookRegularEventModal } from "../modals/book-regular-event";
+import { useApp } from "@/context/AppContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import api from "@/lib/axios";
+import { useEffect, useState } from "react";
 
 export default function RegularEventCard({ event }: { event: any }) {
-    console.log({ regularPrice: event })
+    const { user } = useApp()
+    const router = useRouter()
+    const [formattedDate, setFormattedDate] = useState("")
+
+    useEffect(() => {
+        if (event.date) {
+            setFormattedDate(new Date(event.date).toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }))
+        }
+    }, [event.date])
+
+    const isAdmin = user?.role === 'admin'
+
+    const onDelete = async () => {
+        if (!confirm("Are you sure you want to delete this event?")) return
+        try {
+            const res = await api.delete(`/events/${event._id}`)
+            if (res.status === 200) {
+                toast.success("Event deleted")
+                window.location.reload()
+            }
+        } catch (error) {
+            toast.error("Failed to delete event")
+        }
+    }
+
     return (
         <section className="min-w-76 w-full rounded-xl border-[1.5px] border-zinc-900 overflow-hidden group transition-shadow duration-500 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:border-zinc-800">
             <div className="bg-zinc-800 overflow-hidden">
@@ -16,7 +49,7 @@ export default function RegularEventCard({ event }: { event: any }) {
                 <section className="flex gap-2 flex-col">
                     <section className="flex flex-col gap-2">
                         <h2 className="text-xl">{event.title}</h2>
-                        <p className="text-sm flex gap-2 text-zinc-600"><span><Calendar1 size={16} /></span>{new Date(event.date).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                        <p className="text-sm flex gap-2 text-zinc-600"><span><Calendar1 size={16} /></span>{formattedDate}</p>
                         <p className="flex items-center gap-2 text-sm text-zinc-600"><span><SlLocationPin /></span> {event.venue}</p>
                     </section>
                 </section>
@@ -31,7 +64,24 @@ export default function RegularEventCard({ event }: { event: any }) {
                             <p className="text-xl text-yellow-500 font-semibold">₦ <span className="text-white">{Number(event.vipPrice || 0).toLocaleString()}</span></p>
                         </div>
                     </div>
-                    <div className="">
+                    <div className="flex flex-col gap-2">
+                        {/* Admin Actions */}
+                        {isAdmin && (
+                            <div className="flex flex-col gap-1">
+                                <NButton
+                                    onClick={() => router.push(`/u/a/events/${event._id}/edit`)}
+                                    className="bg-zinc-800 border border-zinc-700 w-full text-xs py-1"
+                                >
+                                    EDIT EVENT
+                                </NButton>
+                                <NButton
+                                    onClick={onDelete}
+                                    className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 w-full text-xs py-1"
+                                >
+                                    DELETE EVENT
+                                </NButton>
+                            </div>
+                        )}
                         <Dialog>
                             <DialogTrigger asChild className="">
                                 <NButton className="bg-green-800">BUY TICKETS</NButton>

@@ -83,7 +83,7 @@ export default function Register() {
                 <div className={'flex sm:flex-row-reverse justify-between flex-col'}>
                     <div className={'border border-zinc-900 mb-4'}>
                         <Button className={'text-neutral-400  bg-transparent w-full px-2'} variant="link"
-                            onClick={() => redirect('/auth/login')}>Login to your account</Button>
+                            onClick={() => router.push('/auth/login')}>Login to your account</Button>
                     </div>
                     <div>
                         <h1 className="md:text-3xl text-slate-100 text-2xl">Create an account</h1>

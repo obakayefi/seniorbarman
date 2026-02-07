@@ -2,7 +2,6 @@
 import { Calendar1 } from "lucide-react";
 import { FaLocationPinLock } from "react-icons/fa6";
 import NButton from "@/components/native/NButton";
-import { redirect } from "next/navigation";
 import HeroAction from "@/components/ui/hero-action";
 import HeroCountdown from "@/components/ui/hero-countdown";
 import api from "@/lib/axios";

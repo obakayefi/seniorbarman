@@ -1,6 +1,6 @@
 const About = () => {
   return (
-    <div className='text-slate-100 text-center  flex flex-col items-center h-auto pb-18 p-4 bg-[url("/about-bg.png")] bg-cover bg-center'>
+    <div style={{ backgroundImage: 'url(/about-bg.png)' }} className='text-slate-100 text-center  flex flex-col items-center h-auto pb-18 p-4 bg-cover bg-center'>
       <h3 className='text-xl bg-[#1A1A1A]/40 mt-4 inline-flex p-2 px-6 rounded-full text-[#CCCCCC]'>ABOUT</h3>
 
       <div className='flex flex-col mt-10 text-xl w-full md:w-2/3 text-left font-normal gap-4'>

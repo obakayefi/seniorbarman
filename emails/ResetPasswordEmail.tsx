@@ -131,7 +131,7 @@ export const ResetPasswordEmail = ({
                     {/* Warning/Info */}
                     <div className="warning">
                         <p className="warning-text">
-                            <strong>Didn't request this?</strong> If you didn't ask for a password reset, you can safely ignore this email. Your password will remain unchanged.
+                            <strong>Didn&apos;t request this?</strong> If you didn&apos;t ask for a password reset, you can safely ignore this email. Your password will remain unchanged.
                         </p>
                     </div>
                 </div>

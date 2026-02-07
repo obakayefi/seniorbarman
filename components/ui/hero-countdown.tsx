@@ -52,6 +52,8 @@ export default function HeroCountdown({ targetDate }: { targetDate: Date }) {
 
         return () => clearInterval(interval);
     }, []);
+    if (loadingCountdown) return <div className="h-10 invisible" />; // Placeholder to maintain layout
+
     return (
         <div className="gap-5 items-center rounded flex pt-3">
             <TimeBlock value={timeLeft.days} label="Days" />
