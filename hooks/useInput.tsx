@@ -13,7 +13,7 @@ const useInput = (initialValue: string | Date) => {
     setValue(typeof initialValue === 'string' ? initialValue : initialValue.toISOString());
   };
 
-  return { value, onChange: handleChange, reset };
+  return { value, onChange: handleChange, reset, setValue };
 };
 
 export default useInput;

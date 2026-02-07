@@ -16,8 +16,7 @@ import { Spinner } from "@/components/ui/spinner"
 import useInput from "@/hooks/useInput"
 import api from "@/lib/axios"
 import axios from "axios"
-import Link from "next/link"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
 
@@ -27,6 +26,7 @@ export default function CreateAdmin() {
     const email = useInput('')
     const firstName = useInput('')
     const lastName = useInput('')
+    const router = useRouter()
     // const phoneNumber = useState('')
 
     const formFilled = email.value && firstName.value && lastName.value && roleType
@@ -41,7 +41,7 @@ export default function CreateAdmin() {
                 lastName: lastName.value,
                 role: roleType
             }
-            const createdAdmin = await api.post('/admin', newEmployee)            
+            const createdAdmin = await api.post('/admin', newEmployee)
             // const createdUser = await axios.post('/api/auth/register', { ...newUser }, { withCredentials: true })
             // // empty the form
             firstName.reset()
@@ -54,7 +54,7 @@ export default function CreateAdmin() {
             // toast.success(`${createdUser.data.user.firstName} your account has been created, wait while we redirect you`)
 
             // then redirect user
-            // setTimeout(() => redirect('/auth/login'), 2000)
+            // setTimeout(() => router.push('/auth/login'), 2000)
         } catch (error: any) {
             console.error('Error registering user', { error: error.message })
         } finally {
@@ -73,7 +73,7 @@ export default function CreateAdmin() {
                         Forge a new admin and bless them with rights
                     </p>
                     <CardAction>
-                        <Button className={'text-zinc-400'} variant="link" onClick={() => redirect('/auth/login')} >Login</Button>
+                        <Button className={'text-zinc-400'} variant="link" onClick={() => router.push('/auth/login')} >Login</Button>
                     </CardAction>
                 </CardHeader>
                 <form onSubmit={onAdminCreate}>

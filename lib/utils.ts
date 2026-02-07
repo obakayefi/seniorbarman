@@ -270,14 +270,9 @@ export function extractTicketStatus(checkInLogs: any[]) {
 }
 
 export const PrepareEventStats = (tickets: any[]) => {
-    let totalTicketsBought;
-    let totalPeopleCheckedIn;
-    let totalPeopleInside;
-    let totalPeopleOutside;
-
-    totalTicketsBought = tickets.length
-    totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
-    totalPeopleInside = tickets.filter(ticket => {
+    const totalTicketsBought = tickets.length
+    const totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
+    const totalPeopleInside = tickets.filter(ticket => {
         const logs = ticket.checkInLogs
         if (!logs || logs.length === 0) {
             return false
@@ -296,7 +291,7 @@ export const PrepareEventStats = (tickets: any[]) => {
         return false
     }).length
 
-    totalPeopleOutside = tickets.filter(ticket => {
+    const totalPeopleOutside = tickets.filter(ticket => {
         const logs = ticket.checkInLogs
         if (!logs || logs.length === 0) {
             return false

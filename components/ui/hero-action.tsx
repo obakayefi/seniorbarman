@@ -1,6 +1,5 @@
 "use client"
 import NButton from "@/components/native/NButton";
-import { redirect } from "next/navigation";
 import { GiSoccerBall } from "react-icons/gi";
 import { HiTicket } from "react-icons/hi2";
 
