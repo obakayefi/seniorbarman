@@ -6,14 +6,15 @@ import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 
 export default function RangersPage() {
-    const [nextMatch, setNextMatch] = useState({})
-    const [upcomingMatches, setUpcomingMatches] = useState({})
+    const [nextMatch, setNextMatch] = useState<any>(null)
+    const [upcomingMatches, setUpcomingMatches] = useState([])
 
     useEffect(() => {
         async function loadMatches() {
-            const { data } = await api.get("/general/upcoming-matches")
-            setUpcomingMatches(data.upcomingMatches)
-            setNextMatch(data.nextMatch)
+            const { data } = await api.get("/events?type=sports")
+            console.log({ data })
+            setUpcomingMatches(data.events)
+            setNextMatch(data.events[0])
         }
         loadMatches()
     }, [])
@@ -24,7 +25,7 @@ export default function RangersPage() {
 
             <div className="relative h-[90vh] lg:h-[85vh] overflow-x-hidden text-white">
                 {/* background image */}
-                <div className="absolute inset-0 bg-[url('/header-bg.png')] bg-cover h-[90vh] lg:h-[85vh] bg-center bg-no-repeat z-0" />
+                <div style={{ backgroundImage: 'url(/header-bg.png)' }} className="absolute inset-0 bg-cover h-[90vh] lg:h-[85vh] bg-center bg-no-repeat z-0" />
 
                 {/* gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-red-600/30 z-10" />

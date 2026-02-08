@@ -3,7 +3,7 @@ import axios from 'axios'
 export function emitWebhook(type: string, data: any) {
     if (!process.env.WEBHOOK_SECRET || !process.env.WEBHOOK_URL) return
 
-    console.log({type, data: data})
+    // console.log({type, data: data})
 
     axios.post(
         process.env.WEBHOOK_URL,

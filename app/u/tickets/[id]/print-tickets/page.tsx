@@ -1,17 +1,17 @@
 "use client";
 
-import React, {useEffect, useRef, useState} from "react";
-import {toPng} from "html-to-image";
+import React, { useEffect, useRef, useState } from "react";
+import { toPng } from "html-to-image";
 import Ticket from "@/app/u/tickets/Ticket";
-import {PageHeader} from "@/components/ui/page-header";
-import {Button} from "@/components/ui/button";
-import {redirect} from "next/navigation";
-import {sitemap} from "@/lib/utils";
-import {CalendarPlus} from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { sitemap } from "@/lib/utils";
+import { CalendarPlus } from "lucide-react";
 import api from "@/lib/axios";
 import JSZip from "jszip";
 
-function chunkArray(arr, size) {
+function chunkArray(arr: any[], size: number) {
     const chunks = [];
     for (let i = 0; i < arr.length; i += size) {
         chunks.push(arr.slice(i, i + size));
@@ -19,20 +19,21 @@ function chunkArray(arr, size) {
     return chunks;
 }
 
-export default function PrintTicketsPage({params}) {
-    const _params = React.use(params);
+export default function PrintTicketsPage({ params }: { params: any }) {
+    const router = useRouter();
+    const _params: any = React.use(params);
     const ref = useRef(null);
 
-    const [tickets, setTickets] = useState([]);
-    const [batches, setBatches] = useState([]);
+    const [tickets, setTickets] = useState<any[]>([]);
+    const [batches, setBatches] = useState<any[][]>([]);
     const [currentBatch, setCurrentBatch] = useState(0);
 
     // Fetch tickets for this event
     useEffect(() => {
         async function loadTickets() {
-            console.log({_params})
-            const {data} = await api.get(`/tickets/${_params.id}`)
-            console.log({data, tickets: data.response.tickets})
+            // console.log({ tickets })
+            const { data } = await api.get(`/tickets/${_params.id}`)
+            // console.log({ data, tickets: data.response.tickets })
             setTickets(data.response.tickets.tickets);
         }
 
@@ -41,11 +42,11 @@ export default function PrintTicketsPage({params}) {
 
     // Prepare batches when tickets load
     useEffect(() => {
-        console.log('Preparing Batches', tickets.length);
+        // console.log('Preparing Batches', tickets.length);
         if (tickets.length > 0) {
-            console.log('Tickets Gotten', tickets.length)
+            // console.log('Tickets Gotten', tickets.length)
             const grouped = chunkArray(tickets, 14);
-            console.log({grouped})
+            // console.log({ grouped })
             setBatches(grouped);
         }
     }, [tickets]);
@@ -61,13 +62,13 @@ export default function PrintTicketsPage({params}) {
 
             if (!ref.current) continue;
 
-            const dataUrl = await toPng(ref.current, {cacheBust: true})
+            const dataUrl = await toPng(ref.current, { cacheBust: true })
 
             const blob = await (await fetch(dataUrl)).blob()
 
             zip.file(`tickets_batch_${i + 1}.png`, blob);
         }
-        const zipBlob = await zip.generateAsync({type: "blob"});
+        const zipBlob = await zip.generateAsync({ type: "blob" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
         link.download = "all_ticket_batches.zip";
@@ -86,9 +87,9 @@ export default function PrintTicketsPage({params}) {
             <PageHeader title='Print Tickets'>
                 <div className='flex items-center gap-1'>
                     {isAdmin ? (
-                        <Button onClick={() => redirect(sitemap.admin.createEvent)} title='Create Event'
-                                className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>
-                            Create Event <CalendarPlus/>
+                        <Button onClick={() => router.push(sitemap.admin.createEvent)} title='Create Event'
+                            className='px-6 bg-orange-500 py-5 active:translate-x-2 duration-200'>
+                            Create Event <CalendarPlus />
                         </Button>
                     ) : null}
                 </div>
@@ -121,7 +122,7 @@ export default function PrintTicketsPage({params}) {
 
                 <div ref={ref} className="grid grid-cols-7 grid-rows-2 gap-1 mb-4 mt-10 py-5 place-items-start">
                     {batches[currentBatch]?.map((ticket: any) => (
-                        <Ticket toPrint key={ticket._id} ticket={ticket}/>
+                        <Ticket toPrint key={ticket._id} ticket={ticket} />
                     ))}
                 </div>
             </div>

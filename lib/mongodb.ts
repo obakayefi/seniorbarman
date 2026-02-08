@@ -16,6 +16,15 @@ export async function connectDB() {
             dbName: "event-booking-db",
             bufferCommands: true,
             serverSelectionTimeoutMS: 20000
-        }).then(m => m)
+        }).then(m => {
+            // console.log("MongoDB connected successfully");
+            cached.conn = m;
+            return m;
+        }).catch(error => {
+            console.error("MongoDB connection error:", error);
+            cached.promise = null;
+            throw error;
+        });
     }
+    return await cached.promise;
 }

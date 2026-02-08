@@ -1,4 +1,4 @@
-import mongoose, {Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const EventSchema = new mongoose.Schema(
     {
@@ -56,9 +56,21 @@ const EventSchema = new mongoose.Schema(
         description: {
             type: String,
         },
-        
+        image: {
+            type: String,
+            required: false
+        },
+        regularPrice: {
+            type: Number,
+            default: 0
+        },
+        vipPrice: {
+            type: Number,
+            default: 0
+        },
+
     },
-    { 
+    {
         timestamps: true,
         toJSON: { virtuals: true },
         toObject: { virtuals: true },

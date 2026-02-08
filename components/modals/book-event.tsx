@@ -1,5 +1,5 @@
 "use client"
-import {Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogClose,
@@ -10,33 +10,33 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {Input} from "@/components/ui/input"
-import {Label} from "@/components/ui/label"
-import {CheckCheckIcon, CheckCircle, CheckIcon, CircleMinus, CirclePlus, Crown, Ticket, Users} from "lucide-react"
-import {Card} from "../ui/card"
-import {ChangeEvent, useEffect, useMemo, useState} from "react"
-import {toast} from "sonner"
-import {sanitizeTicketValue, STAND_TYPE} from "@/lib/utils"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { CheckCheckIcon, CheckCircle, CheckIcon, CircleMinus, CirclePlus, Crown, Ticket, Users } from "lucide-react"
+import { Card } from "../ui/card"
+import { ChangeEvent, useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
+import { sanitizeTicketValue, STAND_TYPE } from "@/lib/utils"
 import PayNow from "./pay-now"
 import ConfirmTicketPurchase from "./confirm-purchase"
 import BuyTicket from "./buy-ticket"
-import {OnPayNow} from "@/lib/helpers";
-import {useApp} from "@/context/AppContext";
+import { OnPayNow } from "@/lib/helpers";
+import { useApp } from "@/context/AppContext";
 
-export function BookEventModal({eventId}: { eventId: string }) {
+export function BookEventModal({ eventId }: { eventId: string }) {
     const [selectedTicketType, setSelectedTicketType] = useState(2)
     const [maxTickets, setMaxTickets] = useState(400)
     const ticketTypes = [
-        {id: 432, name: "Popular Stand", icon: Users, price: 500, color: "text-red-500", max: 22000},
-        {id: 521, name: "Cover Stand Regular", icon: Ticket, price: 2000, color: "text-blue-500", max: 2000},
-        {id: 251, name: "Cover Stand Executive", price: 10000, icon: Crown, color: "text-yellow-500", max: 50},
+        { id: 432, name: "Popular Stand", icon: Users, price: 500, color: "text-red-500", max: 22000 },
+        { id: 521, name: "Cover Stand Regular", icon: Ticket, price: 2000, color: "text-blue-500", max: 2000 },
+        { id: 251, name: "Cover Stand Executive", price: 10000, icon: Crown, color: "text-yellow-500", max: 50 },
     ]
     const [payNowLoading, setPayNowLoading] = useState(false)
-    const {user} = useApp()
+    const { user } = useApp()
     const [ticketQty, setTicketQty] = useState<Record<string, number>>({});
 
     const [ticketsToPurchase, setTicketsToPurchase] = useState(
-        [...ticketTypes].map(ticket => ({id: ticket.id, name: ticket.name, price: ticket.price, quantity: 0}))
+        [...ticketTypes].map(ticket => ({ id: ticket.id, name: ticket.name, price: ticket.price, quantity: 0 }))
     )
     const [modalState, setModalState] = useState(0)
 
@@ -54,7 +54,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
     })
 
     const totalPrice = useMemo(() =>
-            ticketsToPurchase.reduce((total, t) => total + t.price * t.quantity, 0)
+        ticketsToPurchase.reduce((total, t) => total + t.price * t.quantity, 0)
         , [ticketsToPurchase])
 
     // const totalTickets = useMemo(() => {
@@ -62,7 +62,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
     // }, [ticketsToPurchase])
 
 
-    const updateTicketQty = ({name, max, id, delta}: { id: number, delta: number, name: string; max: number }) => {
+    const updateTicketQty = ({ name, max, id, delta }: { id: number, delta: number, name: string; max: number }) => {
         setTicketsToPurchase((_ticketsToPurchase) => {
             return _ticketsToPurchase.map((ticket) => {
                 if (ticket.id !== id) return ticket // leave others unchanged
@@ -74,12 +74,12 @@ export function BookEventModal({eventId}: { eventId: string }) {
                         toast.error(`You can't buy more than ${max.toLocaleString()} tickets for ${name}`)
                     return ticket
                 }
-                return {...ticket, quantity: newQty}
+                return { ...ticket, quantity: newQty }
             })
         });
     };
 
-    const onQtyInputChange = (e: ChangeEvent<HTMLInputElement>, {id, name, price, max}: {
+    const onQtyInputChange = (e: ChangeEvent<HTMLInputElement>, { id, name, price, max }: {
         id: number;
         name: string;
         price: number;
@@ -91,7 +91,7 @@ export function BookEventModal({eventId}: { eventId: string }) {
         if (Number(inputValue) > max) {
             toast.info(`You can't buy more than ${max.toLocaleString()} tickets for the ${name}`);
         }
-        
+
         if (totalTickets > maxTickets) {
             toast.info(`You can't buy more than ${maxTickets} tickets`);
         }
@@ -102,16 +102,21 @@ export function BookEventModal({eventId}: { eventId: string }) {
             if (exists) {
                 // update existing ticket
                 return prev.map((t) =>
-                    t.id === id ? {...t, quantity: numericValue} : t
+                    t.id === id ? { ...t, quantity: numericValue } : t
                 );
             } else {
                 // add new ticket
-                return [...prev, {id, name, price, quantity: numericValue}];
+                return [...prev, { id, name, price, quantity: numericValue }];
             }
         });
     }
 
     const handleOnBuyTicket = async () => {
+        if (!user) {
+            toast.error("Please login to buy tickets");
+            window.location.assign('/auth/login');
+            return;
+        }
         const paymentPayload = {
             email: user?.email,
             amount: totalPrice,
@@ -134,10 +139,10 @@ export function BookEventModal({eventId}: { eventId: string }) {
     return (
         <div className={''}>
             <form className={'bg-orange-400'}>
-                <DialogContent className="sm:max-w-[750px] border-zinc-800 bg-[#020202] w-5/6  max-h-4/5 md:h-auto overflow-auto">
+                <DialogContent className="sm:max-w-[750px] border-white/10 bg-black/60 backdrop-blur-xl w-5/6  max-h-4/5 md:h-auto overflow-auto">
                     {modalState === 0 ? (
                         <BuyTicket
-                            ticketsToPurchase={ticketsToPurchase} 
+                            ticketsToPurchase={ticketsToPurchase}
                             loading={payNowLoading}
                             totalTickets={totalTickets}
                             updateTicketQty={updateTicketQty}

@@ -15,11 +15,12 @@ import { Spinner } from "@/components/ui/spinner"
 import useInput from "@/hooks/useInput"
 import axios from "axios"
 import Link from "next/link"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
 
 export default function Register() {
+    const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const email = useInput('')
     const firstName = useInput('')
@@ -28,7 +29,7 @@ export default function Register() {
     const password = useInput('')
 
     const formFilled = email.value && password.value && firstName.value && lastName.value
-    
+
     const onRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setIsLoading(true)
@@ -39,24 +40,26 @@ export default function Register() {
                 firstName: firstName.value,
                 lastName: lastName.value
             }
-            console.log({ newUser })
-            const createdUser = await axios.post('/api/auth/register', {...newUser}, { withCredentials: true })
+            // console.log({ newUser })
+            const createdUser = await axios.post('/api/auth/register', { ...newUser }, { withCredentials: true })
             // onsole.log({createdUser})
             // empty the form
             firstName.reset()
             lastName.reset()
             email.reset()
             password.reset()
-            
+
 
             //show toaster 
             // toast.success(`${createdUser.data.user.firstName} your account has been created, wait while we redirect you`)
             toast.success(`Your account has been created, login to continue`)
 
             // then redirect user
-            setTimeout(() => redirect('/auth/login'), 2000)
+            setTimeout(() => router.push('/auth/login'), 2000)
         } catch (error: any) {
             console.error('Error registering user', { error: error.message })
+            const errorMsg = error.response?.data?.error || "Registration failed"
+            toast.error(errorMsg)
         } finally {
             setIsLoading(false)
         }
@@ -80,7 +83,7 @@ export default function Register() {
                 <div className={'flex sm:flex-row-reverse justify-between flex-col'}>
                     <div className={'border border-zinc-900 mb-4'}>
                         <Button className={'text-neutral-400  bg-transparent w-full px-2'} variant="link"
-                                onClick={() => redirect('/auth/login')}>Login to your account</Button>
+                            onClick={() => router.push('/auth/login')}>Login to your account</Button>
                     </div>
                     <div>
                         <h1 className="md:text-3xl text-slate-100 text-2xl">Create an account</h1>

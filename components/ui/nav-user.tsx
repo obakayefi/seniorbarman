@@ -29,27 +29,28 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { getInitials } from "@/lib/utils"
 import { useApp } from "@/context/AppContext"
 
 export function NavUser(
   // user,
   // logoutAction
-// }: {
-//   user: {
-//     name: string
-//     email: string
-//     avatar: string,
-//     role: string
-//   },
+  // }: {
+  //   user: {
+  //     name: string
+  //     email: string
+  //     avatar: string,
+  //     role: string
+  //   },
   // logoutAction: () => void;
 ) {
   const { isMobile } = useSidebar()
 
   const { user } = useApp()
+  const router = useRouter()
 
-  if (!user) return null 
+  if (!user) return null
 
   return (
     <SidebarMenu>
@@ -58,7 +59,7 @@ export function NavUser(
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-zinc-800 p-1 text-zinc-200  data-[state=open]:text-zinc-200"
+              className="data-[state=open]:bg-zinc-950 p-2 text-zinc-200 hover:bg-zinc-800 py-4  data-[state=open]:text-zinc-950"
             >
               <section className="flex flex-col">
                 <Avatar className="h-12 w-12 rounded-lg">
@@ -70,7 +71,7 @@ export function NavUser(
               <div className="grid flex-1 text-zinc-200 text-left text-sm leading-tight">
                 <div className="flex items-center gap-1">
                   <span className="truncate font-medium">{user.name}</span>
-                  {((user?.role === 'bouncer') || (user?.role === 'admin')) ? <span className="truncate text-[10px] bg-slate-800 p-1 px-2 rounded text-gray-400 uppercase">{user.role}</span> : null}
+                  {((user?.role === 'bouncer') || (user?.role === 'admin')) ? <span className="truncate text-[10px] p-1 px-2 rounded text-gray-400 uppercase">{user.role}</span> : null}
                 </div>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
@@ -78,12 +79,12 @@ export function NavUser(
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) bg-zinc-800 border-zinc-800 text-zinc-200 min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) bg-zinc-900 border-zinc-800 text-zinc-200 min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
+            {/* <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
@@ -94,7 +95,7 @@ export function NavUser(
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
-            </DropdownMenuLabel>
+            </DropdownMenuLabel> */}
             {/* <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
@@ -118,7 +119,7 @@ export function NavUser(
               </DropdownMenuItem>
             </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => redirect('/auth/logout')}>
+            <DropdownMenuItem onClick={() => router.push('/auth/logout')}>
               <LogOut />
               Log out
             </DropdownMenuItem>

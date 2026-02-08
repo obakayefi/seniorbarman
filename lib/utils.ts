@@ -1,5 +1,6 @@
-import {clsx, type ClassValue} from "clsx"
-import {twMerge} from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+import { EventType } from "@/types/components"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -35,14 +36,13 @@ export function getInitials(fullName: string): string {
 
 export function giveTeamLogo(teamName: string) {
     const teamLogo = CLUBS.filter(club => (club.name === teamName))[0]?.icon
-    console.log({teamLogo, teamName})
     return teamLogo ?? "https://placehold.co/600x400?font=roboto"
 }
 
 export function formatEvent(event: EventType) {
-    const {day, month, year} = formatDate(event.date)
-    const homeLogo = CLUBS.filter(club => (club.name === event.homeTeam))[0].icon
-    const awayLogo = CLUBS.filter(club => (club.name === event.awayTeam))[0].icon
+    const { day, month, year } = formatDate(event.date)
+    const homeLogo = event.homeTeam ? (CLUBS.find(club => club.name === event.homeTeam)?.icon || "/clubs/rangers-logo.png") : "/clubs/rangers-logo.png"
+    const awayLogo = event.awayTeam ? (CLUBS.find(club => club.name === event.awayTeam)?.icon || "/clubs/rangers-logo.png") : "/clubs/rangers-logo.png"
 
     return {
         day,
@@ -50,8 +50,8 @@ export function formatEvent(event: EventType) {
         year,
         awayLogo,
         homeLogo,
-        awayTeam: event.awayTeam,
-        homeTeam: event.homeTeam,
+        awayTeam: event.awayTeam || "",
+        homeTeam: event.homeTeam || "",
         venue: event.venue,
         time: event.time
     }
@@ -69,6 +69,10 @@ export function formatDate(date: Date) {
 }
 
 export const CLUBS = [
+    {
+        name: "Abia Warriors FC",
+        icon: "/clubs/abia-logo.png"
+    },
     {
         name: "Akwa United FC",
         icon: "/clubs/awka.png"
@@ -159,7 +163,7 @@ export const CLUBS = [
     },
     {
         name: "Warri Wolves FC",
-        icon: "/clubs/warri-wolves.jpeg" 
+        icon: "/clubs/warri-wolves.jpeg"
     },
     {
         name: "Wikki Tourists FC",
@@ -189,7 +193,7 @@ export const STADIUMS = [
         state: "Benin"
     },
     {
-        name: "El-Kanemi Warrios Stadium",
+        name: "El-Kanemi Warriors Stadium",
         state: "Borno"
     },
     {
@@ -247,7 +251,7 @@ export function giveLogo(clubName: string) {
 
 export const STATUS_TEXT = ["Checked In", "Checked Out", "Not Checked In"]
 
-export function extractTicketStatus(checkInLogs: []) {
+export function extractTicketStatus(checkInLogs: any[]) {
     let result;
 
     if (checkInLogs && checkInLogs.length === 0) {
@@ -270,14 +274,9 @@ export function extractTicketStatus(checkInLogs: []) {
 }
 
 export const PrepareEventStats = (tickets: any[]) => {
-    let totalTicketsBought;
-    let totalPeopleCheckedIn;
-    let totalPeopleInside;
-    let totalPeopleOutside;
-
-    totalTicketsBought = tickets.length
-    totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
-    totalPeopleInside = tickets.filter(ticket => {
+    const totalTicketsBought = tickets.length
+    const totalPeopleCheckedIn = tickets.filter(ticket => ticket.checkInLogs.length).length
+    const totalPeopleInside = tickets.filter(ticket => {
         const logs = ticket.checkInLogs
         if (!logs || logs.length === 0) {
             return false
@@ -296,7 +295,7 @@ export const PrepareEventStats = (tickets: any[]) => {
         return false
     }).length
 
-    totalPeopleOutside = tickets.filter(ticket => {
+    const totalPeopleOutside = tickets.filter(ticket => {
         const logs = ticket.checkInLogs
         if (!logs || logs.length === 0) {
             return false
@@ -326,8 +325,27 @@ export const formattedDate = (_date: Date) => {
     const date = new Date(_date)
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = String(date.getFullYear()).slice(-2);
+    const year = String(date.getFullYear());
     return `${day}/${month}/${year}`;
+}
+
+export function formatTime(time: string) {
+    if (!time) return "";
+    const parts = time.split(':');
+    if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return time;
+}
+
+export function getBaseUrl() {
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+        return process.env.NEXT_PUBLIC_BASE_URL;
+    }
+    if (process.env.NODE_ENV === "development") {
+        return "http://localhost:3000";
+    }
+    return "https://seniorbarman.com";
 }
 
 export const statusBadgeStyle = (computedStatus: string) => {
@@ -345,13 +363,16 @@ export const statusBadgeStyle = (computedStatus: string) => {
 
 export const sitemap = {
     user: {
-        dashboard: "/u/events",
+        dashboard: "/u/dashboard",
         tickets: "/u/tickets",
+        rangersTicketPurchase: "/rangers",
+        eventsTicketPurchase: "/events"
     },
     bouncer: {
         scanner: "/u/a/scanner",
     },
     admin: {
+        dashboard: "/u/a/dashboard",
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
         createEvent: "/u/a/events/create"

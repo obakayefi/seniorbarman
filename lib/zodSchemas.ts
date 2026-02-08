@@ -8,6 +8,7 @@ export const eventSchema = z.discriminatedUnion("type", [
         time: z.string().min(1, "Time is required"),
         venue: z.string().min(1, "Venue is required"),
         redirectUrl: z.string().url().optional(),
+        bannerUrl: z.string().optional(),
     }),
 
     z.object({
@@ -18,6 +19,7 @@ export const eventSchema = z.discriminatedUnion("type", [
         time: z.string().min(1, "Time is required"),
         venue: z.string().min(1, "Venue is required"),
         redirectUrl: z.string().url().optional(),
+        bannerUrl: z.string().optional(),
     }),
 ]);
 

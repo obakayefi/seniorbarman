@@ -1,25 +1,25 @@
 "use client"
-import React, {useEffect, useState} from 'react'
-import {useQRCode} from 'next-qrcode'
-import {Switch} from "@/components/ui/switch"
-import {MdSecurity, MdStadium} from "react-icons/md";
-import {Scanner} from '@yudiel/react-qr-scanner';
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
-import api from '@/lib/axios';
-import {Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon} from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import React, { useEffect, useState } from 'react'
+import { useQRCode } from 'next-qrcode'
+import { Switch } from "@/components/ui/switch"
+import { MdSecurity, MdStadium } from "react-icons/md";
 import NButton from '@/components/native/NButton';
-import {TbSoccerField} from "react-icons/tb";
-import {toast} from 'sonner';
-import {RiVerifiedBadgeFill} from "react-icons/ri";
-import {MdReport} from "react-icons/md";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {fetchEventStats, getUpcomingEvents} from "@/services/actions";
-import {Spinner} from "@/components/ui/spinner";
-import {STATUS_TEXT} from "@/lib/utils"
-import {IEventStats} from "@/types/data";
-import {extractTicketStatus} from "@/lib/utils";
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { fetchEventStats, getUpcomingEvents } from "@/services/actions";
+import { Spinner } from "@/components/ui/spinner";
+import api from '@/lib/axios';
+import { IEventStats } from "@/types/data";
+import { extractTicketStatus } from "@/lib/utils";
 import TicketScanner from "@/components/widgets/TicketScanner";
+import { Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TbSoccerField } from "react-icons/tb";
+import { toast } from 'sonner';
+import { RiVerifiedBadgeFill } from "react-icons/ri";
+import { MdReport } from "react-icons/md";
+import { STATUS_TEXT } from "@/lib/utils"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type TicketSummary = {
     event: {
@@ -41,16 +41,16 @@ type PreCheckInActionsProps = {
     eventMismatch: boolean;
 }
 
-export const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}: PreCheckInActionsProps) => {
+export const PreCheckInActions = ({ loading, handleCheckingUserIn, eventMismatch }: PreCheckInActionsProps) => {
     if (eventMismatch) return null
 
     return (
-        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+        <section className='border-t-1 flex justify-between gap-2 border-zinc-800 pt-4'>
             <NButton
                 loading={loading}
                 disabled={loading}
                 onClick={handleCheckingUserIn}
-                icon={<ShieldCheckIcon/>}
+                icon={<ShieldCheckIcon />}
                 className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
                 Check User In
             </NButton>
@@ -60,7 +60,7 @@ export const PreCheckInActions = ({loading, handleCheckingUserIn, eventMismatch}
                 disabled={false}
                 onClick={() => {
                 }}
-                icon={<Delete/>}
+                icon={<Delete />}
                 className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
                 Block Ticket
             </NButton>
@@ -77,21 +77,21 @@ type PostCheckInActionsProps = {
 }
 
 export const PostCheckInActions = ({
-                                loading,
-                                eventMismatch,
-                                handleCheckingUserOut,
-                                handleBlockingTicket
-                            }: PostCheckInActionsProps) => {
+    loading,
+    eventMismatch,
+    handleCheckingUserOut,
+    handleBlockingTicket
+}: PostCheckInActionsProps) => {
 
     if (eventMismatch) return null
 
     return (
-        <section className='border-t-1 flex justify-between gap-2 border-slate-200 pt-4'>
+        <section className='border-t-1 flex justify-between gap-2 border-zinc-800 pt-4'>
             <NButton
                 loading={loading}
                 disabled={loading}
                 onClick={handleCheckingUserOut}
-                icon={<ShieldCheckIcon/>}
+                icon={<ShieldCheckIcon />}
                 className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500'>
                 Check User Out
             </NButton>
@@ -100,7 +100,7 @@ export const PostCheckInActions = ({
                 loading={loading}
                 disabled={loading}
                 onClick={handleBlockingTicket}
-                icon={<Delete/>}
+                icon={<Delete />}
                 className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-white text-red-500'>
                 Block Ticket
             </NButton>
@@ -108,11 +108,15 @@ export const PostCheckInActions = ({
     )
 }
 
+// const buildTicketOperationUrl = (operation: string, hash: string) => {
+//    
+//    
+// }
 
 export type TicketOperationType = 'check-in' | 'check-out' | 'suspend' | 'scan' | undefined
 
 const AdminTicketScanner = () => {
-    const {SVG} = useQRCode()
+    const { SVG } = useQRCode()
     // const [canScan, setCanScan] = useState(true)
     const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [openApprovalModal, setOpenApprovalModal] = useState(false)
@@ -129,12 +133,12 @@ const AdminTicketScanner = () => {
     const [events, setEvents] = useState<[]>([])
     const [eventStats, setEventStats] = useState<IEventStats>({} as IEventStats)
     const [ticketOperation, setTicketOperation] = useState<'check-in' | 'check-out' | 'suspend' | 'scan' | undefined>(undefined)
-    
+
 
     const selectTicketOperation = (operation: TicketOperationType) => setTicketOperation(operation)
-    
+
     const resetTicketOperation = () => setTicketOperation(undefined)
-    
+
     useEffect(() => {
         async function loadEvents() {
             setLoadingTickets(true)
@@ -155,13 +159,24 @@ const AdminTicketScanner = () => {
     const handleScan = async (detectedCodes: any) => {
         const qrValue = (detectedCodes[0].rawValue).split('/')
         const ticketHash = qrValue[qrValue.length - 2]
-        const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
+        let operationUrl;
+        if (ticketOperation === 'check-in') {
+            operationUrl = `/tickets/${ticketHash}/check-ticket-in`
+        }
+
+        if (ticketOperation === 'check-out') {
+            operationUrl = `/tickets/${ticketHash}/check-ticket-out`
+        }
+        // const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
+        if (!operationUrl || !ticketHash) throw Error('Could not get operation url or ticket Hash')
+        // console.log({operationUrl})
+        const { data } = await api.post(operationUrl)
         const ticket = data.result.ticket
-        const user = data.result.createdBy
         const ticketData = {
             ...ticket,
-            createdBy: user
+            createdBy: data.result.createdBy
         }
+        // console.log({currentOperation: ticketOperation, data})
         setCurrentTicket(ticketData)
         const stringData = JSON.stringify(ticketData)
         localStorage.setItem('currentTicket', stringData)
@@ -191,7 +206,7 @@ const AdminTicketScanner = () => {
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
-        const {data} = await api.post(`/tickets/${targetHash}/check-ticket-out`)
+        const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`)
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
         // setEventStats(data.result.ticket.eventTicketStats)
         //console.log({statusOut: data.result})
@@ -208,23 +223,23 @@ const AdminTicketScanner = () => {
     }
     const handleCheckingUserIn = async () => {
         setLoading(true)
-        const {data} = await api.post(`/tickets/${targetHash}/check-ticket-in`)
+        const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`)
         setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
 
         setEventStats(data.result.eventTicketStats)
         setLoading(false)
     }
 
-    
+
     const cleanupDialogState = () => {
         console.log('Cleaning up dialog state')
     }
-   
+
 
     return (
         <div className='p-15 h-screen overflow-y-auto'>
             <h2 className='text-4xl flex text-orange-400 items-center gap-2'>
-                <span>Ticket Scanner</span> <span><QrCode className='text-orange-400 mt-0.5'/></span>
+                <span>Ticket Scanner</span> <span><QrCode className='text-orange-400 mt-0.5' /></span>
             </h2>
             <div className="flex lg:flex-row flex-col-reverse gap-2">
                 <section className='w-4/4 mt-1'>
@@ -235,7 +250,7 @@ const AdminTicketScanner = () => {
                                 <div
                                     className="bg-zinc-800 gap-2 h-full flex pl-2 p-1.5 px-6 rounded items-center max-w-fit lg:w-full">
                                     <Switch className={'text-zinc-500'} checked={monitorMode}
-                                            onCheckedChange={toggleMonitorMode}/>
+                                        onCheckedChange={toggleMonitorMode} />
                                     <span
                                         className={'text-zinc-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
                                 </div>
@@ -254,9 +269,9 @@ const AdminTicketScanner = () => {
                                     >
                                         <SelectTrigger
                                             className="w-full grow-0 bg-zinc-800 text-zinc-100 py-1 outline-none border-2 border-zinc-800 flex">
-                                            <SelectValue placeholder="Pick an event to scan for"/>
+                                            <SelectValue placeholder="Pick an event to scan for" />
                                         </SelectTrigger>
-                                        <SelectContent className={'w-full'}>
+                                        <SelectContent className={'w-full border-zinc-800 bg-zinc-800'}>
                                             {events.map(event => (
                                                 <SelectItem
                                                     key={event._id}
@@ -274,7 +289,7 @@ const AdminTicketScanner = () => {
                                 ) : loadingTickets ? (
                                     <div className={'flex gap-2 p-1 px-3 items-center'}>
                                         <h3 className={'text-slate-400'}>Loading Events </h3>
-                                        <span><Spinner/></span>
+                                        <span><Spinner /></span>
                                     </div>
                                 ) : (
                                     <div>
@@ -286,12 +301,12 @@ const AdminTicketScanner = () => {
 
                         <div>
                             <h2 className='text-lg text-zinc-600'>Total Tickets</h2>
-                            <section className="bg-zinc-800 p-1.5 px-2 mb-4 rounded lg:w-54">
+                            <section className="bg-zinc-800 p-1 px-2 mb-4 rounded lg:w-54">
                                 {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
-                                <span className='text-xl text-zinc-400'>
-                                        {/*{Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
+                                <span className='text-zinc-400 text-lg'>
+                                    {/*{Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
                                     340 / 1,200
-                                    </span>
+                                </span>
                             </section>
                         </div>
                     </div>
@@ -308,8 +323,8 @@ const AdminTicketScanner = () => {
                                 ) : null}
                             </section>
                         )}
-                        <NButton className={`${canScan ? 'bg-orange-500' : ''}`} icon={<Power/>}
-                                 onClick={toggleScanMode}>{canScan ? 'Turn Scan Off' : 'Activate Scanner'} </NButton>
+                        <NButton className={`${canScan ? 'bg-orange-500' : ''}`} icon={<Power />}
+                            onClick={toggleScanMode}>{canScan ? 'Turn Scan Off' : 'Activate Scanner'} </NButton>
                     </div>
 
                     {selectedEvent ? (
@@ -321,7 +336,7 @@ const AdminTicketScanner = () => {
                                     {/* stand header */}
                                     <div className={'flex items-center justify-between'}>
                                         <section className={'flex items-center gap-2'}>
-                                            <div className="h-3 w-3 rounded-full bg-indigo-800"/>
+                                            <div className="h-3 w-3 rounded-full bg-indigo-800" />
                                             <h2 className='text-xl text-indigo-200'>Popular Stand</h2>
                                         </section>
                                         <span className={'text-zinc-500'}>2,000 / 2,500</span>
@@ -329,8 +344,8 @@ const AdminTicketScanner = () => {
 
                                     {/* stand overall progress */}
                                     <div className={'flex items-center justify-between gap-2'}>
-                                        <div className={'w-[80%] bg-indigo-800 h-2 rounded-lg'}/>
-                                        <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                        <div className={'w-[80%] bg-indigo-800 h-2 rounded-lg'} />
+                                        <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
                                     </div>
 
                                     <div className={'flex items-center justify-between gap-2'}>
@@ -355,7 +370,7 @@ const AdminTicketScanner = () => {
                                         {/* stand header */}
                                         <div className={'flex items-center justify-between'}>
                                             <section className={'flex items-center gap-2'}>
-                                                <div className="h-3 w-3 rounded-full bg-teal-800"/>
+                                                <div className="h-3 w-3 rounded-full bg-teal-800" />
                                                 <h2 className='text-xl text-teal-200'>Regular Stand</h2>
                                             </section>
                                             <span className={'text-zinc-500'}>2,000 / 2,500</span>
@@ -363,8 +378,8 @@ const AdminTicketScanner = () => {
 
                                         {/* stand overall progress */}
                                         <div className={'flex items-center justify-between gap-2'}>
-                                            <div className={'w-[80%] bg-teal-800 h-2 rounded-lg'}/>
-                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                            <div className={'w-[80%] bg-teal-800 h-2 rounded-lg'} />
+                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
                                         </div>
 
                                         <div className={'flex items-center justify-between gap-2'}>
@@ -388,7 +403,7 @@ const AdminTicketScanner = () => {
                                         {/* stand header */}
                                         <div className={'flex items-center justify-between'}>
                                             <section className={'flex items-center gap-2'}>
-                                                <div className="h-3 w-3 rounded-full bg-orange-800"/>
+                                                <div className="h-3 w-3 rounded-full bg-orange-800" />
                                                 <h2 className='text-xl text-orange-200'>Executive Stand</h2>
                                             </section>
                                             <span className={'text-zinc-500'}>2,000 / 2,500</span>
@@ -396,8 +411,8 @@ const AdminTicketScanner = () => {
 
                                         {/* stand overall progress */}
                                         <div className={'flex items-center justify-between gap-2'}>
-                                            <div className={'w-[80%] bg-orange-800 h-2 rounded-lg'}/>
-                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'}/>
+                                            <div className={'w-[80%] bg-orange-800 h-2 rounded-lg'} />
+                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
                                         </div>
 
                                         <div className={'flex items-center justify-between gap-2'}>
@@ -425,10 +440,10 @@ const AdminTicketScanner = () => {
                             <h2 className="text-3xl text-zinc-500 mb-2">Recent Scans</h2>
                             <section
                                 className='border-zinc-900 bg-zinc-900 rounded-md border-2 h-76 overflow-y-auto flex flex-col items-center justify-center gap-2 p-2'>
-                                <MdSecurity size={32} color={'text-orange-300'}/>
+                                <MdSecurity size={32} color={'text-orange-300'} />
                                 <h2 className=" text-zinc-500">No one has checked in yet</h2>
                             </section>
-                            
+
                         </div>
                     )}
 
@@ -436,28 +451,28 @@ const AdminTicketScanner = () => {
 
 
                 {(monitorMode || !selectedEvent) ? null : (
-                   <TicketScanner 
-                       resetTicketOperationAction={resetTicketOperation}
-                       selectTicketOperationAction={selectTicketOperation}
-                       ticketOperation={ticketOperation}
-                       canScan={canScan}
-                       cleanupDialogStateAction={cleanupDialogState}
-                       selectedEvent={selectedEvent}
-                       currentTicket={currentTicket}
-                       loading={loading}
-                       toggleScanModeAction={toggleScanMode}
-                       handleScanAction={handleScan}
-                       openApprovalModalAction={openApprovalModal}
-                       computedStatus={computedStatus}
-                       handleBlockingTicketAction={handleBlockingTicket}
-                       handleCheckingUserInAction={handleCheckingUserIn}
-                       handleCheckingUserOutAction={handleCheckingUserOut}
-                       isCheckingUserOut={isCheckingUserOut}
-                       updateOpenApprovalModalAction={setOpenApprovalModal}
-                   />
+                    <TicketScanner
+                        resetTicketOperationAction={resetTicketOperation}
+                        selectTicketOperationAction={selectTicketOperation}
+                        ticketOperation={ticketOperation}
+                        canScan={canScan}
+                        cleanupDialogStateAction={cleanupDialogState}
+                        selectedEvent={selectedEvent}
+                        currentTicket={currentTicket}
+                        loading={loading}
+                        toggleScanModeAction={toggleScanMode}
+                        handleScanAction={handleScan}
+                        openApprovalModalAction={openApprovalModal}
+                        computedStatus={computedStatus}
+                        handleBlockingTicketAction={handleBlockingTicket}
+                        handleCheckingUserInAction={handleCheckingUserIn}
+                        handleCheckingUserOutAction={handleCheckingUserOut}
+                        isCheckingUserOut={isCheckingUserOut}
+                        updateOpenApprovalModalAction={setOpenApprovalModal}
+                    />
                 )}
             </div>
-            
+
         </div>
     )
 }

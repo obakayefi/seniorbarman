@@ -7,7 +7,7 @@ import { BackgroundRippleEffect } from './background-ripple-effect'
 
 const Header = () => {
     return (
-        <div className='flex flex-col gap-2 relative h-screen lg:h-[85vh] bg-[url("/sbarman_one.svg")] bg-no-repeat bg-top overflow-hidden mx-1 items-center justify-between w-full pb-4 relative'>
+        <div style={{ backgroundImage: 'url(/sbarman_one.svg)' }} className='flex flex-col gap-2 relative h-screen lg:h-[85vh] bg-no-repeat bg-top overflow-hidden mx-1 items-center justify-between w-full pb-4 relative'>
             {/* <BackgroundRippleEffect /> */}
             <div className='w-full gap-60 h-full relative flex flex-col justify-between px-4 pt-4 items-center'>
                 <section>

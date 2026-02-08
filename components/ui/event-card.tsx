@@ -1,17 +1,36 @@
 "use client"
-import {AlarmClock, MapPin} from 'lucide-react';
+import { AlarmClock, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import {Button} from './button';
-import {EventType, IEvent} from '@/types/components';
-import {Dialog, DialogTrigger} from './dialog';
-import {BookEventModal} from '../modals/book-event';
-import {redirect} from 'next/navigation';
-import {useEffect, useState} from 'react';
-import {CLUBS, formatEvent} from '@/lib/utils';
+import { Button } from './button';
+import { EventType, IEvent } from '@/types/components';
+import { Dialog, DialogTrigger } from './dialog';
+import { BookEventModal } from '../modals/book-event';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { CLUBS, formatEvent } from '@/lib/utils';
+import { useApp } from '@/context/AppContext';
+import { toast } from 'sonner';
+import api from '@/lib/axios';
 
-export const EventCard = ({event}: { event: EventType }) => {
+export const EventCard = ({ event }: { event: EventType }) => {
+    const { user } = useApp()
+    const router = useRouter()
     const [matchInformation, setMatchInformation] = useState<EventType>({} as EventType)
-    // export const EventCard = ({ event: { date, time, type, awayLogo, awayTeam, homeLogo, homeTeam, venue, id } }: { event: IEvent }) => {
+
+    const isAdmin = user?.role === 'admin'
+
+    const onDelete = async () => {
+        if (!confirm("Delete this match?")) return
+        try {
+            const res = await api.delete(`/events/${event._id}`)
+            if (res.status === 200) {
+                toast.success("Match deleted")
+                window.location.reload()
+            }
+        } catch (e) {
+            toast.error("Failed to delete")
+        }
+    }
 
     useEffect(() => {
         const _event = formatEvent(event) as EventType
@@ -20,7 +39,7 @@ export const EventCard = ({event}: { event: EventType }) => {
 
     return (
         <section
-            className='flex flex-col outline w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-800 gap-3 justify-center rounded-lg p-4'>
+            className='flex flex-col w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-900 gap-3 justify-center rounded-lg p-4'>
             <div className='flex items-center justify-center gap-1'>
                 <span className=''>{matchInformation.day}</span>
                 <span className=' uppercase'>{matchInformation.month}</span>
@@ -54,23 +73,46 @@ export const EventCard = ({event}: { event: EventType }) => {
                         </section>
                     </div>
 
-                    <div className='flex flex-col items-center w-full'>
-                        <Dialog>
-                            <div className='flex flex-col w-full mt-1'>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        className='bg-red-500 hover:bg-orange-400 active:translate-y-1 duration-200 text-lg rounded'>
-                                        Book Ticket
-                                    </Button>
-                                </DialogTrigger>
-
+                    <div className='flex flex-col items-center w-full gap-2'>
+                        <div className="flex w-full gap-2 items-start">
+                            <div className="flex-1">
+                                <Dialog>
+                                    <div className='flex flex-col w-full mt-1'>
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                className='bg-red-500 hover:bg-orange-400 active:translate-y-1 duration-200 text-lg rounded w-full'>
+                                                Book Ticket
+                                            </Button>
+                                        </DialogTrigger>
+                                    </div>
+                                    <BookEventModal eventId={event._id} />
+                                </Dialog>
                             </div>
-                            <BookEventModal eventId={event._id}/>
-                        </Dialog>
+
+                            {/* Admin Quick Actions */}
+                            {isAdmin && (
+                                <div className="flex gap-1 flex-col">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => router.push(`/u/a/events/${event._id}/edit`)}
+                                        className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-xs h-8 px-2"
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={onDelete}
+                                        className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border-none text-xs h-8 px-2"
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                         <section className='mt-2 text-center'>
                             <span className='text-gray-400 flex items-center gap-1'>
                                 <span className='text-red-400 font-bold'>{matchInformation.time}</span> @ <span
-                                className='text-sm'>{matchInformation.venue}</span>
+                                    className='text-sm'>{matchInformation.venue}</span>
                             </span>
 
                         </section>

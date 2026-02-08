@@ -1,17 +1,17 @@
-import {NextResponse} from "next/server";
-import {connectDB} from "@/lib/mongodb";
-import {cookies} from "next/headers";
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
+import { cookies } from "next/headers";
 import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
 import User from "@/models/User";
-import jwt, {JwtPayload} from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 
 type Params = {
     params: Promise<{ hashToken: string }>;
 };
 
-export async function GET(req: Request, {params}: Params) {
+export async function GET(req: Request, { params }: Params) {
     try {
         await connectDB();
         const token = (await cookies()).get("token")?.value;
@@ -25,13 +25,13 @@ export async function GET(req: Request, {params}: Params) {
 
         if (!token) {
             return NextResponse.json(
-                {error: "Unauthorized: No token provided"},
-                {status: 401}
+                { error: "Unauthorized: No token provided" },
+                { status: 401 }
             );
         }
 
         // ✅ Await v directly — not props.context.v
-        const {hashToken: eventId} = await params;
+        const { hashToken: eventId } = await params;
 
         const event = await Event.findById(eventId)
         const tickets = await Ticket.find({ createdBy: userId }).populate("event");
@@ -40,6 +40,9 @@ export async function GET(req: Request, {params}: Params) {
         const ticketCount: Record<string, Record<string, number>> = {};
 
         for (const ticket of tickets) {
+            // Skip tickets with null event
+            if (!ticket.event || !ticket.event._id) continue;
+
             const eventId = ticket.event._id.toString();
             const stand = ticket.stand || "Regular";
 
@@ -54,20 +57,24 @@ export async function GET(req: Request, {params}: Params) {
             eventId,
             stands
         }));
-        
-        const specificSummary = arraySummary.filter(summary => summary.eventId === eventId)[0].stands;
+
+        const matchedSummary = arraySummary.find(summary => summary.eventId === eventId);
+        const specificSummary = matchedSummary ? matchedSummary.stands : {};
+
         const transformedSummary = Object.entries(specificSummary).map(([name, value]) => ({
             name,
             value
         }));
 
         for (const ticket of tickets) {
+            if (!ticket.event || !ticket.event._id) continue;
+
             const _eventId = ticket.event._id.toString();
 
             if (_eventId !== eventId) {
                 continue;
             }
-            
+
             if (!ticketList.has(_eventId)) {
                 ticketList.set(_eventId, {
                     event: ticket.event,
@@ -76,14 +83,14 @@ export async function GET(req: Request, {params}: Params) {
             }
             ticketList.get(_eventId)!.tickets.push(ticket)
         }
-        
+
         if (!tickets) {
             return NextResponse.json(
-                {error: "Could not find event for this ticket"},
-                {status: 404}
+                { error: "Could not find event for this ticket" },
+                { status: 404 }
             );
         }
-        
+
         const matchedTicket = ticketList.get(eventId);
         // console.log({ticketList, matchedTicket});
         const response = {
@@ -91,16 +98,16 @@ export async function GET(req: Request, {params}: Params) {
             tickets: matchedTicket,
             summary: transformedSummary
         }
-        
+
         return NextResponse.json(
-            {message: "Ticket found", response},
-            {status: 200}
+            { message: "Ticket found", response },
+            { status: 200 }
         );
     } catch (error) {
         console.error("Error:", error);
         return NextResponse.json(
-            {error: "Internal Server Error"},
-            {status: 500}
+            { error: "Internal Server Error" },
+            { status: 500 }
         );
     }
 }

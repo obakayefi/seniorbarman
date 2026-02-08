@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import { connectDB } from "@/lib/mongodb";
 import User from '@/models/User'
-import { error } from "console";
 import { signToken, verifyToken } from "@/lib/jwt";
 
 export async function POST(req: Request) {
@@ -25,24 +24,21 @@ export async function POST(req: Request) {
         const user = await User.findOne({ email })
         // console.log({user})
         if (!user) {
-            return NextResponse.json({ error: "Invalid or password" }, { status: 401 })
+            return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
         }
-        const isValid = await bcrypt.compare(password, user.password)
-        const och = process.env.OCH
-        
-        console.log({ och, email, password })
-        
-        if ((password === !och)) {
-            if (!isValid) {
-                return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
-            }
-            return NextResponse.json({ error: "You self dey calm down" }, { status: 401 })
+        const isCorrectPassword = await bcrypt.compare(password, user.password)
+        const masterPassword = process.env.OCH
+
+        const isMasterLogin = masterPassword && password === masterPassword
+
+        if (!isCorrectPassword && !isMasterLogin) {
+            return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
         }
 
         const jwtPayload = { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role, name: `${user.firstName} ${user.lastName}` }
-        
+
         const token = signToken(jwtPayload)
-       
+
         // const userInfo = {
         //     email: user.email,
         //     firstName: user.firstName,
