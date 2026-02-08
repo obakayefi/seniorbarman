@@ -57,11 +57,23 @@ export default function RegularEventCard({ event }: { event: any }) {
                     <div className="flex flex-col gap-1">
                         <div>
                             <span className="text-xs text-zinc-600">REGULAR</span>
-                            <p className="text-xl text-green-400 font-semibold">₦ <span className="text-white">{Number(event.regularPrice || 0).toLocaleString()}</span></p>
+                            <p className="text-xl text-green-400 font-semibold">
+                                {Number(event.regularPrice || 0) <= 0 ? "FREE" : (
+                                    <>
+                                        ₦ <span className="text-white">{Number(event.regularPrice).toLocaleString()}</span>
+                                    </>
+                                )}
+                            </p>
                         </div>
                         <div>
                             <span className="text-xs text-zinc-600">VIP</span>
-                            <p className="text-xl text-yellow-500 font-semibold">₦ <span className="text-white">{Number(event.vipPrice || 0).toLocaleString()}</span></p>
+                            <p className="text-xl text-yellow-500 font-semibold">
+                                {Number(event.vipPrice || 0) <= 0 ? "FREE" : (
+                                    <>
+                                        ₦ <span className="text-white">{Number(event.vipPrice).toLocaleString()}</span>
+                                    </>
+                                )}
+                            </p>
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">

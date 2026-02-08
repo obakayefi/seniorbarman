@@ -31,9 +31,9 @@ export default function PrintTicketsPage({ params }: { params: any }) {
     // Fetch tickets for this event
     useEffect(() => {
         async function loadTickets() {
-            console.log({ _params })
+            // console.log({ tickets })
             const { data } = await api.get(`/tickets/${_params.id}`)
-            console.log({ data, tickets: data.response.tickets })
+            // console.log({ data, tickets: data.response.tickets })
             setTickets(data.response.tickets.tickets);
         }
 
@@ -42,11 +42,11 @@ export default function PrintTicketsPage({ params }: { params: any }) {
 
     // Prepare batches when tickets load
     useEffect(() => {
-        console.log('Preparing Batches', tickets.length);
+        // console.log('Preparing Batches', tickets.length);
         if (tickets.length > 0) {
-            console.log('Tickets Gotten', tickets.length)
+            // console.log('Tickets Gotten', tickets.length)
             const grouped = chunkArray(tickets, 14);
-            console.log({ grouped })
+            // console.log({ grouped })
             setBatches(grouped);
         }
     }, [tickets]);

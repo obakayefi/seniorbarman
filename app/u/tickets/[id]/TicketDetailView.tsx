@@ -22,13 +22,13 @@ export default function TicketDetailView() {
 
     useEffect(() => {
         async function getTickets() {
-            const { data } = await api.get(`/tickets/${params.id}`)
-            setEventInfo(data.response.event)
-            setTickets(data.response.tickets.tickets)
-            setTicketSummary(data.response.summary)
-            setLoading(false)
+            const { data } = await api.get(`/tickets/${params.id}`);
+            setEventInfo(data.response.event);
+            setTickets(data.response.tickets.tickets);
+            setTicketSummary(data.response.summary);
+            setLoading(false);
         }
-        getTickets()
+        getTickets();
     }, [params.id])
 
     return (
