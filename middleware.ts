@@ -6,7 +6,7 @@ export function middleware(req: NextRequest) {
     const token = req.cookies.get("token")?.value
     const pathname = req.nextUrl.pathname
 
-    console.log({ token, pathname })
+    // console.log({ token, pathname })
 
     const publicPaths = ['/login', '/register', '/api/auth/login', '/api/auth/register']
     if (publicPaths.includes(pathname)) return NextResponse.next()
@@ -16,7 +16,7 @@ export function middleware(req: NextRequest) {
     }
 
     const decoded = verifyToken(token)
-    console.log({ decoded })
+    // console.log({ decoded })
     // if (!decoded) {
     //     const res = NextResponse.redirect(new URL("/auth/login", req.url))
     //     res.cookies.delete("token");

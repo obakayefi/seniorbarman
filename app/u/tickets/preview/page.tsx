@@ -22,15 +22,15 @@ export default function PreviewTickets() {
             const token = params.hashToken
             const { data } = await api.get(`/tickets/preview/${token}`);
             const eventFormatted = formatEvent(data.event)
-            // console.log({data, eventFormatted})
+            // console.log({tickets_are: data.data, params})
             setCurrentTicket({ ...data, awayLogo: eventFormatted.awayLogo, homeLogo: eventFormatted.homeLogo })
         } catch (e) {
-            console.log({ e })
+            // console.log({ e })
         }
     }
 
     useEffect(() => {
-        console.log({ user })
+        // console.log({ user })
     }, [user]);
 
     useEffect(() => {

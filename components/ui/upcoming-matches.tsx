@@ -30,14 +30,14 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                     <div className={'w-full '}>
                         <div className={'flex text-slate-200  w-full flex-col gap-1 justify-between'}>
                             <div
-                                className={'flex flex-col md:flex-row gap-2 items-center lg:items-start lg:justify-start justify-center text-center'}>
+                                className={'flex flex-col md:flex-row gap-1 items-center lg:items-start lg:justify-start justify-center text-center'}>
                                 <h2>{match.homeTeam}</h2>
                                 <span className={'text-gray-400'}>vs</span>
                                 <h2>{match.awayTeam}</h2>
                             </div>
 
                             <div
-                                className={'flex min-w-fit text-xs flex-col items-center lg:items-start justify-center lg:justify-start text-gray-400 gap-4'}>
+                                className={'flex min-w-fit text-xs flex-col items-center lg:items-start justify-center lg:justify-start mt-6 text-gray-400 gap-4'}>
                                 <p className={'flex gap-1'}><Calendar1Icon size={14} />
                                     <span>{dateString}</span></p>
                                 <p className={'flex gap-1'}><Clock size={14} /> {formatTime(match.time)}</p>
@@ -48,10 +48,7 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
 
                     <div
                         className={'text-sm flex flex-col max-w-fit lg:flex-col text-right w-full justify-center lg:justify-end lg:items-end items-center gap-1 lg:text-right'}>
-                        <p className={'text-slate-500 hidden lg:flex'}>From</p>
-                        <h4 className={'text-2xl text-green-500 font-bold'}>₦{Number(match.regularPrice || 0).toLocaleString()}</h4>
-                        <p className={'text-slate-500'}>30,000 tickets left</p>
-                        <div className={'w-full flex items-center justify-center pt-5'}>
+                        <div className={'w-full flex items-center justify-center '}>
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <NButton className={'bg-green-500 w-full'}>Buy Tickets</NButton>

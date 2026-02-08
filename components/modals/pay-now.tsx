@@ -23,7 +23,7 @@ const PayNow = ({ goBack, ticketsToPurchase, eventId }: Props) => {
             toast.success('Tickets purchased!')
             // setTimeout(() => setLoading(false), 3000)
         } catch (error: any) {
-            console.log('Error creating ticket:', error.message)
+            // console.log('Error creating ticket:', error.message)
         } finally {
             setLoading(false)
         }

@@ -6,6 +6,11 @@ import Link from "next/link";
 import { CLUBS, extractTicketStatus, formatTime, giveLogo } from "@/lib/utils";
 
 const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
+    // Don't render if event is null or missing ID
+    if (!event || !event._id) {
+        return null;
+    }
+
     return (
         <>
             {event.type === "sports" ? (
@@ -77,6 +82,7 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
                 </Link>
             ) : event.type === "event" ? (
                 <Link href={`/u/tickets/${event._id}`} className="overflow-hidden ">
+
                     <div
                         className='group relative border-2 border-zinc-900 hover:border-orange-500/50 cursor-pointer duration-500 flex flex-col rounded-2xl overflow-hidden min-h-[350px] shadow-2xl'
                         style={{

@@ -187,11 +187,18 @@ const CreateEventForm = () => {
             })
 
             const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Failed to create event");
-            console.log("Event created: ", data)
+            if (!res.ok) {
+                console.error('API Error Response:', data);
+                toast.error(data.error || data.details || "Failed to create event");
+                throw new Error(data.error || "Failed to create event");
+            }
+            // console.log("Event created: ", data)
             toast.success('🥳 Event created successfully')
         } catch (error) {
-            console.error('Error submitting  form:', error)
+            console.error('Error submitting form:', error)
+            if (error instanceof Error) {
+                toast.error(error.message);
+            }
         } finally {
             setIsLoading(false)
             formReset()
@@ -343,7 +350,7 @@ const CreateEventForm = () => {
 
                         <div className="flex flex-col gap-2 border-zinc-800">
                             <Label className="text-gray-400">Time</Label>
-                            <Input className={'text-white'} onChange={eventTime.onChange} value={eventTime.value} type="time" step={1} defaultValue={"12:00:00"} />
+                            <Input className={'text-white'} onChange={eventTime.onChange} value={eventTime.value} type="time" step={1} />
                         </div>
                     </section>
 

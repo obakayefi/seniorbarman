@@ -40,7 +40,7 @@ export default function Register() {
                 firstName: firstName.value,
                 lastName: lastName.value
             }
-            console.log({ newUser })
+            // console.log({ newUser })
             const createdUser = await axios.post('/api/auth/register', { ...newUser }, { withCredentials: true })
             // onsole.log({createdUser})
             // empty the form

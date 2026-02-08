@@ -37,7 +37,7 @@ export default function ResetPasswordFulfillment() {
 
         setIsLoading(true)
         try {
-            console.log('Fulfilling password reset for token:', token)
+            // console.log('Fulfilling password reset for token:', token)
             const { data } = await axios.post('/api/auth/reset-password', {
                 token: String(token),
                 password: password.value

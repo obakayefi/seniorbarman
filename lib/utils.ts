@@ -70,6 +70,10 @@ export function formatDate(date: Date) {
 
 export const CLUBS = [
     {
+        name: "Abia Warriors FC",
+        icon: "/clubs/abia-logo.png"
+    },
+    {
         name: "Akwa United FC",
         icon: "/clubs/awka.png"
     },
@@ -189,7 +193,7 @@ export const STADIUMS = [
         state: "Benin"
     },
     {
-        name: "El-Kanemi Warrios Stadium",
+        name: "El-Kanemi Warriors Stadium",
         state: "Borno"
     },
     {
