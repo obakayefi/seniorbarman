@@ -13,3 +13,24 @@ export const OnPayNow = async (payload: {}, ticketsToPrint: any[], eventId: stri
     // console.log({ orderPayload, response: savedTicketOrder })
     setTimeout(() => window.location.assign(paymentUrl), 1000)
 }
+
+export const OnFreeOrder = async (ticketsToPrint: any[], eventId: string) => {
+    try {
+        const flattenedOrder = ticketsToPrint.filter(ticket => ticket.quantity > 0)
+        const reference = `FREE-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+        const orderPayload = { tickets: flattenedOrder, eventId, reference, isGenerated: false }
+
+        // Create the ticket order first
+        await api.post('/ticket-order', orderPayload)
+
+        // Directly generate tickets using the existing POST /api/tickets endpoint
+        // which seems to handle creation and insertion
+        const ticketPayload = { ticketsToPurchase: flattenedOrder, eventId }
+        await api.post('/tickets', ticketPayload)
+
+        return { success: true, reference }
+    } catch (error) {
+        console.error("Error in OnFreeOrder:", error)
+        throw error
+    }
+}

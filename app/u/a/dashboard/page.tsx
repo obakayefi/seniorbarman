@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3 } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -58,6 +58,14 @@ const AdminDashboard = () => {
             url: sitemap.admin.createAdmin,
             color: "text-blue-500",
             bg: "bg-blue-500/10"
+        },
+        {
+            title: "Search Ticket",
+            description: "Find and manage any ticket by ID",
+            icon: Search,
+            url: sitemap.admin.ticketSearch,
+            color: "text-indigo-500",
+            bg: "bg-indigo-500/10"
         }
     ]
 

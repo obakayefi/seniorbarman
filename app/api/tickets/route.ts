@@ -140,17 +140,8 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
                 return NextResponse.json({ error: "A ticket ID is required" },
                     { status: 500 })
             }
-            const qrPayload = {
-                ticket: ticketId,
-                event: eventId,
-                createdBy: userId,
-                stand: tickets[i].name,
-                checkInToken,
-                price: tickets[i].price,
-                ticketNumber,
-            }
-
-            const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
+            const previewUrl = `https://seniorbarman.com/tickets/p/${checkInToken}`
+            const qrCode = await QRCode.toDataURL(previewUrl)
 
             //console.log({ printNow: tickets[i], j, i })
 
@@ -210,17 +201,8 @@ export async function POST(req: Request) {
                         return NextResponse.json({ error: "A ticket ID is required" },
                             { status: 500 })
                     }
-                    const qrPayload = {
-                        ticket: ticketId,
-                        event: data.eventId,
-                        createdBy: userId,
-                        stand: tickets[i].name,
-                        checkInToken,
-                        price: tickets[i].price,
-                        ticketNumber,
-                    }
-
-                    // const qrCode = await QRCode.toDataURL(JSON.stringify(qrPayload))
+                    const previewUrl = `https://seniorbarman.com/tickets/p/${checkInToken}`
+                    const qrCode = await QRCode.toDataURL(previewUrl)
 
                     // console.log({printNow: tickets[i], j, i})
 
@@ -234,8 +216,8 @@ export async function POST(req: Request) {
                         ticketNumber: `${data.eventId}-${Date.now()}-${j}XC10-SBM`,
                     })
                 }
-                await Ticket.insertMany(_createdTickets)
             }
+            await Ticket.insertMany(_createdTickets)
 
             return NextResponse.json({
                 message: "Ticket created successfully",

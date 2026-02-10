@@ -7,13 +7,16 @@ import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
 import { toPng } from 'html-to-image';
+import { useApp } from '@/context/AppContext';
+import { toast } from 'sonner';
 
 interface TicketCarouselProps {
     tickets: any[];
     eventInfo: any;
+    user?: any;
 }
 
-export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselProps) {
+export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedType, setSelectedType] = useState<string | null>(null);
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -21,8 +24,10 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
     const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [emailError, setEmailError] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);
     const { Image: QRImage } = useQRCode();
+    const { user: currentUser } = useApp();
 
     if (!tickets || tickets.length === 0) return null;
 
@@ -161,6 +166,35 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
         setEmailError('');
     };
 
+    const handleDeleteTicket = async () => {
+        if (!window.confirm("Are you sure you want to delete this ticket? This action cannot be undone.")) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`/api/tickets/manage/${currentTicket._id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete ticket');
+            }
+
+            toast.success('Ticket deleted successfully');
+            // Reload the page to reflect changes
+            window.location.reload();
+        } catch (error: any) {
+            console.error('Failed to delete ticket:', error);
+            toast.error(error.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+
     return (
         <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-4">
             {/* Header with status badge */}
@@ -168,13 +202,15 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                 <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
                     {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
                 </div>
-                {/* <button
+                {/* 
+                <button
                     onClick={() => setShowEmailModal(true)}
                     className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Email ticket"
                 >
                     <Mail size={20} className="text-zinc-400" />
-                </button> */}
+                </button> 
+                */}
             </div>
 
             {/* Breadcrumb */}
@@ -271,7 +307,7 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                 <div className="flex justify-center mb-6">
                     <div className="bg-white p-6 rounded-lg">
                         <QRImage
-                            text={`https://seniorbarman.com/u/tickets/preview/${currentTicket.checkInToken}/`}
+                            text={`${getBaseUrl()}/tickets/p/${currentTicket.checkInToken}`}
                             options={{
                                 type: 'image/jpeg',
                                 quality: 0.3,
@@ -308,14 +344,14 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                             <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
                         </div>
                     </section>
-                    <section className='flex flex-col gap-4'>
+                    <section className='flex flex-col gap-4 items-end text-right'>
                         <div>
                             <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
                             <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
                         </div>
                         <div>
                             <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
-                            <p className="text-white">{currentTicket.userId?.name || currentTicket.email || 'Guest'}</p>
+                            <p className="text-white">{user ? `${user.firstName} ${user.lastName}` : (currentTicket.createdBy?.firstName ? `${currentTicket.createdBy.firstName} ${currentTicket.createdBy.lastName}` : (currentTicket.email || 'Guest'))}</p>
                         </div>
                     </section>
                 </div>
@@ -379,108 +415,28 @@ export default function TicketCarousel({ tickets, eventInfo }: TicketCarouselPro
                     <Download size={18} />
                     {isDownloading ? 'Downloading...' : 'Download PDF'}
                 </button>
+
+                {/* 
                 <button
                     onClick={() => setShowEmailModal(true)}
                     className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm sm:text-base"
                 >
                     <Mail size={18} />
                     Email Ticket
-                </button>
+                </button> 
+                */}
+
+                {currentUser?.role === 'admin' && (
+                    <button
+                        onClick={handleDeleteTicket}
+                        disabled={isDeleting}
+                        className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete Ticket'}
+                    </button>
+                )}
             </div>
 
-            {/* Email Modal */}
-            {showEmailModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full relative overflow-hidden">
-                        {/* Progressive Background Blur for success */}
-                        {emailStatus === 'success' && (
-                            <div className="absolute inset-0 bg-orange-500/10 backdrop-blur-[2px] pointer-events-none" />
-                        )}
-
-                        {emailStatus === 'success' ? (
-                            <div className="text-center py-4 relative z-10">
-                                <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Mail size={32} className="text-orange-400" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-white mb-2">Ticket Sent!</h2>
-                                <p className="text-zinc-400 mb-6">
-                                    The ticket has been successfully sent to <span className="text-white font-medium">{emailAddress}</span>
-                                </p>
-                                <button
-                                    onClick={closeEmailModal}
-                                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Done
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="relative z-10">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h2 className="text-xl font-bold text-white">Email Ticket</h2>
-                                    <button
-                                        onClick={closeEmailModal}
-                                        className="text-zinc-500 hover:text-white transition-colors"
-                                    >
-                                        <ChevronRight className="rotate-45" size={24} />
-                                    </button>
-                                </div>
-
-                                <p className="text-zinc-400 text-sm mb-6">
-                                    Send this ticket to someone via email. They'll receive a professional pass with all event details.
-                                </p>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-zinc-500 text-xs uppercase font-semibold mb-2 ml-1">
-                                            Recipient's Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={emailAddress}
-                                            onChange={(e) => {
-                                                setEmailAddress(e.target.value);
-                                                if (emailStatus === 'error') setEmailStatus('idle');
-                                            }}
-                                            placeholder="e.g. hello@example.com"
-                                            className={`w-full bg-zinc-800 border ${emailStatus === 'error' ? 'border-red-500/50 focus:ring-red-500/50' : 'border-zinc-700 focus:ring-orange-500'} rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 transition-all`}
-                                            disabled={emailStatus === 'loading'}
-                                        />
-                                        {emailStatus === 'error' && (
-                                            <p className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1">
-                                                <span>⚠️</span> {emailError}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-3 pt-2">
-                                        <button
-                                            onClick={closeEmailModal}
-                                            disabled={emailStatus === 'loading'}
-                                            className="flex-1 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleEmailTicket}
-                                            disabled={emailStatus === 'loading'}
-                                            className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        >
-                                            {emailStatus === 'loading' ? (
-                                                <>
-                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    Sending...
-                                                </>
-                                            ) : (
-                                                'Send Ticket'
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

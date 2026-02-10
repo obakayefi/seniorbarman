@@ -29,7 +29,7 @@ export function BookRegularEventModal({ event }: { event: any }) {
 
     // Construct ticket types dynamically
     const ticketTypes = [
-        { id: 1, name: "Regular", icon: Ticket, price: Number(event.regularPrice || 0), color: "text-blue-500", max: 20000 },
+        { id: 1, name: "Regular", icon: Ticket, price: Number((event.regularPrice < 0 ? 0 : event.regularPrice) || 0), color: "text-blue-500", max: 20000 },
         { id: 2, name: "VIP", price: Number(event.vipPrice || 0), icon: Crown, color: "text-yellow-500", max: 500 },
     ]
 

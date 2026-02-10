@@ -375,6 +375,7 @@ export const sitemap = {
         dashboard: "/u/a/dashboard",
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
-        createEvent: "/u/a/events/create"
+        createEvent: "/u/a/events/create",
+        ticketSearch: "/u/a/tickets/search"
     },
 }
