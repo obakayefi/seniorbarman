@@ -12,12 +12,14 @@ import { BsFillCalendarDateFill } from "react-icons/bs";
 import BulkTicketView from "@/app/u/tickets/BulkTicketView";
 import RegularTicketView from "@/app/u/tickets/RegularTicketView";
 import TicketCarousel from "./TicketCarousel";
+import { useApp } from "@/context/AppContext";
 
 export default function TicketDetailView() {
     const [tickets, setTickets] = useState([])
     const [eventInfo, setEventInfo] = useState<any>({})
     const [ticketSummary, setTicketSummary] = useState<{}[]>([])
     const params = useParams()
+    const { user } = useApp()
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -100,7 +102,7 @@ export default function TicketDetailView() {
                             </section> */}
 
                             <section className="mt-6">
-                                <TicketCarousel tickets={tickets} eventInfo={eventInfo} />
+                                <TicketCarousel tickets={tickets} user={user} eventInfo={eventInfo} />
                             </section>
                         </div>
                     ) : eventInfo?.type === 'event' ? (
@@ -177,7 +179,7 @@ export default function TicketDetailView() {
                             </section> */}
 
                             <section className="mt-6">
-                                <TicketCarousel tickets={tickets} eventInfo={eventInfo} />
+                                <TicketCarousel tickets={tickets} user={user} eventInfo={eventInfo} />
                             </section>
                         </div>
                     ) : (

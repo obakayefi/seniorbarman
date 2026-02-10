@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useQRCode } from "next-qrcode";
 import { extractTicketStatus, formatTime, getBaseUrl } from "@/lib/utils";
 
-const Ticket = ({ ticket, toPrint }: { ticket: any, toPrint: boolean }) => {
+const Ticket = ({ ticket, toPrint, user }: { ticket: any, toPrint: boolean, user?: any }) => {
     const { Image } = useQRCode();
 
     if (!ticket) return null
@@ -42,17 +42,22 @@ const Ticket = ({ ticket, toPrint }: { ticket: any, toPrint: boolean }) => {
                         </h2>
                         <h2 className="text-sm">{ticket.event.awayTeam}</h2>
                     </div>
-                    <div className='text-slate-700 gap-2 justify-center border-t-1 border-gray-200 pt-2 flex items-center text-center mb-3 '>
+                    <div className='text-slate-700 gap-2 justify-center border-t-1 border-gray-200 pt-2 flex items-center text-center mb-1'>
                         <h2 className="text-sm">{formattedDate(ticket.event.date)}</h2>
                         <span className={'text-gray-300'}>|</span>
                         <h2 className="text-sm">{formatTime(ticket.event.time) || "16:00"}</h2>
                     </div>
+                    {(user || ticket.createdBy) && (
+                        <div className='text-slate-500 text-[10px] uppercase font-bold text-center mb-2'>
+                            Holder: {user ? `${user.firstName} ${user.lastName}` : (ticket.createdBy?.firstName ? `${ticket.createdBy.firstName} ${ticket.createdBy.lastName}` : 'Account Holder')}
+                        </div>
+                    )}
                 </div>
 
                 {/*<Image className='border-2 flex  border-gray-100 rounded' alt='ticket qr code' src={ticket.qrCode} width={300} height={100} />*/}
                 <div className={'md:-mt-4  mt-0 bg-transparent'}>
                     <Image
-                        text={`${getBaseUrl()}/tickets/p/${ticket.checkInToken}/`}
+                        text={`${getBaseUrl()}/tickets/p/${ticket.checkInToken}`}
                         options={{
                             type: 'image/jpeg',
                             quality: 0.3,

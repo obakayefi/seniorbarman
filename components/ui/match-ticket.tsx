@@ -6,7 +6,7 @@ import { formattedDate, formatTime, getBaseUrl } from "@/lib/utils";
 import { MdOutlineEvStation, MdOutlineStadium } from "react-icons/md";
 import { PiChair } from "react-icons/pi";
 
-export default function MatchTicket({ ticket }: { ticket: any }) {
+export default function MatchTicket({ ticket, user }: { ticket: any, user?: any }) {
     const { Image } = useQRCode();
 
     return (
@@ -22,7 +22,7 @@ export default function MatchTicket({ ticket }: { ticket: any }) {
             <div className={'flex w-full mx-auto items-center justify-center p-6 bg-transparent flex-1'}>
                 <div className="p-3 bg-white rounded-2xl shadow-inner shadow-black/20">
                     <Image
-                        text={`${getBaseUrl()}/tickets/p/${ticket?.checkInToken}/`}
+                        text={`${getBaseUrl()}/tickets/p/${ticket?.checkInToken}`}
                         options={{
                             type: 'image/jpeg',
                             quality: 0.3,
@@ -71,6 +71,14 @@ export default function MatchTicket({ ticket }: { ticket: any }) {
                         <PiChair size={16} className="text-orange-500" />
                     </div>
                 </section>
+                {(user || ticket.createdBy) && (
+                    <section className={'flex flex-col gap-1 col-span-2 border-t border-white/5 pt-3 mt-1'}>
+                        <h4 className={'text-zinc-600 font-black text-[9px] uppercase tracking-widest'}>HOLDER</h4>
+                        <p className={'text-zinc-300 text-[10px] font-bold uppercase'}>
+                            {user ? `${user.firstName} ${user.lastName}` : (ticket.createdBy?.firstName ? `${ticket.createdBy.firstName} ${ticket.createdBy.lastName}` : 'Account Holder')}
+                        </p>
+                    </section>
+                )}
             </div>
 
             <div className="bg-orange-500/10 py-2 border-t border-white/5 text-center transition-colors group-hover:bg-orange-500/20">

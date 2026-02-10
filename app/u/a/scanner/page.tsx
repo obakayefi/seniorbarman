@@ -157,8 +157,8 @@ const AdminTicketScanner = () => {
     const toggleMonitorMode = () => setMonitorMode(!monitorMode)
 
     const handleScan = async (detectedCodes: any) => {
-        const qrValue = (detectedCodes[0].rawValue).split('/')
-        const ticketHash = qrValue[qrValue.length - 2]
+        const parts = (detectedCodes[0].rawValue).split('/').filter(Boolean)
+        const ticketHash = parts[parts.length - 1]
         let operationUrl;
         if (ticketOperation === 'check-in') {
             operationUrl = `/tickets/${ticketHash}/check-ticket-in`

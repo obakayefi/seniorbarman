@@ -1,6 +1,6 @@
 type HeaderProps = {
     title: string;
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 export const PageHeader = ({ title, children }: HeaderProps) => (
