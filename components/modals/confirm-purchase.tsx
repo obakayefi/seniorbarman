@@ -83,7 +83,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                                     <h5>{ticket.name}
                                     </h5>
                                     <p className="text-lg text-orange-500">
-                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span>
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm italic">({ticket.quantity} ticket{ticket.quantity > 1 ? 's' : ''})</span>
                                     </p>
                                 </div>
                             </section>

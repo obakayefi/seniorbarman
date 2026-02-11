@@ -20,7 +20,7 @@ import { sanitizeTicketValue, STAND_TYPE } from "@/lib/utils"
 // import PayNow from "./pay-now"
 import ConfirmTicketPurchase from "./confirm-purchase"
 import BuyTicket from "./buy-ticket"
-import { OnPayNow } from "@/lib/helpers";
+import { OnPayNow, OnFreeOrder } from "@/lib/helpers";
 import { useApp } from "@/context/AppContext";
 
 export function BookRegularEventModal({ event }: { event: any }) {
@@ -124,8 +124,22 @@ export function BookRegularEventModal({ event }: { event: any }) {
             setModalState(1)
         } else {
             setPayNowLoading(true)
-            await OnPayNow(paymentPayload, ticketsToPurchase, event._id)
-            setPayNowLoading(false)
+            try {
+                if (totalPrice === 0) {
+                    const result = await OnFreeOrder(ticketsToPurchase, event._id)
+                    if (result.success) {
+                        toast.success('Tickets generated successfully!')
+                        setTimeout(() => window.location.assign('/u/tickets'), 1500)
+                    }
+                } else {
+                    await OnPayNow(paymentPayload, ticketsToPurchase, event._id)
+                }
+            } catch (error: any) {
+                console.error("Error creating ticket:", error)
+                toast.error(error.message || "Failed to process order. Please try again.")
+            } finally {
+                setPayNowLoading(false)
+            }
         }
     }
 
