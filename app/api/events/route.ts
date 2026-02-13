@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    // const upcoming = searchParams.get("upcoming");
     const eventType = searchParams.get("type");
+    const forScanner = searchParams.get("forScanner") === "true";
 
     try {
         await connectDB()
@@ -23,10 +23,6 @@ export async function GET(req: Request) {
         })
             .sort({ date: 1 })
             .lean()
-
-        // Filter logic:
-        // 1. If date > today (future), keep it.
-        // 2. If date == today, keep only if it's more than 30 minutes before the event start time.
 
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         const nowInWat = new Date(watTime);
@@ -42,7 +38,11 @@ export async function GET(req: Request) {
                 return true
             }
 
-            // 2. It's today. Check against start time with 30-minute buffer.
+            // 2. It's today.
+            // If it's for the scanner, we show it as long as it's today (even if in progress)
+            if (forScanner) return true;
+
+            // Otherwise, check against start time with 30-minute buffer for sales.
             try {
                 // event.time is expected to be "HH:mm"
                 const [hours, minutes] = event.time.split(':').map(Number);
@@ -65,8 +65,7 @@ export async function GET(req: Request) {
             { events: filteredEvents },
             { status: 200 }
         )
-    } catch
-    (error: any) {
+    } catch (error: any) {
         return NextResponse.json({
             error: "Can't fetch events:: " + error.message
         },

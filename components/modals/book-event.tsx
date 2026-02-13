@@ -138,7 +138,6 @@ export function BookEventModal({ eventId }: { eventId: string }) {
                 }
             } catch (error: any) {
                 console.error("Error creating ticket:", error)
-                toast.error(error.message || "Failed to process order. Please try again.")
             } finally {
                 setPayNowLoading(false)
             }

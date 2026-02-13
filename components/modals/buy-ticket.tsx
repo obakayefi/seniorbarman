@@ -58,7 +58,6 @@ const BuyTicket = ({
                                 className={`flex text-white bg-zinc-950 border-zinc-800 hover:bg-zinc-900 duration-300 items-center gap-3 p-4`}>
                                 <Icon className={`h-6 w-6 ${color}`} />
                                 <span className="font text-gray-600">{name}</span>
-                                <span>PRICE: {price}</span>
                                 <span className="text-green-300">{price <= 0 ? "FREE" : `₦${price.toLocaleString()}`}</span>
 
 
