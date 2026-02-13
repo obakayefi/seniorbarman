@@ -312,11 +312,34 @@ export const PrepareEventStats = (tickets: any[]) => {
         }
     }).length
 
+    // Breakdown by stand
+    const standBreakdown: Record<string, { inside: number; outside: number; total: number }> = {}
+
+    tickets.forEach(ticket => {
+        const stand = ticket.stand || "General"
+        if (!standBreakdown[stand]) {
+            standBreakdown[stand] = { inside: 0, outside: 0, total: 0 }
+        }
+
+        standBreakdown[stand].total += 1
+
+        const logs = ticket.checkInLogs
+        if (logs && logs.length > 0) {
+            const lastLog = logs[logs.length - 1]
+            if (lastLog.action === "entry") {
+                standBreakdown[stand].inside += 1
+            } else if (lastLog.action === "exit") {
+                standBreakdown[stand].outside += 1
+            }
+        }
+    })
+
     return {
         totalPeopleInside,
         totalPeopleOutside,
         totalTicketsBought,
-        totalPeopleCheckedIn
+        totalPeopleCheckedIn,
+        standBreakdown
     }
 }
 

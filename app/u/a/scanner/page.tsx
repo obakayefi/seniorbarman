@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { fetchEventStats, getUpcomingEvents } from "@/services/actions";
 import { Spinner } from "@/components/ui/spinner";
 import api from '@/lib/axios';
-import { IEventStats } from "@/types/data";
+import { IEventStats, TicketSummary } from "@/types/data";
 import { extractTicketStatus } from "@/lib/utils";
 import TicketScanner from "@/components/widgets/TicketScanner";
-import { Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon } from 'lucide-react';
+import { Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon, Ticket, Users, History, UserCheck, UserMinus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TbSoccerField } from "react-icons/tb";
 import { toast } from 'sonner';
@@ -21,18 +21,7 @@ import { MdReport } from "react-icons/md";
 import { STATUS_TEXT } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type TicketSummary = {
-    event: {
-        homeTeam: string;
-        awayTeam: string;
-    };
-    user: string;
-    ticket: {
-        status: string;
-        id: string;
-        stand: string;
-    }
-}
+// ... (PreCheckInActions, PostCheckInActions etc)
 
 
 type PreCheckInActionsProps = {
@@ -117,362 +106,501 @@ export type TicketOperationType = 'check-in' | 'check-out' | 'suspend' | 'scan' 
 
 const AdminTicketScanner = () => {
     const { SVG } = useQRCode()
-    // const [canScan, setCanScan] = useState(true)
     const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [openApprovalModal, setOpenApprovalModal] = useState(false)
-    const [currentTicket, setCurrentTicket] = useState<TicketSummary>({} as TicketSummary)
+    const [currentTicket, setCurrentTicket] = useState<TicketSummary | null>(null)
     const [targetHash, setTargetHash] = useState<string>('')
     const [loading, setLoading] = useState(false)
-    const [loadingTickets, setLoadingTickets] = useState([])
+    const [loadingTickets, setLoadingTickets] = useState(false)
     const [ticketStatus, setTicketStatus] = useState('')
     const [isCheckingUserOut, setIsCheckingUserOut] = useState(false)
     const [isBlockingTicket, setIsBlockingTicket] = useState(false)
     const [canScan, setCanScan] = useState(false)
-    const [selectedEvent, setSelectedEvent] = useState('')
-    const [computedStatus, setComputedStatus] = useState('')
-    const [events, setEvents] = useState<[]>([])
-    const [eventStats, setEventStats] = useState<IEventStats>({} as IEventStats)
-    const [ticketOperation, setTicketOperation] = useState<'check-in' | 'check-out' | 'suspend' | 'scan' | undefined>(undefined)
-
-
+    const [selectedEvent, setSelectedEvent] = useState<string>('')
+    const [eventType, setEventType] = useState<'sports' | 'event'>('sports') // New state for event type
+    const [computedStatus, setComputedStatus] = useState<string | null>(null)
+    const [events, setEvents] = useState<any[]>([])
+    const [eventStats, setEventStats] = useState<IEventStats>({
+        totalTicketsBought: 0,
+        totalPeopleCheckedIn: 0,
+        totalPeopleInside: 0,
+        totalPeopleOutside: 0,
+        standBreakdown: {}
+    })
+    const [ticketOperation, setTicketOperation] = useState<TicketOperationType>('check-in')
+    const [recentScans, setRecentScans] = useState<any[]>([])
+    const [scanError, setScanError] = useState<any>(null)
     const selectTicketOperation = (operation: TicketOperationType) => setTicketOperation(operation)
-
     const resetTicketOperation = () => setTicketOperation(undefined)
 
+    // Load events when event type changes
     useEffect(() => {
         async function loadEvents() {
             setLoadingTickets(true)
-            const _events = (await getUpcomingEvents()).data
-            if (_events) setEvents(_events.events)
-            setLoadingTickets(false)
+            setSelectedEvent('') // Clear selection when switching types
+            try {
+                const response = await getUpcomingEvents(true, eventType)
+                if (response?.data?.events) {
+                    setEvents(response.data.events)
+                } else {
+                    setEvents([])
+                }
+            } catch (error) {
+                console.error("Failed to load events:", error)
+                setEvents([])
+            } finally {
+                setLoadingTickets(false)
+            }
         }
-
         loadEvents()
-    }, [])
+    }, [eventType])
 
-    // useEffect(() => {
-    //     // console.log({eventsLogged: events})
-    // }, [events]);
     const toggleScanMode = () => setCanScan(scan => !scan)
     const toggleMonitorMode = () => setMonitorMode(!monitorMode)
 
     const handleScan = async (detectedCodes: any) => {
-        const parts = (detectedCodes[0].rawValue).split('/').filter(Boolean)
+        if (!detectedCodes || detectedCodes.length === 0) return;
+
+        const rawValue = detectedCodes[detectedCodes.length - 1].rawValue;
+        const parts = rawValue.split('/').filter(Boolean)
         const ticketHash = parts[parts.length - 1]
+
         let operationUrl;
         if (ticketOperation === 'check-in') {
             operationUrl = `/tickets/${ticketHash}/check-ticket-in`
-        }
-
-        if (ticketOperation === 'check-out') {
+        } else if (ticketOperation === 'check-out') {
             operationUrl = `/tickets/${ticketHash}/check-ticket-out`
         }
-        // const {data} = await api.get(`/admin/scanner?hash=${ticketHash}`)
-        if (!operationUrl || !ticketHash) throw Error('Could not get operation url or ticket Hash')
-        // console.log({operationUrl})
-        const { data } = await api.post(operationUrl)
-        const ticket = data.result.ticket
-        const ticketData = {
-            ...ticket,
-            createdBy: data.result.createdBy
+
+        if (!operationUrl || !ticketHash) {
+            toast.error("Could not process scan. Ensure an operation is selected.");
+            return;
         }
-        // console.log({currentOperation: ticketOperation, data})
-        setCurrentTicket(ticketData)
-        const stringData = JSON.stringify(ticketData)
-        localStorage.setItem('currentTicket', stringData)
-        setTargetHash(ticketHash)
-        setTicketStatus(data.result.ticket.status)
-        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-        setOpenApprovalModal(true)
-        setCanScan(false)
+
+        // Show modal immediately with loading state
+        setOpenApprovalModal(true);
+        setLoading(true);
+        setCanScan(false);
+        setScanError(null); // Clear previous errors
+        setTargetHash(ticketHash);
+
+        try {
+            const { data } = await api.post(operationUrl)
+            const ticket = data.result.ticket
+
+            // Ticket already has createdBy populated from API
+            setCurrentTicket(ticket)
+            setTicketStatus(ticket.status)
+            setComputedStatus(extractTicketStatus(ticket.checkInLogs))
+
+            if (data.result.eventTicketStats) {
+                setEventStats(data.result.eventTicketStats);
+            }
+
+            // Record recent scan
+            setRecentScans(prev => [{
+                time: new Date().toLocaleTimeString(),
+                userName: ticket.createdBy?.firstName || "Unknown",
+                stand: ticket.stand || "Unknown Stand",
+                status: ticketOperation === 'check-in' ? "IN" : "OUT",
+                success: true
+            }, ...prev].slice(0, 10))
+        } catch (error: any) {
+            console.error("Scan error:", error);
+            const errorData = error.response?.data;
+
+            // Set error state for modal
+            setScanError({
+                title: errorData?.error || "Error processing ticket",
+                message: errorData?.details?.message || "An unexpected error occurred while processing the ticket.",
+                suggestion: errorData?.details?.suggestion,
+                canVoid: errorData?.details?.canVoid,
+                canCheckOut: errorData?.details?.canCheckOut,
+                ticket: errorData?.ticket || errorData?.details?.ticket // Check both locations
+            });
+
+            // Keep modal open to show error
+            // setOpenApprovalModal(false); 
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        setComputedStatus(extractTicketStatus(currentTicket.checkInLogs))
+        if (currentTicket?.checkInLogs) {
+            setComputedStatus(extractTicketStatus(currentTicket.checkInLogs))
+        }
     }, [currentTicket]);
+
     const getEventStats = async () => {
+        if (!selectedEvent) return;
         const stats = await fetchEventStats(selectedEvent)
-        setEventStats(stats.eventTicketStats)
+        if (stats?.eventTicketStats) {
+            setEventStats(stats.eventTicketStats)
+        }
     }
 
     useEffect(() => {
         if (!selectedEvent) return
         getEventStats()
-    }, [selectedEvent]);
 
-    // useEffect(() => {
-    //     console.log({eventStatsChange: eventStats})
-    // }, [eventStats]);
+        // SSE connection for monitor mode
+        let eventSource: EventSource | null = null;
+        if (monitorMode) {
+            eventSource = new EventSource(`/api/events/${selectedEvent}/stream`);
+
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "connected") {
+                    console.log("SSE connected for event:", data.eventId);
+                } else if (data.eventTicketStats) {
+                    setEventStats(data.eventTicketStats);
+                }
+            };
+
+            eventSource.onerror = (error) => {
+                console.error("SSE error:", error);
+                eventSource?.close();
+            };
+        }
+
+        return () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        };
+    }, [selectedEvent, monitorMode]);
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
-        const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`)
-        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-        // setEventStats(data.result.ticket.eventTicketStats)
-        //console.log({statusOut: data.result})
-        setEventStats(data.result.eventTicketStats)
-        //getEventStats()
-        setIsCheckingUserOut(false)
+        try {
+            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`)
+            setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+            if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
+            toast.success("User checked out successfully");
+        } catch (error) {
+            toast.error("Error checking out user");
+        } finally {
+            setIsCheckingUserOut(false)
+        }
     }
 
     const handleBlockingTicket = async () => {
         setIsBlockingTicket(true)
-        const blockedTicket = await api.post(`/tickets/${targetHash}/block-ticket`)
-        //console.log('Blocking Ticket', {blockedTicket})
-        setIsBlockingTicket(false)
+        try {
+            await api.post(`/tickets/${targetHash}/block-ticket`)
+            toast.success("Ticket blocked successfully");
+        } catch (error) {
+            toast.error("Error blocking ticket");
+        } finally {
+            setIsBlockingTicket(false)
+        }
     }
+
     const handleCheckingUserIn = async () => {
         setLoading(true)
-        const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`)
-        setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
-
-        setEventStats(data.result.eventTicketStats)
-        setLoading(false)
+        try {
+            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`)
+            setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+            if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
+            toast.success("User checked in successfully");
+        } catch (error) {
+            toast.error("Error checking in user");
+        } finally {
+            setLoading(false)
+        }
     }
-
 
     const cleanupDialogState = () => {
-        console.log('Cleaning up dialog state')
+        setOpenApprovalModal(false);
+        setCurrentTicket(null)
+        setScanError(null)
+        setCanScan(true) // Re-enable scanning for next ticket
     }
 
+    const selectedEventData = events.find(e => e._id === selectedEvent);
 
     return (
-        <div className='p-15 h-screen overflow-y-auto'>
-            <h2 className='text-4xl flex text-orange-400 items-center gap-2'>
-                <span>Ticket Scanner</span> <span><QrCode className='text-orange-400 mt-0.5' /></span>
-            </h2>
-            <div className="flex lg:flex-row flex-col-reverse gap-2">
-                <section className='w-4/4 mt-1'>
-                    <div className="flex lg:flex-row bg-zinc-900 p-2 px-4 rounded-lg gap-4 flex-col items-end w-full">
-                        {selectedEvent ? (
-                            <section className="flex mt-2 lg:mt-1 max-w-fit mb-4 flex-col">
-                                <h2 className="text-lg mb-1 text-zinc-600">Monitoring Mode</h2>
-                                <div
-                                    className="bg-zinc-800 gap-2 h-full flex pl-2 p-1.5 px-6 rounded items-center max-w-fit lg:w-full">
-                                    <Switch className={'text-zinc-500'} checked={monitorMode}
-                                        onCheckedChange={toggleMonitorMode} />
-                                    <span
-                                        className={'text-zinc-500'}>{monitorMode ? "Activated" : "Deactivated"}</span>
-                                </div>
-                            </section>
-                        ) : null}
+        <div className='min-h-screen bg-black text-white p-4 sm:p-8 lg:p-12 overflow-y-auto'>
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+                <div className="space-y-2">
+                    <h1 className='text-3xl sm:text-5xl font-black flex items-center gap-3 tracking-tighter'>
+                        TICKET <span className="text-orange-500">SCANNER</span>
+                        <QrCode size={40} className='text-orange-500' />
+                    </h1>
+                    <p className="text-zinc-500 font-medium">Administrative Access Only • v2.0</p>
+                </div>
 
-                        <section className="flex mt-2 lg:mt-10 mb-4 w-full flex-col">
-                            <h2 className="text-lg mb-1 text-zinc-600">Pick Event To Monitor</h2>
-                            <div className="bg-zinc-800 rounded w-full">
-                                {events.length > 0 ? (
-                                    <Select
-                                        value={selectedEvent}
-                                        onValueChange={(value: string) => {
-                                            setSelectedEvent(value);
-                                        }}
-                                    >
-                                        <SelectTrigger
-                                            className="w-full grow-0 bg-zinc-800 text-zinc-100 py-1 outline-none border-2 border-zinc-800 flex">
-                                            <SelectValue placeholder="Pick an event to scan for" />
-                                        </SelectTrigger>
-                                        <SelectContent className={'w-full border-zinc-800 bg-zinc-800'}>
-                                            {events.map(event => (
-                                                <SelectItem
-                                                    key={event._id}
-                                                    value={event._id}
-                                                    className={'w-full outline'}>
-                                                    {/*<span className={'text-xs bg-green-400 text-white p-1 rounded'}>(Home)</span> {event.homeTeam} vs {event.awayTeam} <span className={'bg-orange-400 text-white p-1 rounded text-xs'}>(Away)</span> | {new Date(event.date).toDateString()}*/}
-                                                    <span
-                                                        className={'text-xs bg-green-500 text-white p-1 rounded'}>Home</span> {event.homeTeam} vs {event.awayTeam}
-                                                    <span
-                                                        className={'bg-orange-400 text-white p-1 rounded text-xs'}>Away</span>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : loadingTickets ? (
-                                    <div className={'flex gap-2 p-1 px-3 items-center'}>
-                                        <h3 className={'text-slate-400'}>Loading Events </h3>
-                                        <span><Spinner /></span>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <h2 className="text-xl">No Events</h2>
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-
-                        <div>
-                            <h2 className='text-lg text-zinc-600'>Total Tickets</h2>
-                            <section className="bg-zinc-800 p-1 px-2 mb-4 rounded lg:w-54">
-                                {/*<span className='text-5xl text-slate-800'>{eventStats.totalPeopleCheckedIn}/{eventStats.totalTicketsBought}</span>*/}
-                                <span className='text-zinc-400 text-lg'>
-                                    {/*{Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
-                                    340 / 1,200
-                                </span>
-                            </section>
-                        </div>
+                {/* Global Status Pill */}
+                {selectedEventData && (
+                    <div className="flex items-center gap-3 bg-zinc-900/50 backdrop-blur-md border border-white/5 px-4 py-2 rounded-full">
+                        <div className={`h-2.5 w-2.5 rounded-full animate-pulse ${monitorMode ? 'bg-green-500' : 'bg-orange-500'}`} />
+                        <span className="text-sm font-bold uppercase tracking-widest text-zinc-300">
+                            {monitorMode ? 'Real-time Monitoring' : 'Field Entry Active'}
+                        </span>
                     </div>
-
-                    {/*MOBILE SCANNER */}
-                    <div className="h-auto bg-zinc-800 md:hidden w-full flex flex-col gap-1">
-                        {(monitorMode || !selectedEvent) ? null : (
-                            <section>
-                                {canScan ? (
-                                    <Scanner
-                                        onScan={handleScan}
-                                        onError={(error: any) => console.log(error?.message)}
-                                    />
-                                ) : null}
-                            </section>
-                        )}
-                        <NButton className={`${canScan ? 'bg-orange-500' : ''}`} icon={<Power />}
-                            onClick={toggleScanMode}>{canScan ? 'Turn Scan Off' : 'Activate Scanner'} </NButton>
-                    </div>
-
-                    {selectedEvent ? (
-                        <div className="flex mt-10 flex-col gap-2 w-full">
-                            <h2 className='text-3xl text-zinc-400'>Fan Stats</h2>
-                            <div className='flex gap-4 flex-col'>
-
-                                <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-2/2">
-                                    {/* stand header */}
-                                    <div className={'flex items-center justify-between'}>
-                                        <section className={'flex items-center gap-2'}>
-                                            <div className="h-3 w-3 rounded-full bg-indigo-800" />
-                                            <h2 className='text-xl text-indigo-200'>Popular Stand</h2>
-                                        </section>
-                                        <span className={'text-zinc-500'}>2,000 / 2,500</span>
-                                    </div>
-
-                                    {/* stand overall progress */}
-                                    <div className={'flex items-center justify-between gap-2'}>
-                                        <div className={'w-[80%] bg-indigo-800 h-2 rounded-lg'} />
-                                        <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
-                                    </div>
-
-                                    <div className={'flex items-center justify-between gap-2'}>
-                                        <section className={'text-center'}>
-                                            <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
-                                            <p className={'text-2xl text-left text-indigo-200'}>425</p>
-                                        </section>
-                                        <section className={'text-center'}>
-                                            <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
-                                            <p className={'text-2xl text-right text-blue-200'}>239</p>
-                                        </section>
-                                    </div>
-
-                                    {/*<span className='text-2xl text-zinc-300'>*/}
-                                    {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
-                                    {/*</span>*/}
-                                </section>
-                                {/*STAND ROW*/}
-                                <section className={'w-full flex gap-2'}>
-                                    {/* STAND */}
-                                    <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-1/2">
-                                        {/* stand header */}
-                                        <div className={'flex items-center justify-between'}>
-                                            <section className={'flex items-center gap-2'}>
-                                                <div className="h-3 w-3 rounded-full bg-teal-800" />
-                                                <h2 className='text-xl text-teal-200'>Regular Stand</h2>
-                                            </section>
-                                            <span className={'text-zinc-500'}>2,000 / 2,500</span>
-                                        </div>
-
-                                        {/* stand overall progress */}
-                                        <div className={'flex items-center justify-between gap-2'}>
-                                            <div className={'w-[80%] bg-teal-800 h-2 rounded-lg'} />
-                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
-                                        </div>
-
-                                        <div className={'flex items-center justify-between gap-2'}>
-                                            <section className={'text-center'}>
-                                                <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
-                                                <p className={'text-2xl text-left text-teal-200'}>425</p>
-                                            </section>
-                                            <section className={'text-center'}>
-                                                <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
-                                                <p className={'text-2xl text-right text-teal-200'}>239</p>
-                                            </section>
-                                        </div>
-
-                                        {/*<span className='text-2xl text-zinc-300'>*/}
-                                        {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
-                                        {/*</span>*/}
-                                    </section>
-
-                                    {/* STAND */}
-                                    <section className="bg-neutral-900 p-2 px-4 flex flex-col gap-4 rounded lg:w-1/2">
-                                        {/* stand header */}
-                                        <div className={'flex items-center justify-between'}>
-                                            <section className={'flex items-center gap-2'}>
-                                                <div className="h-3 w-3 rounded-full bg-orange-800" />
-                                                <h2 className='text-xl text-orange-200'>Executive Stand</h2>
-                                            </section>
-                                            <span className={'text-zinc-500'}>2,000 / 2,500</span>
-                                        </div>
-
-                                        {/* stand overall progress */}
-                                        <div className={'flex items-center justify-between gap-2'}>
-                                            <div className={'w-[80%] bg-orange-800 h-2 rounded-lg'} />
-                                            <div className={'w-[20%] bg-zinc-700 h-2 rounded-lg'} />
-                                        </div>
-
-                                        <div className={'flex items-center justify-between gap-2'}>
-                                            <section className={'text-center'}>
-                                                <h3 className={'text-zinc-600 text-sm'}>INSIDE</h3>
-                                                <p className={'text-2xl text-left text-orange-200'}>121</p>
-                                            </section>
-                                            <section className={'text-center'}>
-                                                <h3 className={'text-zinc-600 text-sm'}>OUTSIDE</h3>
-                                                <p className={'text-2xl text-right text-orange-200'}>98</p>
-                                            </section>
-                                        </div>
-
-                                        {/*<span className='text-2xl text-zinc-300'>*/}
-                                        {/*    {Number(eventStats?.totalTicketsBought)?.toLocaleString()}*/}
-                                        {/*</span>*/}
-                                    </section>
-                                </section>
-                            </div>
-                        </div>
-                    ) : null}
-
-                    {!selectedEvent ? null : (
-                        <div className='mt-10'>
-                            <h2 className="text-3xl text-zinc-500 mb-2">Recent Scans</h2>
-                            <section
-                                className='border-zinc-900 bg-zinc-900 rounded-md border-2 h-76 overflow-y-auto flex flex-col items-center justify-center gap-2 p-2'>
-                                <MdSecurity size={32} color={'text-orange-300'} />
-                                <h2 className=" text-zinc-500">No one has checked in yet</h2>
-                            </section>
-
-                        </div>
-                    )}
-
-                </section>
-
-
-                {(monitorMode || !selectedEvent) ? null : (
-                    <TicketScanner
-                        resetTicketOperationAction={resetTicketOperation}
-                        selectTicketOperationAction={selectTicketOperation}
-                        ticketOperation={ticketOperation}
-                        canScan={canScan}
-                        cleanupDialogStateAction={cleanupDialogState}
-                        selectedEvent={selectedEvent}
-                        currentTicket={currentTicket}
-                        loading={loading}
-                        toggleScanModeAction={toggleScanMode}
-                        handleScanAction={handleScan}
-                        openApprovalModalAction={openApprovalModal}
-                        computedStatus={computedStatus}
-                        handleBlockingTicketAction={handleBlockingTicket}
-                        handleCheckingUserInAction={handleCheckingUserIn}
-                        handleCheckingUserOutAction={handleCheckingUserOut}
-                        isCheckingUserOut={isCheckingUserOut}
-                        updateOpenApprovalModalAction={setOpenApprovalModal}
-                    />
                 )}
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Column - Controls & Selection */}
+                <div className="lg:col-span-8 space-y-8">
+                    {/* Event Selection & Global Stats */}
+                    <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                            <div className="space-y-4">
+                                {/* Event Type Toggle */}
+                                <div className="mb-4">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-500 px-1 block mb-3">Event Type</label>
+                                    <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-2xl border border-white/5">
+                                        <button
+                                            onClick={() => setEventType('sports')}
+                                            className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'sports'
+                                                ? 'bg-orange-500 text-white shadow-lg'
+                                                : 'text-zinc-400 hover:text-white'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <TbSoccerField size={18} />
+                                                <span>Football</span>
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => setEventType('event')}
+                                            className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'event'
+                                                ? 'bg-orange-500 text-white shadow-lg'
+                                                : 'text-zinc-400 hover:text-white'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Ticket size={18} />
+                                                <span>Regular Events</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 px-1">Select Active Event</label>
+                                <div className="relative group">
+                                    {events.length > 0 ? (
+                                        <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                                            <SelectTrigger className="w-full bg-zinc-950 border-white/10 text-white h-14 rounded-2xl focus:ring-orange-500/20">
+                                                <SelectValue placeholder="Identify the target event" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-zinc-950 border-white/10 text-white rounded-2xl shadow-2xl'>
+                                                {events.map(event => (
+                                                    <SelectItem key={event._id} value={event._id} className="focus:bg-orange-500 focus:text-white rounded-xl py-3 cursor-pointer">
+                                                        {event.type === 'sports' ? (
+                                                            <div className="flex items-center gap-3">
+                                                                <TbSoccerField className="text-orange-500" />
+                                                                <span className="font-bold">{event.homeTeam} <span className="text-zinc-500 font-normal">v</span> {event.awayTeam}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-3">
+                                                                <Ticket size={16} className="text-orange-500" />
+                                                                <span className="font-bold">{event.title}</span>
+                                                            </div>
+                                                        )}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : loadingTickets ? (
+                                        <div className="h-14 bg-zinc-950/50 rounded-2xl flex items-center px-4 gap-3">
+                                            <Spinner className="text-orange-500" />
+                                            <span className="text-zinc-500 text-sm">Initializing resources...</span>
+                                        </div>
+                                    ) : (
+                                        <div className="h-14 bg-zinc-950/50 rounded-2xl flex items-center px-4 gap-3 border border-dashed border-white/10">
+                                            <MdReport className="text-zinc-600" />
+                                            <span className="text-zinc-600 text-sm italic">No scheduled events found</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-1">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Monitor Mode</label>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${monitorMode ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
+                                        {monitorMode ? 'AUTO-REFRESH' : 'MANUAL'}
+                                    </span>
+                                </div>
+                                <div className="bg-zinc-950 border border-white/10 h-14 rounded-2xl flex items-center justify-between px-6">
+                                    <span className="text-sm font-medium text-zinc-400">{monitorMode ? "Broadcast Active" : "Scanning Priority"}</span>
+                                    <Switch checked={monitorMode} onCheckedChange={toggleMonitorMode} className="data-[state=checked]:bg-green-500" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* High Level Metrics */}
+                        {selectedEventData && eventStats && (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/5">
+                                <div className="text-center p-4 rounded-2xl bg-white/2">
+                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter mb-1">Checked In</p>
+                                    <p className="text-2xl font-black text-white">{eventStats.totalPeopleCheckedIn || 0}</p>
+                                </div>
+                                <div className="text-center p-4 rounded-2xl bg-white/2">
+                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter mb-1">Inside Now</p>
+                                    <p className="text-2xl font-black text-green-500">{eventStats.totalPeopleInside || 0}</p>
+                                </div>
+                                <div className="text-center p-4 rounded-2xl bg-white/2">
+                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter mb-1">Sold Out</p>
+                                    <p className="text-2xl font-black text-zinc-400">{eventStats.totalTicketsBought || 0}</p>
+                                </div>
+                                <div className="text-center p-4 rounded-2xl bg-white/2">
+                                    <p className="text-[10px] font-black uppercase text-zinc-500 tracking-tighter mb-1">At Exit</p>
+                                    <p className="text-2xl font-black text-red-400">{eventStats.totalPeopleOutside || 0}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Detailed Stand/Type Stats */}
+                    {selectedEventData && eventStats?.standBreakdown && (
+                        <div className="space-y-6">
+                            <h2 className='text-xl sm:text-2xl font-black flex items-center gap-3 px-2 tracking-tight'>
+                                <Users size={22} className="text-orange-500" />
+                                DETAILED OCCUPANCY
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.entries(eventStats.standBreakdown).map(([name, data]: [string, any], idx) => (
+                                    <div key={idx} className="bg-zinc-900/40 border border-white/5 p-6 rounded-3xl shadow-xl hover:bg-zinc-900/60 transition-colors">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                                                <h3 className="text-lg font-bold text-white uppercase">{name}</h3>
+                                            </div>
+                                            <span className="text-xs font-bold text-zinc-500 bg-white/5 px-2 py-1 rounded-lg">
+                                                {data.inside}/{data.total}
+                                            </span>
+                                        </div>
+                                        {/* Progress Bar */}
+                                        <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden mb-6">
+                                            <div
+                                                className="h-full bg-orange-500 transition-all duration-1000 ease-out"
+                                                style={{ width: `${(data.inside / data.total) * 100}%` }}
+                                            />
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">Total In</p>
+                                                <p className="text-3xl font-black text-white">{data.inside || 0}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">Cap. Left</p>
+                                                <p className="text-xl font-bold text-zinc-400">{(data.total - data.inside) || 0}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Scans Area */}
+                    <div className="pt-4 space-y-4">
+                        <h2 className='text-xl sm:text-2xl font-black flex items-center gap-3 px-2 tracking-tight'>
+                            <History size={24} className="text-zinc-500" />
+                            RECENT ACTIVITY
+                        </h2>
+                        <div className="bg-zinc-900/40 border border-white/5 rounded-3xl min-h-[160px] overflow-hidden">
+                            {recentScans.length > 0 ? (
+                                <div className="divide-y divide-white/5">
+                                    {recentScans.map((scan, i) => (
+                                        <div key={i} className="flex items-center justify-between p-4 hover:bg-white/2 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`p-2 rounded-full ${scan.status === 'IN' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                    {scan.status === 'IN' ? <UserCheck size={16} /> : <UserMinus size={16} />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold">{scan.userName}</p>
+                                                    <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">{scan.stand}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-white">{scan.status}</p>
+                                                <p className="text-[10px] text-zinc-500 font-medium">{scan.time}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-12 text-center gap-3">
+                                    <div className="p-4 bg-zinc-950/50 rounded-full">
+                                        <ShieldCheck className="text-zinc-700" size={32} />
+                                    </div>
+                                    <p className="text-sm font-medium text-zinc-600 italic">Security log is ready. Waiting for scan detection...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column - Scanner UI */}
+                <div className="lg:col-span-4 max-w-sm mx-auto w-full">
+                    {!monitorMode && selectedEvent && (
+                        <div className="sticky top-12 space-y-6">
+                            <div className="bg-zinc-900 border-2 border-orange-500/20 rounded-[2rem] overflow-hidden shadow-[0_0_50px_-12px_rgba(249,115,22,0.15)]">
+                                <div className="p-1 px-4 py-3 bg-orange-500 flex justify-between items-center text-white">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Entry Command Center</span>
+                                    <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                                </div>
+
+                                <TicketScanner
+                                    resetTicketOperationAction={resetTicketOperation}
+                                    selectTicketOperationAction={selectTicketOperation}
+                                    ticketOperation={ticketOperation}
+                                    canScan={canScan}
+                                    cleanupDialogStateAction={cleanupDialogState}
+                                    selectedEvent={selectedEvent}
+                                    currentTicket={currentTicket}
+                                    loading={loading}
+                                    toggleScanModeAction={toggleScanMode}
+                                    handleScanAction={handleScan}
+                                    openApprovalModalAction={openApprovalModal}
+                                    computedStatus={computedStatus}
+                                    handleBlockingTicketAction={handleBlockingTicket}
+                                    handleCheckingUserInAction={handleCheckingUserIn}
+                                    handleCheckingUserOutAction={handleCheckingUserOut}
+                                    isCheckingUserOut={isCheckingUserOut}
+                                    updateOpenApprovalModalAction={setOpenApprovalModal}
+                                    scanError={scanError}
+                                    onResetError={() => setScanError(null)}
+                                />
+
+                                <div className="bg-zinc-950 p-6 text-center">
+                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Quick Diagnostic</p>
+                                    <div className="flex justify-center gap-3">
+                                        <div className="h-2 w-2 rounded-full bg-green-500/50" />
+                                        <div className="h-2 w-2 rounded-full bg-zinc-800" />
+                                        <div className="h-2 w-2 rounded-full bg-zinc-800" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Device Warning */}
+                            <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-2xl flex items-start gap-3">
+                                <MdReport className="text-orange-500 shrink-0 mt-0.5" />
+                                <p className="text-xs text-orange-200/60 leading-relaxed italic">
+                                    Ensure your device camera has adequate lighting for high-speed QR detection. Manual check-in available via approval modal.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {!selectedEvent && (
+                        <div className="bg-zinc-900/50 border-2 border-dashed border-white/5 rounded-[2rem] p-12 text-center space-y-4">
+                            <div className="p-6 bg-zinc-950/50 rounded-full inline-block">
+                                <Power className="text-zinc-800" size={40} />
+                            </div>
+                            <h3 className="text-slate-500 font-bold uppercase tracking-wider text-sm">System Offline</h3>
+                            <p className="text-xs text-zinc-600">Select an event from the deployment menu to initialize the security perimeter.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     )
 }
