@@ -329,7 +329,7 @@ const AdminTicketScanner = () => {
                         TICKET <span className="text-orange-500">SCANNER</span>
                         <QrCode size={40} className='text-orange-500' />
                     </h1>
-                    <p className="text-zinc-500 font-medium">Administrative Access Only • v2.0</p>
+                    <p className="text-zinc-500 font-medium">Administrative Access Only</p>
                 </div>
 
                 {/* Global Status Pill */}

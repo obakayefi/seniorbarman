@@ -12,12 +12,18 @@ export async function connectDB() {
     if (cached.conn) return cached.conn
 
     if (!cached.promise) {
+        // Determine database name based on environment
+        const isStaging = process.env.NEXT_PUBLIC_ENV === 'staging' || process.env.VERCEL_ENV === 'preview';
+        const dbName = isStaging ? 'event-booking-db-staging' : 'event-booking-db';
+
+        console.log(`[MongoDB] Connecting to database: ${dbName} (env: ${process.env.NEXT_PUBLIC_ENV || process.env.VERCEL_ENV || 'development'})`);
+
         cached.promise = mongoose.connect(MONGODB_URI, {
-            dbName: "event-booking-db",
+            dbName,
             bufferCommands: true,
             serverSelectionTimeoutMS: 20000
         }).then(m => {
-            // console.log("MongoDB connected successfully");
+            console.log(`[MongoDB] Successfully connected to ${dbName}`);
             cached.conn = m;
             return m;
         }).catch(error => {

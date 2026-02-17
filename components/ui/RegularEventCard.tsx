@@ -4,6 +4,7 @@ import { SlLocationPin } from "react-icons/sl";
 import { Calendar1 } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
 import { BookRegularEventModal } from "../modals/book-regular-event";
+import { DeleteConfirmModal } from "../modals/delete-confirm-modal";
 import { useApp } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,16 +28,21 @@ export default function RegularEventCard({ event }: { event: any }) {
 
     const isAdmin = user?.role === 'admin'
 
+    const [isDeleting, setIsDeleting] = useState(false)
+
     const onDelete = async () => {
-        if (!confirm("Are you sure you want to delete this event?")) return
+        // if (!confirm("Are you sure you want to delete this event?")) return
+        setIsDeleting(true)
         try {
-            const res = await api.delete(`/events/${event._id}`)
+            const res = await api.delete(`/events/${event._id}?type=event`)
             if (res.status === 200) {
                 toast.success("Event deleted")
                 window.location.reload()
             }
         } catch (error) {
             toast.error("Failed to delete event")
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -77,21 +83,25 @@ export default function RegularEventCard({ event }: { event: any }) {
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                        {/* Admin Actions */}
                         {isAdmin && (
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1 w-full text-right items-end">
                                 <NButton
                                     onClick={() => router.push(`/u/a/events/${event._id}/edit`)}
                                     className="bg-zinc-800 border border-zinc-700 w-full text-xs py-1"
                                 >
                                     EDIT EVENT
                                 </NButton>
-                                <NButton
-                                    onClick={onDelete}
-                                    className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 w-full text-xs py-1"
-                                >
-                                    DELETE EVENT
-                                </NButton>
+                                <DeleteConfirmModal
+                                    onConfirm={onDelete}
+                                    isDeleting={isDeleting}
+                                    trigger={
+                                        <NButton
+                                            className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 w-full text-xs py-1"
+                                        >
+                                            DELETE EVENT
+                                        </NButton>
+                                    }
+                                />
                             </div>
                         )}
                         <Dialog>

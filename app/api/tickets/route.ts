@@ -96,8 +96,7 @@ export async function GET(req: Request) {
         const tickets = await Ticket
             .find({ createdBy: userId })
             .populate("event")
-        // console.log({userId})
-        // console.log({ serverTickets: tickets, userId })
+
         // Handle case where user has no events
         if (!tickets.length) {
             return NextResponse.json({
@@ -108,11 +107,28 @@ export async function GET(req: Request) {
 
         const events = await Event.find({})
 
+        // Debugging logs
+        console.log(`[API] Fetching tickets. User: ${userId}`);
+        console.log(`[API] Total raw tickets found: ${tickets.length}`);
+        console.log(`[API] Total events found: ${events.length}`);
+
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
         // console.log({eventsSortedWithTickets})
+
+        // Filter out tickets where the event object is missing (orphaned tickets)
+        // strict filter to ensure event is not null/undefined
+        const validTickets = eventsSortedWithTickets.filter(ticket =>
+            ticket &&
+            ticket._id &&
+            ticket.transformedSummary &&
+            ticket.title // title exists on the event object, ensuring it's not a null reference if we spread it
+        );
+
+        console.log(`[API] Valid tickets after filtering: ${validTickets.length}`);
+
         return NextResponse.json({
             message: "tickets fetched successfully",
-            tickets: eventsSortedWithTickets.filter(ticket => ticket && ticket._id && ticket.transformedSummary),
+            tickets: validTickets,
         });
     } catch (error) {
         //  console.error("Error fetching user events:", error);

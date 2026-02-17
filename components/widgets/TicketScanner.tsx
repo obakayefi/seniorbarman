@@ -99,7 +99,7 @@ export default function TicketScanner({
                                 Check Fan Out
                             </NButton>
 
-                            <NButton
+                            {/* <NButton
                                 className={'py-10 bg-amber-500 hover:bg-amber-200 hover:text-amber-900 text-lg'}
                                 icon={<QrCode />}
                                 onClick={() => selectTicketOperationAction('scan')}>
@@ -111,7 +111,7 @@ export default function TicketScanner({
                                 icon={<ShieldX />}
                                 onClick={() => selectTicketOperationAction('suspend')}>
                                 Suspend Ticket
-                            </NButton>
+                            </NButton> */}
                         </div>
                     ) : null}
                 </section>
