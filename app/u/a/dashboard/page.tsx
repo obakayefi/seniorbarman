@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
+import EnvViewer from '@/components/features/admin/EnvViewer'
 
 const AdminDashboard = () => {
     const { user } = useApp()
@@ -71,7 +72,9 @@ const AdminDashboard = () => {
 
     return (
         <div className='md:p-10 p-6 w-full space-y-10'>
-            <PageHeader title="Admin Oversight" />
+            <PageHeader title="Admin Oversight">
+                <EnvViewer />
+            </PageHeader>
 
             {/* Admin Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
