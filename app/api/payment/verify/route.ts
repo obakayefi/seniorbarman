@@ -12,6 +12,13 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Reference missing" }, { status: 400 })
         }
 
+        if (reference.startsWith('FREE-')) {
+            return NextResponse.json(
+                { status: 'success', message: 'Free order verified' },
+                { status: 200 }
+            )
+        }
+
         const paystackRes = await axios.get(
             `https://api.paystack.co/transaction/verify/${reference}`,
             {

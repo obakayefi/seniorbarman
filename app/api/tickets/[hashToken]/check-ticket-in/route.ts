@@ -1,13 +1,14 @@
-import {NextResponse} from "next/server";
-import {connectDB} from "@/lib/mongodb";
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
 import Ticket from "@/models/Ticket";
 import Event from "@/models/Event"
-import {TicketPayload} from "@/types/data";
-import {cookies} from "next/headers";
-import jwt, {JwtPayload} from "jsonwebtoken";
+import { TicketPayload } from "@/types/data";
+import { cookies } from "next/headers";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "@/models/User";
-import {PrepareEventStats} from "@/lib/utils";
-import {emitWebhook} from "@/services/webhookService";
+import { PrepareEventStats } from "@/lib/utils";
+import { emitWebhook } from "@/services/webhookService";
+import eventBus from "@/lib/eventbus";
 
 type Params = {
     params: Promise<{ hashToken: string }>;
@@ -18,40 +19,63 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
     let totalOutsideStadium = 0;
     let totalInsideStadium = 0;
     let totalCheckedIn = 0;
-    
+
     const _ticketsCheckedIn = tickets.filter(event => event.checkInLogs.length > 0);
     totalCheckedIn = _ticketsCheckedIn.length;
-    
+
     /*
     * check all tickets with logs
     * 
     * pick the last log on each ticket and if the action is exit add count of those outsideStadium
     * else if the action is entry increase totalinside
     * */
-   
+
     return {
         allPurchasedTickets: tickets.length,
     };
 }
 
 
-export async function POST(req: Request, {params}: Params) {
+export async function POST(req: Request, { params }: Params) {
     try {
         await connectDB();
-        const {hashToken} = await params;
+        const { hashToken } = await params;
 
         if (!hashToken) {
             return NextResponse.json(
-                {error: "Invalid action"},
-                {status: 400}
+                { error: "Invalid action" },
+                { status: 400 }
             );
         }
-        let ticket = await Ticket.findOne({checkInToken: hashToken}).populate("event");
-        
+        let ticket = await Ticket.findOne({ checkInToken: hashToken }).populate("event").populate("createdBy");
+
         if (!ticket) {
             return NextResponse.json(
-                {error: "Ticket not found"},
-                {status: 404}
+                { error: "Ticket not found" },
+                { status: 404 }
+            );
+        }
+
+        // Validation: Cannot check in if already inside
+        if (ticket.isInside) {
+            const lastLog = ticket.checkInLogs[ticket.checkInLogs.length - 1];
+            const lastAction = lastLog?.action || "unknown";
+            const lastTime = lastLog?.time ? new Date(lastLog.time).toLocaleString() : "unknown";
+
+            return NextResponse.json(
+                {
+                    error: "Cannot check in - User already inside",
+                    details: {
+                        message: "This ticket holder is already checked into the venue and has not checked out.",
+                        suggestion: "Check them out first before checking in again, or verify if this is a duplicate scan.",
+                        ticketStatus: "Already Inside",
+                        lastAction: lastAction,
+                        lastActionTime: lastTime,
+                        canCheckOut: true,
+                        ticket: ticket
+                    }
+                },
+                { status: 400 }
             );
         }
 
@@ -62,10 +86,13 @@ export async function POST(req: Request, {params}: Params) {
             location: "Gate 1"
         }
         ticket.isInside = true;
-        
         ticket.checkInLogs.push(gateAction)
         await ticket.save()
-        
+
+        // Fetch event tickets and calculate stats in parallel
+        const ticketsForEvent = await Ticket.find({ event: ticket.event })
+        const eventTicketStats = PrepareEventStats(ticketsForEvent);
+
         emitWebhook("ticket.check_in", {
             ticketId: ticket._id,
             userId: ticket,
@@ -74,18 +101,25 @@ export async function POST(req: Request, {params}: Params) {
             location: gateAction.location,
             method: gateAction.method,
         })
-        
-        let updatedTicket = await Ticket.findOne({checkInToken: hashToken}).populate("event").populate("createdBy");
-        
-        return NextResponse.json({
-            message: "Ticket successfully checked in",
-            result: {ticket: updatedTicket},
+
+        eventBus.emit(`event_update:${ticket.event}`, {
+            type: "ticket.check_in",
+            ticket: ticket,
+            eventTicketStats
         });
+
+        return NextResponse.json(
+            {
+                message: "Ticket successfully checked in",
+                result: { ticket: ticket, eventTicketStats }
+            },
+            { status: 200 }
+        )
     } catch (error) {
         console.error("Error checking in ticket:", error);
         return NextResponse.json(
-            {error: "Internal server error"},
-            {status: 500}
+            { error: "Internal server error" },
+            { status: 500 }
         );
     }
 }

@@ -3,7 +3,7 @@ export interface IEventStats {
     totalPeopleCheckedIn: number;
     totalPeopleInside: number;
     totalPeopleOutside: number;
-    
+
 }
 
 export type TicketPayload = {
@@ -21,3 +21,23 @@ export type TicketPayload = {
     qrCode: string;      // the Base64 PNG string
     decodedQR: string;   // e.g. "255dd9f9abcbd9fb12f662f5577604d0"
 };
+
+export type TicketSummary = {
+    event: {
+        _id: string;
+        homeTeam?: string;
+        awayTeam?: string;
+        title?: string;
+    };
+    user: string;
+    ticket: {
+        status: string;
+        id: string;
+        stand: string;
+    };
+    checkInLogs: any[];
+    stand?: string;
+    createdBy?: {
+        firstName: string;
+    };
+}

@@ -47,14 +47,14 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "You can't generate tickets like this, sorry" }, { status: 400 })
         }
 
-       // console.log({ticketOrders, reference})
+        // console.log({ticketOrders, reference})
 
         // throw Error if tickets have already been generated
         // if (ticketOrders?.isGenerated) return NextResponse.json({ error: 'Tickets for this order has been generated', }, { status: 400 })   
 
         const _ticketsToPrint = await PrintTickets(ticketOrders.tickets, ticketOrders.event, true)
 
-       //  console.log({ ticketOrders, _ticketsToPrint });
+        //  console.log({ ticketOrders, _ticketsToPrint });
 
         const createdTickets = await Ticket.create(_ticketsToPrint)
 

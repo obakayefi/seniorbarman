@@ -3,9 +3,11 @@ import Event from "@/models/Event"
 import Ticket from "@/models/Ticket";
 import { getUserFromCookie } from "@/lib/auth";
 import { PrepareEventStats } from "@/lib/utils";
+import { connectDB } from "@/lib/mongodb";
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
     try {
+        await connectDB()
         const { id } = await context.params
         const ticketsForEvent = await Ticket.find({ event: id })
         const eventTicketStats = PrepareEventStats(ticketsForEvent)

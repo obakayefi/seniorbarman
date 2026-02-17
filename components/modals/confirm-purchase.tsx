@@ -7,7 +7,7 @@ import useUser from '@/hooks/useUser'
 import api from '@/lib/axios'
 import { useApp } from '@/context/AppContext'
 import NButton from '../native/NButton'
-import { OnPayNow } from "@/lib/helpers";
+import { OnPayNow, OnFreeOrder } from "@/lib/helpers";
 import { getUserFromCookie } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -48,9 +48,18 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                 return
             }
 
-            await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
+            if (totalPrice === 0) {
+                const result = await OnFreeOrder(ticketsToPurchase, eventId)
+                if (result.success) {
+                    toast.success('Tickets generated successfully!')
+                    setTimeout(() => window.location.assign('/u/tickets'), 1500)
+                }
+            } else {
+                await OnPayNow(paymentPayload, ticketsToPurchase, eventId)
+            }
         } catch (error: any) {
             console.error('Error making payment', error.message)
+            toast.error('Failed to process order. Please try again.')
         } finally {
             setLoading(false)
         }
@@ -69,12 +78,12 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="border-b-2 border-zinc-800">
+                            <section className="border-b-2 border-zinc-950">
                                 <div className="flex flex-col sm:flex-row justify-between">
                                     <h5>{ticket.name}
                                     </h5>
                                     <p className="text-lg text-orange-500">
-                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm">{ticket.quantity} ticket(s)</span>
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm italic">({ticket.quantity} ticket{ticket.quantity > 1 ? 's' : ''})</span>
                                     </p>
                                 </div>
                             </section>
@@ -94,7 +103,7 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
                     disabled={loading}
                     icon={<CheckCircle />}
                     loading={loading}>
-                    Pay Now
+                    {totalPrice === 0 ? 'Get Tickets' : 'Pay Now'}
                 </NButton>
             </DialogFooter>
         </div>

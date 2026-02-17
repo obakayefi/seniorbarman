@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    // const upcoming = searchParams.get("upcoming");
     const eventType = searchParams.get("type");
+    const forScanner = searchParams.get("forScanner") === "true";
 
     try {
         await connectDB()
@@ -24,10 +24,6 @@ export async function GET(req: Request) {
             .sort({ date: 1 })
             .lean()
 
-        // Filter logic:
-        // 1. If date > today (future), keep it.
-        // 2. If date == today, keep only if it's more than 30 minutes before the event start time.
-
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         const nowInWat = new Date(watTime);
 
@@ -38,21 +34,21 @@ export async function GET(req: Request) {
             eventMidnight.setHours(0, 0, 0, 0)
 
             // 1. Check if future date (strictly after today)
-            if (eventMidnight.getTime() > today.getTime()) {
-                return true
-            }
+            // if (eventMidnight.getTime() > today.getTime()) {
+            //     return true
+            // }
 
-            // 2. It's today. Check against start time with 30-minute buffer.
+            // 2. It's today.
+            // If it's for the scanner, we show it as long as it's today (even if in progress)
+            if (forScanner) {
+                // Return true if it's today or in the future
+                return eventDate >= today;
+            };
+
+            // Otherwise, check against start time with 30-minute buffer for sales.
             try {
-                // event.time is expected to be "HH:mm"
-                const [hours, minutes] = event.time.split(':').map(Number);
-                if (isNaN(hours) || isNaN(minutes)) return false;
-
-                const eventStartTime = new Date(eventDate);
-                eventStartTime.setHours(hours, minutes, 0, 0);
-
                 // Cutoff is 30 minutes before the event starts
-                const cutoffTime = new Date(eventStartTime.getTime() - 30 * 60 * 1000);
+                const cutoffTime = new Date(eventDate.getTime() - 30 * 60 * 1000);
 
                 return nowInWat < cutoffTime;
             } catch (e) {
@@ -65,8 +61,7 @@ export async function GET(req: Request) {
             { events: filteredEvents },
             { status: 200 }
         )
-    } catch
-    (error: any) {
+    } catch (error: any) {
         return NextResponse.json({
             error: "Can't fetch events:: " + error.message
         },
@@ -132,21 +127,30 @@ export async function POST(req: Request) {
             imageUrl = uploadResult.secure_url;
         }
 
+        let finalDate = new Date(date);
+
+        if (time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                finalDate.setHours(hours, minutes);
+            }
+        }
+
         let newEvent = type === "sports" ? {
             homeTeam,
             awayTeam,
-            time,
+            // time,
             venue,
             type,
-            date,
+            date: finalDate,
             regularPrice: Number(regularPrice) || 0,
             vipPrice: Number(vipPrice) || 0,
             image: imageUrl
         } : {
             title,
-            date,
+            date: finalDate,
             type,
-            time,
+            // time,
             venue,
             regularPrice: Number(regularPrice) || 0,
             vipPrice: Number(vipPrice) || 0,
