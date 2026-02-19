@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             );
         }
 
-        const batchId = params.id;
+        const { id: batchId } = await params;
 
         const tickets = await Ticket.find({ batchId: batchId }).populate('event');
 

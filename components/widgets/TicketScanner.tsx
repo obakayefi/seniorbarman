@@ -237,7 +237,7 @@ export default function TicketScanner({
                             <>
                                 {/* Validation Badge */}
                                 <div className="flex justify-center">
-                                    {(selectedEvent && currentTicket) && selectedEvent === currentTicket.event?._id ? (
+                                    {(selectedEvent && currentTicket) && selectedEvent.toString() === currentTicket.event?._id?.toString() ? (
                                         <div className='flex items-center gap-2 text-green-400 bg-green-500/10 border border-green-500/30 px-6 py-3 rounded-2xl'>
                                             <RiVerifiedBadgeFill size={28} />
                                             <span className="font-bold text-lg">Valid Ticket</span>

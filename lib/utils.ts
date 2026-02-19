@@ -399,6 +399,8 @@ export const sitemap = {
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
         createEvent: "/u/a/events/create",
-        ticketSearch: "/u/a/tickets/search"
+        ticketSearch: "/u/a/tickets/search",
+        ticketGrantWizard: "/u/a/ticket-grant-wizard",
+        auditLogs: "/u/a/audit"
     },
 }

@@ -33,69 +33,48 @@ export async function GET(req: Request, { params }: Params) {
         // ✅ Await v directly — not props.context.v
         const { hashToken: eventId } = await params;
 
-        const event = await Event.findById(eventId)
+        const event = await Event.findById(eventId);
         const tickets = await Ticket.find({ createdBy: userId }).populate("event");
-        // const tickets = await Ticket.find({createdBy: userId});
-        const ticketList = new Map<string, { event: any, tickets: any[] }>()
+
         const ticketCount: Record<string, Record<string, number>> = {};
 
         for (const ticket of tickets) {
-            // Skip tickets with null event
-            if (!ticket.event || !ticket.event._id) continue;
+            const ticketEventId = ticket.event?._id?.toString() || ticket.event?.toString();
+            if (!ticketEventId) continue;
 
-            const eventId = ticket.event._id.toString();
             const stand = ticket.stand || "Regular";
 
-            if (!ticketCount[eventId]) {
-                ticketCount[eventId] = {};
+            if (!ticketCount[ticketEventId]) {
+                ticketCount[ticketEventId] = {};
             }
 
-            ticketCount[eventId][stand] = (ticketCount[eventId][stand] || 0) + 1;
+            ticketCount[ticketEventId][stand] = (ticketCount[ticketEventId][stand] || 0) + 1;
         }
 
-        const arraySummary = Object.entries(ticketCount).map(([eventId, stands]) => ({
-            eventId,
-            stands
-        }));
-
-        const matchedSummary = arraySummary.find(summary => summary.eventId === eventId);
-        const specificSummary = matchedSummary ? matchedSummary.stands : {};
-
+        const specificSummary = ticketCount[eventId] || {};
         const transformedSummary = Object.entries(specificSummary).map(([name, value]) => ({
             name,
             value
         }));
 
-        for (const ticket of tickets) {
-            if (!ticket.event || !ticket.event._id) continue;
+        const matchedTickets = tickets.filter(ticket => {
+            const ticketEventId = ticket.event?._id?.toString() || ticket.event?.toString();
+            return ticketEventId === eventId;
+        });
 
-            const _eventId = ticket.event._id.toString();
-
-            if (_eventId !== eventId) {
-                continue;
-            }
-
-            if (!ticketList.has(_eventId)) {
-                ticketList.set(_eventId, {
-                    event: ticket.event,
-                    tickets: []
-                })
-            }
-            ticketList.get(_eventId)!.tickets.push(ticket)
-        }
-
-        if (!tickets) {
+        if (matchedTickets.length === 0 && !event) {
             return NextResponse.json(
-                { error: "Could not find event for this ticket" },
+                { error: "Could not find event or tickets for this ID" },
                 { status: 404 }
             );
         }
 
-        const matchedTicket = ticketList.get(eventId);
-        // console.log({ticketList, matchedTicket});
         const response = {
-            event,
-            tickets: matchedTicket,
+            event: event || { _id: eventId, title: "Deleted Event", isOrphaned: true, type: 'event' },
+            tickets: {
+                event: event || { _id: eventId },
+                tickets: matchedTickets
+            },
             summary: transformedSummary
         }
 

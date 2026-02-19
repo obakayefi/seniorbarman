@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             );
         }
 
-        const eventId = params.id;
+        const { id: eventId } = await params;
 
         // Aggregate to find batches
         // We want: batchId, count, createdAt (min), holderName (first), isPrinted (any)
