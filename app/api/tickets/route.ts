@@ -30,44 +30,60 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 
 async function SortTicketsForView(events: any[], tickets: any[]) {
-    // console.log('TO SORT!', { tickets })
-
     const ticketCount: Record<string, Record<string, number>> = {};
+    const orphanedEventIds = new Set<string>();
 
     for (const ticket of tickets) {
-        // Skip tickets without a valid event
-        if (!ticket?.event?._id) {
-            continue;
-        }
+        // Use the raw ID if the event is null (orphaned)
+        const eventId = ticket.event?._id?.toString() || ticket.event?.toString();
 
-        const eventId = ticket.event._id.toString();
-        const stand = ticket?.stand || "Regular";
+        if (!eventId) continue;
+
+        const stand = ticket.stand || "Regular";
 
         if (!ticketCount[eventId]) {
             ticketCount[eventId] = {};
         }
 
         ticketCount[eventId][stand] = (ticketCount[eventId][stand] || 0) + 1;
+
+        // Check if this event exists in our list
+        const eventExists = events.some(e => e._id.toString() === eventId);
+        if (!eventExists) {
+            orphanedEventIds.add(eventId);
+        }
     }
 
-    // console.log({ ticketCount });
-
-    const arraySummary = Object.entries(ticketCount).map(([eventId, stands]) => ({
-        eventId,
-        stands
-    }));
-
+    // Process existing events
     const extendedEvents = events.map(event => {
-        const plain = event.toObject()
+        const plain = event.toObject ? event.toObject() : event;
+        const matchedStands = ticketCount[event._id.toString()];
+        const transformedSummary = matchedStands ? Object.entries(matchedStands).map(([name, value]) => ({
+            name,
+            value
+        })) : [];
 
-        const matchedEvent = (arraySummary.find((summary) => summary?.eventId === event?._id.toString()))?.stands;
-        const transformedSummary = matchedEvent && Object.entries(matchedEvent).map(([name, value]) => ({
+        return { ...plain, transformedSummary };
+    });
+
+    // Add orphaned events placeholders
+    const orphanedGroups = Array.from(orphanedEventIds).map(eventId => {
+        const matchedStands = ticketCount[eventId];
+        const transformedSummary = Object.entries(matchedStands).map(([name, value]) => ({
             name,
             value
         }));
-        return { ...plain, transformedSummary }
-    })
-    return extendedEvents
+
+        return {
+            _id: eventId,
+            title: "Deleted Event",
+            isOrphaned: true,
+            transformedSummary,
+            type: 'event' // Default to event for display
+        };
+    });
+
+    return [...extendedEvents, ...orphanedGroups];
 }
 
 export async function GET(req: Request) {
@@ -95,7 +111,7 @@ export async function GET(req: Request) {
         // Fetch events created by this user
         const tickets = await Ticket
             .find({ createdBy: userId })
-            .populate("event")
+            .lean()
 
         // Handle case where user has no events
         if (!tickets.length) {
@@ -113,18 +129,13 @@ export async function GET(req: Request) {
         console.log(`[API] Total events found: ${events.length}`);
 
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
-        // console.log({eventsSortedWithTickets})
 
-        // Filter out tickets where the event object is missing (orphaned tickets)
-        // strict filter to ensure event is not null/undefined
-        const validTickets = eventsSortedWithTickets.filter(ticket =>
-            ticket &&
-            ticket._id &&
-            ticket.transformedSummary &&
-            ticket.title // title exists on the event object, ensuring it's not a null reference if we spread it
+        // Filter out empty summaries (no tickets for that event)
+        const validTickets = eventsSortedWithTickets.filter(group =>
+            group.transformedSummary && group.transformedSummary.length > 0
         );
 
-        console.log(`[API] Valid tickets after filtering: ${validTickets.length}`);
+        console.log(`[API] Valid ticket groups after filtering: ${validTickets.length}`);
 
         return NextResponse.json({
             message: "tickets fetched successfully",
@@ -240,11 +251,45 @@ export async function POST(req: Request) {
                 tickets: _createdTickets
             })
         }
-
     } catch (error: any) {
         return NextResponse.json(
             { error: "Failed to create ticket: " + error.message },
             { status: 500 }
-        )
+        );
+    }
+}
+
+export async function DELETE(req: Request) {
+    try {
+        await connectDB();
+        const user = await getUserFromCookie();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(req.url);
+        const eventId = searchParams.get("eventId");
+
+        if (!eventId) {
+            return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
+        }
+
+        const result = await Ticket.deleteMany({
+            event: eventId,
+            createdBy: user.id
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: `Deleted ${result.deletedCount} tickets successfully.`,
+            deletedCount: result.deletedCount
+        });
+
+    } catch (error: any) {
+        return NextResponse.json(
+            { error: "Failed to delete tickets: " + error.message },
+            { status: 500 }
+        );
     }
 }

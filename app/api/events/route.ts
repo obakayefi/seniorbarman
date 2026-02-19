@@ -47,9 +47,15 @@ export async function GET(req: Request) {
 
             // Otherwise, check against start time with 30-minute buffer for sales.
             try {
-                // Cutoff is 30 minutes before the event starts
-                const cutoffTime = new Date(eventDate.getTime() - 30 * 60 * 1000);
+                // For regular events, we allow sales all day as long as it's today or future
+                if (event.type === 'event') {
+                    const eventEndOfDay = new Date(eventDate);
+                    eventEndOfDay.setHours(23, 59, 59, 999);
+                    return nowInWat < eventEndOfDay;
+                }
 
+                // For sports, keep the 30-minute pre-event cutoff
+                const cutoffTime = new Date(eventDate.getTime() - 30 * 60 * 1000);
                 return nowInWat < cutoffTime;
             } catch (e) {
                 // Fallback for malformed time strings - better to show than hide if date is today

@@ -28,7 +28,7 @@ export function DeleteConfirmModal({ onConfirm, isDeleting, trigger }: DeleteCon
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription className="text-zinc-400">
                         This action cannot be undone. This will permanently delete this event
-                        and remove the data from our servers.
+                        and remove the data from our servers. <b>Note: All associated tickets will be nullified.</b>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

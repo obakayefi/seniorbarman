@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import api from "@/lib/axios";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { MoveLeft } from "lucide-react";
 import Image from "next/image";
 import { giveLogo } from "@/lib/utils";
@@ -13,6 +14,9 @@ import BulkTicketView from "@/app/u/tickets/BulkTicketView";
 import RegularTicketView from "@/app/u/tickets/RegularTicketView";
 import TicketCarousel from "./TicketCarousel";
 import { useApp } from "@/context/AppContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Loader2, AlertTriangle, Trash2 } from "lucide-react";
 
 export default function TicketDetailView() {
     const [tickets, setTickets] = useState([])
@@ -21,17 +25,43 @@ export default function TicketDetailView() {
     const params = useParams()
     const { user } = useApp()
     const [loading, setLoading] = useState(true)
+    const [nullifying, setNullifying] = useState(false)
+    const router = useRouter()
 
-    useEffect(() => {
-        async function getTickets() {
+    const getTickets = async () => {
+        try {
+            setLoading(true)
             const { data } = await api.get(`/tickets/${params.id}`);
             setEventInfo(data.response.event);
-            setTickets(data.response.tickets.tickets);
+            setTickets(data.response.tickets.tickets || []);
             setTicketSummary(data.response.summary);
+        } catch (error) {
+            console.error(error)
+        } finally {
             setLoading(false);
         }
-        getTickets();
+    }
+
+    useEffect(() => {
+        if (params.id) getTickets();
     }, [params.id])
+
+    const handleNullify = async () => {
+        if (!confirm("This event no longer exists. Are you sure you want to nullify all associated tickets? This action cannot be undone.")) return;
+
+        try {
+            setNullifying(true)
+            const res = await api.delete(`/tickets?eventId=${eventInfo._id}`);
+            if (res.data.success) {
+                toast.success(res.data.message);
+                router.push('/u/tickets');
+            }
+        } catch (error: any) {
+            toast.error("Failed to nullify tickets: " + (error.response?.data?.error || error.message));
+        } finally {
+            setNullifying(false)
+        }
+    }
 
     return (
         <>
@@ -47,6 +77,38 @@ export default function TicketDetailView() {
                             <span className={'text-zinc-700'}>Back to Tickets</span>
                         </Link>
                     </div>
+
+                    {/* Orphaned Event Banner */}
+                    {eventInfo?.isOrphaned && (
+                        <div className="mb-8 p-6 bg-red-950/20 border-2 border-red-500/30 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-md">
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 rounded-2xl bg-red-500/10 flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="text-red-500" size={32} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Event No Longer Exists</h3>
+                                    <p className="text-sm text-zinc-500">The organizer has removed this event. These tickets are no longer valid for check-in.</p>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={handleNullify}
+                                disabled={nullifying}
+                                className="w-full md:w-fit h-14 px-8 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-red-900/20 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {nullifying ? (
+                                    <div className="flex items-center gap-3">
+                                        <Loader2 size={18} className="animate-spin" />
+                                        <span>Nullifying Tickets...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-3">
+                                        <Trash2 size={18} />
+                                        <span>Nullify All Tickets</span>
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+                    )}
 
                     {/* Sport View */}
                     {eventInfo?.type === 'sports' ? (

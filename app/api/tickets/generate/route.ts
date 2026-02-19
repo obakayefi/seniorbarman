@@ -19,9 +19,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { eventId, quantity, type, price, stand, holderName } = body;
+        const { eventId, quantity, type, price, stand, holderName, targetUserId } = body;
 
-        console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName });
+        console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName, targetUserId });
 
         if (!eventId || !quantity || !price) {
             console.error('[GENERATE] Validation failed:', { eventId: !!eventId, quantity: !!quantity, price: !!price });
@@ -37,6 +37,15 @@ export async function POST(req: Request) {
                 { error: "Invalid quantity" },
                 { status: 400 }
             );
+        }
+
+        // Determine ticket owner
+        // If targetUserId is provided and user is admin, use targetUserId
+        // Otherwise use the requesting user's ID
+        let ticketOwnerId = user.id || user._id;
+        if (targetUserId && user.role === 'admin') {
+            ticketOwnerId = targetUserId;
+            console.log(`[GENERATE] Admin generating tickets for target user: ${targetUserId}`);
         }
 
         const _createdTickets = [];
@@ -55,7 +64,7 @@ export async function POST(req: Request) {
                 _id: ticketId,
                 checkInToken,
                 event: eventId,
-                createdBy: user.id || user._id,
+                createdBy: ticketOwnerId,
                 stand: stand || "Regular",
                 price: Number(price),
                 ticketNumber: `${eventId.slice(-4)}-${Date.now().toString().slice(-6)}-${shortTicketNumber}`,

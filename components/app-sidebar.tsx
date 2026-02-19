@@ -80,6 +80,14 @@ export function AppSidebar({ links }: { links: SidebarLink[] }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem className={'text-zinc-200'}>
+                <SidebarMenuButton asChild>
+                  <a href="/u/a/events/manage">
+                    <CalendarDays className="w-4 h-4" />
+                    <span>Manage Activities</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

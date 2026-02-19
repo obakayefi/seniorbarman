@@ -5,6 +5,7 @@ import { Button } from './button';
 import { EventType, IEvent } from '@/types/components';
 import { Dialog, DialogTrigger } from './dialog';
 import { BookEventModal } from '../modals/book-event';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CLUBS, formatEvent } from '@/lib/utils';
@@ -20,11 +21,17 @@ export const EventCard = ({ event }: { event: EventType }) => {
     const isAdmin = user?.role === 'admin'
 
     const onDelete = async () => {
-        if (!confirm("Delete this match?")) return
+        if (!confirm("Removing this match will nullify all associated tickets. Do you also want to permanently delete its associated tickets as well?")) return
+
+        const deleteTickets = confirm("Do you also want to delete all tickets associated with this match? (Recommended to avoid orphaned tickets)");
+
         try {
+            if (deleteTickets) {
+                await api.delete(`/tickets?eventId=${event._id}`);
+            }
             const res = await api.delete(`/events/${event._id}`)
             if (res.status === 200) {
-                toast.success("Match deleted")
+                toast.success("Match and associated tickets deleted")
                 window.location.reload()
             }
         } catch (e) {
@@ -39,39 +46,39 @@ export const EventCard = ({ event }: { event: EventType }) => {
 
     return (
         <section
-            className='flex flex-col w-full items-center   duration-200 hover:bg-zinc-900/50 border border-zinc-900 gap-3 justify-center rounded-lg p-4'>
-            <div className='flex items-center justify-center gap-1'>
+            className='flex flex-col w-full items-center duration-200 hover:bg-zinc-900/50 border border-zinc-900 gap-3 justify-center rounded-lg p-4 group'>
+            <Link href={`/events/${event._id}`} className='flex items-center justify-center gap-1 hover:text-orange-500 transition-colors'>
                 <span className=''>{matchInformation.day}</span>
                 <span className=' uppercase'>{matchInformation.month}</span>
                 <span className='text-gray-400'>{matchInformation.year}</span>
-            </div>
+            </Link>
             <section className='flex w-full items-center flex-col justify-center'>
 
-                <div className='flex items-center  flex-col gap-2'>
-                    <div className="flex lg:flex-row flex-col items-center gap-2">
+                <div className='flex items-center flex-col gap-2'>
+                    <Link href={`/events/${event._id}`} className="flex lg:flex-row flex-col items-center gap-2 group/match">
                         <section className='flex flex-col lg:flex-row h-20 lg:h-40 justify-between items-center gap-1'>
-                            <span className='text-center'>{matchInformation.homeTeam}</span>
+                            <span className='text-center group-hover/match:text-orange-400 transition-colors'>{matchInformation.homeTeam}</span>
                             <Image
                                 src={matchInformation.homeLogo ?? "https://placehold.co/400"}
                                 alt='home logo'
-                                className='h-14 lg:h-24 lg:w-24 h w-14'
+                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110'
                                 height={100}
                                 width={100}
                             />
                         </section>
                         <p className={'text-zinc-500'}>VS</p>
-                        <section className='flex flex-col h-20  lg:flex-row lg:h-40 justify-center items-center gap-1'>
+                        <section className='flex flex-col h-20 lg:flex-row lg:h-40 justify-center items-center gap-1'>
                             <Image
                                 src={matchInformation.awayLogo ?? "https://placehold.co/400"}
                                 alt='away logo'
                                 height={100}
                                 objectFit='cover'
-                                className='h-14 lg:h-24 lg:w-24 h w-14'
+                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110'
                                 width={100}
                             />
-                            <span className='text-center'>{matchInformation.awayTeam}</span>
+                            <span className='text-center group-hover/match:text-orange-400 transition-colors'>{matchInformation.awayTeam}</span>
                         </section>
-                    </div>
+                    </Link>
 
                     <div className='flex flex-col items-center w-full gap-2'>
                         <div className="flex w-full gap-2 items-start">

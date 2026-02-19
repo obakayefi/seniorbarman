@@ -185,7 +185,7 @@ const AdminTicketScanner = () => {
         setTargetHash(ticketHash);
 
         try {
-            const { data } = await api.post(operationUrl)
+            const { data } = await api.post(operationUrl, { eventId: selectedEvent })
             const ticket = data.result.ticket
 
             // Ticket already has createdBy populated from API
@@ -274,7 +274,7 @@ const AdminTicketScanner = () => {
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
         try {
-            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`)
+            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`, { eventId: selectedEvent })
             setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
             if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
             toast.success("User checked out successfully");
@@ -300,7 +300,7 @@ const AdminTicketScanner = () => {
     const handleCheckingUserIn = async () => {
         setLoading(true)
         try {
-            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`)
+            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`, { eventId: selectedEvent })
             setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
             if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
             toast.success("User checked in successfully");

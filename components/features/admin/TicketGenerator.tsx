@@ -151,7 +151,6 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
                                 <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
                                     <SelectItem value="Regular">Regular</SelectItem>
                                     <SelectItem value="VIP">VIP</SelectItem>
-                                    <SelectItem value="VVIP">VVIP</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

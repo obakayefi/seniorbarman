@@ -14,6 +14,8 @@ export async function POST(req: Request, { params }: Params) {
     try {
         await connectDB()
         const { hashToken } = await params
+        const body = await req.json().catch(() => ({}));
+        const { eventId } = body;
 
         const gateAction = {
             action: "exit",
@@ -37,6 +39,22 @@ export async function POST(req: Request, { params }: Params) {
             return NextResponse.json(
                 { error: "Ticket not found" },
                 { status: 404 }
+            );
+        }
+
+        // Validation: Event Mismatch
+        if (eventId && ticket.event?._id?.toString() !== eventId) {
+            return NextResponse.json(
+                {
+                    error: "Event Mismatch",
+                    details: {
+                        message: "This ticket is registered for a different event.",
+                        suggestion: "Ensure you have selected the correct event in the scanner deployment menu.",
+                        ticketStatus: "Invalid Event",
+                        ticket: ticket
+                    }
+                },
+                { status: 400 }
             );
         }
 

@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { useQRCode } from "next-qrcode";
 import { extractTicketStatus, formattedDate, formatTime, getBaseUrl } from "@/lib/utils";
 import { MdStadium } from "react-icons/md";
@@ -9,6 +9,16 @@ import { BsFillCalendarDateFill } from "react-icons/bs";
 import { toPng } from 'html-to-image';
 import { useApp } from '@/context/AppContext';
 import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface TicketCarouselProps {
     tickets: any[];
@@ -20,11 +30,13 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedType, setSelectedType] = useState<string | null>(null);
     const [showEmailModal, setShowEmailModal] = useState(false);
+    const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
     const [emailAddress, setEmailAddress] = useState('');
     const [emailStatus, setEmailStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [emailError, setEmailError] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeletingBatch, setIsDeletingBatch] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);
     const { Image: QRImage } = useQRCode();
     const { user: currentUser } = useApp();
@@ -191,6 +203,31 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
             toast.error(error.message || 'Something went wrong. Please try again.');
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleDeleteAllTickets = async () => {
+        setIsDeletingBatch(true);
+        try {
+            const response = await fetch(`/api/tickets?eventId=${eventInfo._id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete tickets');
+            }
+
+            toast.success(data.message || 'All tickets deleted successfully');
+            setShowDeleteAllModal(false);
+            // Reload to reflect changes
+            window.location.href = '/u/tickets';
+        } catch (error: any) {
+            console.error('Failed to delete all tickets:', error);
+            toast.error(error.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsDeletingBatch(false);
         }
     };
 
@@ -406,35 +443,65 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
                 <button
                     onClick={downloadPDF}
                     disabled={isDownloading}
-                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Download size={18} />
                     {isDownloading ? 'Downloading...' : 'Download PDF'}
                 </button>
 
-                {/* 
-                <button
-                    onClick={() => setShowEmailModal(true)}
-                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm sm:text-base"
-                >
-                    <Mail size={18} />
-                    Email Ticket
-                </button> 
-                */}
-
                 {currentUser?.role === 'admin' && (
                     <button
                         onClick={handleDeleteTicket}
                         disabled={isDeleting}
-                        className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
+                        className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600/10 border border-red-600/20 hover:bg-red-600/20 text-red-500 rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
                     >
                         {isDeleting ? 'Deleting...' : 'Delete Ticket'}
                     </button>
                 )}
+
+                <Dialog open={showDeleteAllModal} onOpenChange={setShowDeleteAllModal}>
+                    <DialogTrigger asChild>
+                        <button
+                            disabled={isDeletingBatch}
+                            className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
+                        >
+                            {isDeletingBatch ? (
+                                <>
+                                    <Loader2 size={18} className="animate-spin" />
+                                    Deleting All...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 size={18} />
+                                    Delete All Tickets
+                                </>
+                            )}
+                        </button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-zinc-950 border-zinc-900">
+                        <DialogHeader>
+                            <DialogTitle className="text-white flex items-center gap-2">
+                                <AlertCircle className="text-red-500" size={20} />
+                                Confirm Batch Deletion
+                            </DialogTitle>
+                            <DialogDescription className="text-zinc-500">
+                                This will permanently delete all <span className="text-white font-bold">{tickets.length}</span> tickets for this event. This action cannot be undone.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button variant="outline" onClick={() => setShowDeleteAllModal(false)} className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800">
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" onClick={handleDeleteAllTickets} disabled={isDeletingBatch} className="bg-red-600 hover:bg-red-700 text-white">
+                                {isDeletingBatch ? "Deleting..." : "Delete All Tickets"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
         </div>
