@@ -56,10 +56,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             imageUrl = uploadResult.secure_url;
         }
 
+        let finalDate = undefined;
+        if (date) {
+            finalDate = new Date(date);
+            if (time) {
+                const [hours, minutes] = time.split(':').map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    finalDate.setHours(hours, minutes);
+                }
+            }
+        } else if (existingEvent.date && time) {
+            // If date isn't changing but time is, we need to update the existing date's time
+            finalDate = new Date(existingEvent.date);
+            const [hours, minutes] = time.split(':').map(Number);
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                finalDate.setHours(hours, minutes);
+            }
+        }
+
+
         const updatedData: any = {
-            time,
+            // time,
             venue,
-            date,
+            date: finalDate || date, // Fallback to provided date if no time merge logic ran, or undefined if not provided
             regularPrice: Number(regularPrice) || 0,
             vipPrice: Number(vipPrice) || 0,
             image: imageUrl

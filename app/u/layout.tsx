@@ -2,7 +2,7 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { CalendarDays, CalendarPlus, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Tickets, UserPlus, UsersRound } from 'lucide-react'
+import { CalendarDays, CalendarPlus, History as HistoryIcon, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Sparkles, Tickets, UserPlus, UsersRound } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
 import { GiSoccerField } from "react-icons/gi";
@@ -60,6 +60,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
         },
         ...bouncerLinks.filter(link => link.title !== "Dashboard"), // Avoid duplicate dashboard if bouncerLinks starts with userLinks
         {
+            title: "Ticket Grant Wizard",
+            url: sitemap.admin.ticketGrantWizard,
+            roles: ["admin"],
+            icon: Sparkles,
+        },
+        {
             title: "Create Admin",
             url: sitemap.admin.createAdmin,
             roles: ["admin"],
@@ -71,12 +77,18 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             roles: ["admin"],
             icon: CalendarPlus,
         },
-        // {
-        //     title: "Users",
-        //     url: sitemap.admin.users,
-        //     roles: ["bouncer", "admin"],
-        //     icon: UsersRound,
-        // },
+        {
+            title: "User Management",
+            url: sitemap.admin.users,
+            roles: ["admin"],
+            icon: UsersRound,
+        },
+        {
+            title: "Audit Logs",
+            url: sitemap.admin.auditLogs,
+            roles: ["admin"],
+            icon: HistoryIcon,
+        },
     ]
 
     const navlinks = user?.role === "admin" ? adminLinks : user?.role === "bouncer" ? bouncerLinks : userLinks

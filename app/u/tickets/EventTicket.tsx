@@ -1,14 +1,77 @@
+"use client"
 import { MdStadium } from "react-icons/md"
 import { BsFillCalendarDateFill } from "react-icons/bs";
-import { FaClock } from "react-icons/fa6";
+import { FaClock, FaTrashCan } from "react-icons/fa6";
 import Image from "next/image";
 import Link from "next/link";
 import { CLUBS, extractTicketStatus, formatTime, giveLogo } from "@/lib/utils";
+import { toast } from "sonner";
+import api from "@/lib/axios";
+import { AlertTriangle } from "lucide-react";
 
 const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
     // Don't render if event is null or missing ID
     if (!event || !event._id) {
         return null;
+    }
+
+    const handleDeleteOrphaned = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!confirm("This event has been deleted. Are you sure you want to clear all associated tickets?")) return;
+
+        try {
+            const res = await api.delete(`/tickets?eventId=${event._id}`);
+            if (res.data.success) {
+                toast.success(res.data.message);
+                window.location.reload();
+            }
+        } catch (error: any) {
+            toast.error("Failed to delete tickets: " + (error.response?.data?.error || error.message));
+        }
+    };
+
+    if (event.isOrphaned) {
+        return (
+            <div className='group relative border-2 border-red-900/30 bg-red-950/10 backdrop-blur-xl flex flex-col rounded-2xl shadow-xl overflow-hidden min-h-[300px]'>
+                <section className="flex justify-between border-b border-red-500/10 p-4 px-6 bg-red-500/5">
+                    <div className="flex items-center gap-2 text-red-500 font-black uppercase tracking-widest text-[10px]">
+                        <AlertTriangle size={14} />
+                        <span>Event Deleted</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                        <span>Tickets Nullified</span>
+                    </div>
+                </section>
+
+                <section className='flex flex-col items-center justify-center gap-4 py-8 px-6 flex-1'>
+                    <h2 className='text-2xl font-black text-white text-center leading-tight tracking-tighter uppercase grayscale opacity-50'>Deleted Event</h2>
+                    <p className="text-zinc-500 text-xs text-center max-w-[250px]">All tickets associated with this event are no longer valid for check-in.</p>
+                </section>
+
+                <div className="p-6 bg-black/20 border-t border-red-500/10 space-y-4">
+                    {event?.transformedSummary?.length > 0 && (
+                        <section className={'flex items-center flex-wrap gap-2 justify-center opacity-40'}>
+                            {event?.transformedSummary.map((t: any) => (
+                                <div key={t.name} className='text-center bg-white/5 border border-white/5 px-4 py-2 rounded-xl flex-1 min-w-[100px]'>
+                                    <h4 className='text-zinc-500 text-[9px] font-black uppercase tracking-widest mb-1'>{t.name}</h4>
+                                    <span className='text-xl font-black text-white'>{t.value}</span>
+                                </div>
+                            ))}
+                        </section>
+                    )}
+
+                    <button
+                        onClick={handleDeleteOrphaned}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black uppercase text-[10px] tracking-widest transition-all duration-300 shadow-lg shadow-red-900/20"
+                    >
+                        <FaTrashCan size={14} />
+                        Clear Orphaned Tickets
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (

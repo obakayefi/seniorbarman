@@ -42,10 +42,7 @@ const EventSchema = new mongoose.Schema(
             type: Date, // You can switch to Date if you'll sort/filter events by date
             required: true,
         },
-        time: {
-            type: String,
-            required: true,
-        },
+
         venue: {
             type: String,
             required: true,
@@ -83,4 +80,9 @@ EventSchema.virtual("tickets", {
     foreignField: "event",
 })
 
-export default mongoose.models.Event || mongoose.model("Event", EventSchema);
+// Force delete model to prevent caching issues in dev
+if (mongoose.models.Event) {
+    delete mongoose.models.Event;
+}
+
+export default mongoose.model("Event", EventSchema);

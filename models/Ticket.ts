@@ -15,7 +15,7 @@ const CheckInLogSchema = new Schema({
     method: {
         type: String // e.g "QR Scan" or "Manual Scan"
     },
-    
+
 })
 
 const ticketSchema = new Schema({
@@ -63,6 +63,18 @@ const ticketSchema = new Schema({
     issuedAt: {
         type: Date,
         default: Date.now()
+    },
+    holderName: {
+        type: String,
+        default: "Guest"
+    },
+    batchId: {
+        type: String,
+        index: true
+    },
+    isPrinted: {
+        type: Boolean,
+        default: false
     },
     checkInLogs: [CheckInLogSchema]
 }, {

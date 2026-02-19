@@ -34,26 +34,28 @@ export async function GET(req: Request) {
             eventMidnight.setHours(0, 0, 0, 0)
 
             // 1. Check if future date (strictly after today)
-            if (eventMidnight.getTime() > today.getTime()) {
-                return true
-            }
+            // if (eventMidnight.getTime() > today.getTime()) {
+            //     return true
+            // }
 
             // 2. It's today.
             // If it's for the scanner, we show it as long as it's today (even if in progress)
-            if (forScanner) return true;
+            if (forScanner) {
+                // Return true if it's today or in the future
+                return eventDate >= today;
+            };
 
             // Otherwise, check against start time with 30-minute buffer for sales.
             try {
-                // event.time is expected to be "HH:mm"
-                const [hours, minutes] = event.time.split(':').map(Number);
-                if (isNaN(hours) || isNaN(minutes)) return false;
+                // For regular events, we allow sales all day as long as it's today or future
+                if (event.type === 'event') {
+                    const eventEndOfDay = new Date(eventDate);
+                    eventEndOfDay.setHours(23, 59, 59, 999);
+                    return nowInWat < eventEndOfDay;
+                }
 
-                const eventStartTime = new Date(eventDate);
-                eventStartTime.setHours(hours, minutes, 0, 0);
-
-                // Cutoff is 30 minutes before the event starts
-                const cutoffTime = new Date(eventStartTime.getTime() - 30 * 60 * 1000);
-
+                // For sports, keep the 30-minute pre-event cutoff
+                const cutoffTime = new Date(eventDate.getTime() - 30 * 60 * 1000);
                 return nowInWat < cutoffTime;
             } catch (e) {
                 // Fallback for malformed time strings - better to show than hide if date is today
@@ -131,21 +133,30 @@ export async function POST(req: Request) {
             imageUrl = uploadResult.secure_url;
         }
 
+        let finalDate = new Date(date);
+
+        if (time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                finalDate.setHours(hours, minutes);
+            }
+        }
+
         let newEvent = type === "sports" ? {
             homeTeam,
             awayTeam,
-            time,
+            // time,
             venue,
             type,
-            date,
+            date: finalDate,
             regularPrice: Number(regularPrice) || 0,
             vipPrice: Number(vipPrice) || 0,
             image: imageUrl
         } : {
             title,
-            date,
+            date: finalDate,
             type,
-            time,
+            // time,
             venue,
             regularPrice: Number(regularPrice) || 0,
             vipPrice: Number(vipPrice) || 0,

@@ -2,6 +2,7 @@
 import * as React from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmModal } from "../modals/delete-confirm-modal";
 import {
     Select,
     SelectContent,
@@ -82,6 +83,11 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                     setEventDate(parsedDate)
                     setMonth(parsedDate)
                     setDateValue(parsedDate)
+
+                    // Extract time from date
+                    const hours = parsedDate.getHours().toString().padStart(2, '0');
+                    const minutes = parsedDate.getMinutes().toString().padStart(2, '0');
+                    eventTime.setValue(`${hours}:${minutes}`);
                 }
             } catch (error) {
                 console.error("Error fetching event:", error)
@@ -138,11 +144,11 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     }
 
     const onDeleteEvent = async () => {
-        if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) return
+        // if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) return
 
         setIsSubmitting(true)
         try {
-            const res = await fetch(`/api/events/${eventId}`, {
+            const res = await fetch(`/api/events/${eventId}?type=${currentEventType}`, {
                 method: "DELETE"
             })
             const data = await res.json()
@@ -294,15 +300,10 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                 </CardContent>
 
                 <CardFooter className="mt-6 border-t border-zinc-800 pt-6 flex justify-between items-center">
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20"
-                        onClick={onDeleteEvent}
-                        disabled={isSubmitting}
-                    >
-                        Delete Event
-                    </Button>
+                    <DeleteConfirmModal
+                        onConfirm={onDeleteEvent}
+                        isDeleting={isSubmitting}
+                    />
                     <div className="flex gap-3">
                         <Button type="button" variant="ghost" onClick={() => router.back()} disabled={isSubmitting}>
                             Cancel

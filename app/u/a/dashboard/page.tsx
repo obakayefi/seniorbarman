@@ -4,9 +4,10 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Ticket, UsersRound, History, Sparkles, CalendarDays } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
+import EnvViewer from '@/components/features/admin/EnvViewer'
 
 const AdminDashboard = () => {
     const { user } = useApp()
@@ -60,18 +61,52 @@ const AdminDashboard = () => {
             bg: "bg-blue-500/10"
         },
         {
+            title: "Ticket Grant Wizard",
+            description: "Directly grant tickets to users",
+            icon: Sparkles,
+            url: sitemap.admin.ticketGrantWizard,
+            color: "text-purple-500",
+            bg: "bg-purple-500/10"
+        },
+        {
+            title: "User Management",
+            description: "Manage accounts and roles",
+            icon: UsersRound,
+            url: sitemap.admin.users,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10"
+        },
+        {
+            title: "Audit Logs",
+            description: "Track all system activity",
+            icon: History,
+            url: sitemap.admin.auditLogs,
+            color: "text-zinc-500",
+            bg: "bg-zinc-500/10"
+        },
+        {
             title: "Search Ticket",
             description: "Find and manage any ticket by ID",
             icon: Search,
             url: sitemap.admin.ticketSearch,
             color: "text-indigo-500",
             bg: "bg-indigo-500/10"
+        },
+        {
+            title: "Manage Activities",
+            description: "Edit or delete any past or future event",
+            icon: CalendarDays,
+            url: "/u/a/events/manage",
+            color: "text-rose-500",
+            bg: "bg-rose-500/10"
         }
     ]
 
     return (
         <div className='md:p-10 p-6 w-full space-y-10'>
-            <PageHeader title="Admin Oversight" />
+            <PageHeader title="Admin Oversight">
+                <EnvViewer />
+            </PageHeader>
 
             {/* Admin Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
