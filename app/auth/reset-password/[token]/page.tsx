@@ -7,6 +7,8 @@ import {
     CardHeader,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
+import { PasswordStrength } from "@/components/ui/password-strength"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import useInput from "@/hooks/useInput"
@@ -66,21 +68,20 @@ export default function ResetPasswordFulfillment() {
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="password">New Password</Label>
-                            <Input
+                            <PasswordInput
                                 id="password"
-                                type="password"
                                 placeholder="* * * * * * * *"
                                 value={password.value ?? ""}
                                 onChange={password.onChange}
                                 className="text-white bg-zinc-950"
                                 required
                             />
+                            <PasswordStrength password={password.value} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="confirmPassword">Confirm Password</Label>
-                            <Input
+                            <PasswordInput
                                 id="confirmPassword"
-                                type="password"
                                 placeholder="* * * * * * * *"
                                 value={confirmPassword.value ?? ""}
                                 onChange={confirmPassword.onChange}

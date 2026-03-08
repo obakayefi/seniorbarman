@@ -362,12 +362,21 @@ export function formatTime(time: string) {
 }
 
 export function getBaseUrl() {
+    // Check if we are in the browser
+    if (typeof window !== "undefined") {
+        return window.location.origin;
+    }
+
+    // Server-side
     if (process.env.NEXT_PUBLIC_BASE_URL) {
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
+
     if (process.env.NODE_ENV === "development") {
         return "http://localhost:3000";
     }
+
+    // Default for production if not set
     return "https://seniorbarman.com";
 }
 

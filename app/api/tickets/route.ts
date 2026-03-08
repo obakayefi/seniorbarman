@@ -12,6 +12,7 @@ import Ticket from "@/models/Ticket";
 import mongoose from "mongoose";
 import { getUserFromCookie, verifyAuth } from "@/lib/auth";
 import { StandType } from "@/types/components";
+import { getBaseUrl } from "@/lib/utils";
 import { summary } from "framer-motion/m";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -167,7 +168,7 @@ export async function PrintTickets(data: any, eventId: string, isPaid: boolean) 
                 return NextResponse.json({ error: "A ticket ID is required" },
                     { status: 500 })
             }
-            const previewUrl = `https://seniorbarman.com/tickets/p/${checkInToken}`
+            const previewUrl = `${getBaseUrl()}/tickets/p/${checkInToken}`
             const qrCode = await QRCode.toDataURL(previewUrl)
 
             //console.log({ printNow: tickets[i], j, i })
@@ -228,7 +229,7 @@ export async function POST(req: Request) {
                         return NextResponse.json({ error: "A ticket ID is required" },
                             { status: 500 })
                     }
-                    const previewUrl = `https://seniorbarman.com/tickets/p/${checkInToken}`
+                    const previewUrl = `${getBaseUrl()}/tickets/p/${checkInToken}`
                     const qrCode = await QRCode.toDataURL(previewUrl)
 
                     // console.log({printNow: tickets[i], j, i})

@@ -32,6 +32,8 @@ import {
 import { useRouter } from "next/navigation"
 import { getInitials } from "@/lib/utils"
 import { useApp } from "@/context/AppContext"
+import { useState } from "react"
+import { ChangePasswordModal } from "@/components/features/auth/ChangePasswordModal"
 
 export function NavUser(
   // user,
@@ -49,6 +51,7 @@ export function NavUser(
 
   const { user } = useApp()
   const router = useRouter()
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
 
   if (!user) return null
 
@@ -119,12 +122,20 @@ export function NavUser(
               </DropdownMenuItem>
             </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
+              <Sparkles />
+              Change password
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/auth/logout')}>
               <LogOut />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <ChangePasswordModal
+          isOpen={isChangePasswordOpen}
+          onOpenChange={setIsChangePasswordOpen}
+        />
       </SidebarMenuItem>
     </SidebarMenu>
   )

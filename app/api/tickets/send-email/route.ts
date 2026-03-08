@@ -136,9 +136,9 @@ export async function POST(request: NextRequest) {
                     Best,<br />~ SeniorBarman Team
                 </p>
                 <div style="margin-top: 16px;">
-                    <a href="https://seniorbarman.com/help" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Help</a>
-                    <a href="https://seniorbarman.com/terms" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Terms</a>
-                    <a href="https://seniorbarman.com/privacy" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Privacy</a>
+                    <a href="${getBaseUrl()}/help" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Help</a>
+                    <a href="${getBaseUrl()}/terms" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Terms</a>
+                    <a href="${getBaseUrl()}/privacy" style="color: #f97316; text-decoration: none; margin: 0 12px; font-size: 14px;">Privacy</a>
                 </div>
                 <p style="font-size: 12px; color: #71717a; margin-top: 16px;">
                     © SeniorBarman 2024. All rights reserved.<br />Lagos State, Nigeria

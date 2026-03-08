@@ -10,6 +10,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useApp } from "@/context/AppContext"
@@ -105,11 +106,10 @@ export default function Login() {
                                     Forgot your password?
                                 </Link>
                             </div>
-                            <Input
+                            <PasswordInput
                                 id="password"
                                 value={password.value}
                                 onChange={password.onChange}
-                                type="password"
                                 required
                             />
                         </div>

@@ -10,6 +10,8 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
+import { PasswordStrength } from "@/components/ui/password-strength"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import useInput from "@/hooks/useInput"
@@ -140,14 +142,14 @@ export default function Register() {
                                     Forgot your password?
                                 </Link>
                             </div>
-                            <Input
+                            <PasswordInput
                                 id="password"
-                                type="password"
                                 placeholder="* * * * * * * *"
                                 required
                                 onChange={password.onChange}
                                 value={password.value}
                             />
+                            <PasswordStrength password={password.value} />
                         </div>
                     </div>
                 </CardContent>

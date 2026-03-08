@@ -89,7 +89,7 @@ export async function POST(req: Request) {
 
         // Send email
         const { data, error } = await resend.emails.send({
-            from: "SeniorBarman <onboarding@resend.dev>",
+            from: "SeniorBarman <noreply@seniorbarman.com>",
             to: [email],
             subject: "Reset Your Password - SeniorBarman",
             html: emailHtml,
