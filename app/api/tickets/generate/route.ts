@@ -23,10 +23,22 @@ export async function POST(req: Request) {
 
         console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName, targetUserId });
 
-        if (!eventId || !quantity || !price) {
-            console.error('[GENERATE] Validation failed:', { eventId: !!eventId, quantity: !!quantity, price: !!price });
+        // Robust validation: check for null, undefined, or empty strings for mandatory fields
+        const isMissingEvent = !eventId;
+        const isMissingQuantity = quantity === undefined || quantity === null || quantity === '';
+        const isMissingPrice = price === undefined || price === null || price === '';
+
+        if (isMissingEvent || isMissingQuantity || isMissingPrice) {
+            console.error('[GENERATE] Validation failed:', { isMissingEvent, isMissingQuantity, isMissingPrice });
             return NextResponse.json(
-                { error: "Missing required fields", details: { eventId: !!eventId, quantity: !!quantity, price: !!price } },
+                {
+                    error: "Missing required fields",
+                    details: {
+                        eventId: !isMissingEvent,
+                        quantity: !isMissingQuantity,
+                        price: !isMissingPrice
+                    }
+                },
                 { status: 400 }
             );
         }
@@ -34,14 +46,12 @@ export async function POST(req: Request) {
         const numQuantity = Number(quantity);
         if (isNaN(numQuantity) || numQuantity <= 0) {
             return NextResponse.json(
-                { error: "Invalid quantity" },
+                { error: "Quantity must be a number greater than 0" },
                 { status: 400 }
             );
         }
 
         // Determine ticket owner
-        // If targetUserId is provided and user is admin, use targetUserId
-        // Otherwise use the requesting user's ID
         let ticketOwnerId = user.id || user._id;
         if (targetUserId && user.role === 'admin') {
             ticketOwnerId = targetUserId;
@@ -49,16 +59,12 @@ export async function POST(req: Request) {
         }
 
         const _createdTickets = [];
-        const batchId = crypto.randomUUID(); // Unique ID for this batch
+        const batchId = crypto.randomUUID();
 
-        // Generate tickets
         for (let i = 0; i < numQuantity; i++) {
             const ticketId = new mongoose.Types.ObjectId();
             const checkInToken = crypto.randomBytes(16).toString('hex');
-
-            // Generate a simpler readable ticket number for the print
             const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-            const shortTicketNumber = `${uniqueSuffix}`;
 
             _createdTickets.push({
                 _id: ticketId,
@@ -67,7 +73,7 @@ export async function POST(req: Request) {
                 createdBy: ticketOwnerId,
                 stand: stand || "Regular",
                 price: Number(price),
-                ticketNumber: `${eventId.slice(-4)}-${Date.now().toString().slice(-6)}-${shortTicketNumber}`,
+                ticketNumber: `${eventId.toString().slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`,
                 payment: {
                     status: 'success',
                     reference: `ADMIN-GEN-${batchId}`,
@@ -80,12 +86,15 @@ export async function POST(req: Request) {
             });
         }
 
-        await Ticket.insertMany(_createdTickets);
+        const savedTickets = await Ticket.insertMany(_createdTickets);
+
+        // Populate event details so the frontend preview has everything it needs
+        const populatedTickets = await Ticket.find({ _id: { $in: savedTickets.map(t => t._id) } }).populate('event');
 
         return NextResponse.json({
             success: true,
             message: `Successfully generated ${numQuantity} tickets`,
-            tickets: _createdTickets,
+            tickets: populatedTickets,
             batchId
         }, { status: 201 });
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Loader2, Download, Printer, Ticket } from "lucide-react"
 import api from "@/lib/axios"
@@ -17,6 +18,8 @@ interface TicketGeneratorProps {
 
 export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
     const [loading, setLoading] = useState(false)
+    const [eventLoading, setEventLoading] = useState(true)
+    const [event, setEvent] = useState<any>(null)
     const [tickets, setTickets] = useState<any[]>([])
     const [config, setConfig] = useState({
         quantity: 14,
@@ -27,8 +30,43 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
     })
     const printRef = useRef<HTMLDivElement>(null)
 
+    // Fetch event details for preview rendering
+    const fetchEvent = useCallback(async () => {
+        try {
+            setEventLoading(true)
+            const res = await api.get(`/admin/events/${eventId}`)
+            if (res.data.success) {
+                setEvent(res.data.event)
+            }
+        } catch (error) {
+            console.error("Failed to fetch event for preview:", error)
+        } finally {
+            setEventLoading(false)
+        }
+    }, [eventId])
+
+    React.useEffect(() => {
+        fetchEvent()
+    }, [fetchEvent])
+
+    // Construct mock tickets for the "Live Preview"
+    const mockTickets = React.useMemo(() => {
+        if (tickets.length > 0) return tickets.slice(0, 8);
+
+        // Generate 4 mock tickets for preview
+        return Array.from({ length: 4 }).map((_, i) => ({
+            _id: `mock-${i}`,
+            ticketNumber: `PREVIEW-${i + 1}`,
+            checkInToken: "preview-token",
+            stand: config.stand,
+            price: config.price,
+            holderName: config.holderName || "Guest",
+            event: event // Use the real event data fetched
+        }));
+    }, [tickets, config, event]);
+
     const handleGenerate = async () => {
-        // Validation
+        // ... (existing validation)
         if (!config.quantity || parseInt(config.quantity.toString()) <= 0) {
             toast.error("Please enter a valid quantity")
             return
@@ -48,21 +86,12 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
             if (res.data.success) {
                 setTickets(res.data.tickets)
                 toast.success(`Generated ${res.data.tickets.length} tickets`)
-                // Refresh batch list logic should be triggered here, ideally via callback or context
-                // For now, simple page reload or we can rely on user manually refreshing
-                window.location.reload()
             }
         } catch (error: any) {
+            // ... error handling
             console.error("Generate error:", error)
             const errorMsg = error.response?.data?.error || "Failed to generate tickets"
-            const errorDetails = error.response?.data?.details
-
-            if (errorDetails) {
-                console.error("Missing fields:", errorDetails)
-                toast.error(`${errorMsg}. Check console for details.`)
-            } else {
-                toast.error(errorMsg)
-            }
+            toast.error(errorMsg)
         } finally {
             setLoading(false)
         }
@@ -84,6 +113,14 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
         }
     }, [printRef, eventId])
 
+    if (eventLoading) {
+        return (
+            <Card className="bg-zinc-950 border-zinc-800 p-12 flex justify-center items-center">
+                <Loader2 className="animate-spin text-orange-500 h-8 w-8" />
+            </Card>
+        )
+    }
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-zinc-100">
             {/* Configuration Panel */}
@@ -91,15 +128,15 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
                 <CardHeader className="border-b border-zinc-800 pb-4">
                     <CardTitle className="text-xl font-bold flex items-center gap-2 text-white">
                         <Ticket className="text-orange-500" />
-                        Ticket Configuration
+                        Configure Batch
                     </CardTitle>
                     <CardDescription className="text-zinc-400">
-                        Configure and generate a new batch of tickets.
+                        Customize appearance and generate tickets.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                     <div className="space-y-2">
-                        <Label className="text-zinc-300">Layout Type</Label>
+                        <Label className="text-zinc-300">Layout Style</Label>
                         <Select
                             value={config.type}
                             onValueChange={(v) => setConfig({ ...config, type: v })}
@@ -108,14 +145,14 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
-                                <SelectItem value="sports">Sports Layout (14/Page)</SelectItem>
-                                <SelectItem value="standard">Standard Grid (QR Code)</SelectItem>
+                                <SelectItem value="sports">Premium Sports (8/Page)</SelectItem>
+                                <SelectItem value="standard">Standard Grid (20/Page)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-zinc-300">Quantity</Label>
+                        <Label className="text-zinc-300">Quantity to Generate</Label>
                         <Input
                             type="number"
                             min={1}
@@ -123,9 +160,6 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
                             onChange={(e) => setConfig({ ...config, quantity: parseInt(e.target.value) || 0 })}
                             className="bg-zinc-900 border-zinc-700 focus:border-orange-500 focus:ring-orange-500/20 text-white placeholder:text-zinc-600"
                         />
-                        <p className="text-xs text-zinc-500">
-                            {config.type === 'sports' ? 'Optimized for A4 (14 tickets per page)' : 'Generates items in a grid'}
-                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -165,66 +199,57 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
                             onChange={(e) => setConfig({ ...config, holderName: e.target.value })}
                             className="bg-zinc-900 border-zinc-700 focus:border-orange-500 focus:ring-orange-500/20 text-white"
                         />
-                        <p className="text-xs text-zinc-500">
-                            Printed on ticket. Defaults to 'Guest' if empty.
-                        </p>
                     </div>
 
-                    <Button
-                        onClick={handleGenerate}
-                        disabled={loading}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-6 shadow-md shadow-orange-900/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generating...
-                            </>
-                        ) : (
-                            "Generate Batch"
-                        )}
-                    </Button>
+                    <div className="pt-2">
+                        <Button
+                            onClick={handleGenerate}
+                            disabled={loading}
+                            className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-black h-14 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-xs"
+                        >
+                            {loading ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Finalizing...</>
+                            ) : (
+                                "Generate & Commit"
+                            )}
+                        </Button>
+                        <p className="text-[10px] text-center text-zinc-500 mt-3 uppercase tracking-widest">
+                            Review the preview before generating
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
 
             {/* Preview Panel */}
             <div className="lg:col-span-2 space-y-6">
-                <div className="flex justify-between items-center bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
+                <div className="flex justify-between items-center bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
                     <div>
-                        <h2 className="text-xl font-bold text-white">Live Preview</h2>
-                        <p className="text-sm text-zinc-400">Preview generated tickets before downloading</p>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-2">
+                            {tickets.length > 0 ? "Production Preview" : "Live Blueprint"}
+                            {tickets.length === 0 && <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30 text-[10px]">DRAFT</Badge>}
+                        </h2>
+                        <p className="text-xs text-zinc-400">Showing how your tickets will appear on A4 paper</p>
                     </div>
                     {tickets.length > 0 && (
                         <Button
                             variant="outline"
                             onClick={handleDownloadImage}
-                            className="border-zinc-700 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
+                            className="border-zinc-700 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors h-10 px-6 rounded-lg font-bold"
                         >
-                            <Download className="mr-2 h-4 w-4" /> Download Image
+                            <Download className="mr-2 h-4 w-4" /> Save Page 1
                         </Button>
                     )}
                 </div>
 
-                <div className="bg-zinc-950 rounded-xl p-8 overflow-auto border-2 border-dashed border-zinc-800 min-h-[600px] flex justify-center items-start shadow-inner">
-                    {tickets.length > 0 ? (
-                        <div className="scale-[0.65] origin-top border shadow-2xl bg-white text-black w-fit transition-transform">
-                            <TicketPrintLayout
-                                ref={printRef}
-                                tickets={tickets}
-                                type={config.type}
-                                eventId={eventId}
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-zinc-600 gap-4 mt-32">
-                            <div className="p-6 bg-zinc-900 rounded-full border border-zinc-800">
-                                <Printer size={48} className="opacity-50" />
-                            </div>
-                            <div className="text-center">
-                                <p className="text-lg font-medium text-zinc-400">No Tickets Generated</p>
-                                <p className="text-sm">Configure and generate tickets to see a preview here.</p>
-                            </div>
-                        </div>
-                    )}
+                <div className="bg-zinc-950 rounded-2xl p-8 overflow-auto border-2 border-dashed border-zinc-800 min-h-[700px] flex justify-center items-start shadow-inner bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:20px_20px]">
+                    <div className="scale-[0.55] origin-top border-8 border-white shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white text-black w-fit transition-all duration-500 ease-in-out">
+                        <TicketPrintLayout
+                            ref={printRef}
+                            tickets={mockTickets}
+                            type={config.type}
+                            eventId={eventId}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

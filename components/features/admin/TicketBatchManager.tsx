@@ -42,21 +42,23 @@ export default function TicketBatchManager({ eventId }: TicketBatchManagerProps)
         fetchBatches()
     }, [eventId])
 
-    const handlePrintBatch = async (batchId: string, type: string = 'sports') => {
+    const handlePrintBatch = async (batchId: string, eventType: string = 'event') => {
         setProcessingBatch(batchId)
+        const toastId = toast.loading("Fetching batch data...")
         try {
             const res = await api.get(`/tickets/batch/${batchId}`)
             const tickets = res.data.tickets
 
             if (!tickets || tickets.length === 0) {
-                toast.error("No tickets found in batch")
+                toast.error("No tickets found in batch", { id: toastId })
                 setProcessingBatch(null)
                 return
             }
 
-            toast.info(`Preparing ${tickets.length} tickets for print...`)
+            toast.loading(`Processing ${tickets.length} tickets into pages...`, { id: toastId })
 
-            const ticketsPerPage = type === 'sports' ? 14 : 16;
+            // Premium fits 8, Standard fits 20
+            const ticketsPerPage = eventType === 'standard' ? 20 : 8;
             const chunks = []
             for (let i = 0; i < tickets.length; i += ticketsPerPage) {
                 chunks.push(tickets.slice(i, i + ticketsPerPage))
@@ -66,23 +68,32 @@ export default function TicketBatchManager({ eventId }: TicketBatchManagerProps)
             const folder = zip.folder(`batch-${batchId.slice(0, 8)}`)
 
             for (let i = 0; i < chunks.length; i++) {
-                setPrintData({ tickets: chunks[i], type })
-                await new Promise(resolve => setTimeout(resolve, 250)) // Slight delay for render
+                toast.loading(`Generating Page ${i + 1} of ${chunks.length}...`, { id: toastId })
+                setPrintData({ tickets: chunks[i], type: eventType })
+
+                // Wait for render and image processing
+                await new Promise(resolve => setTimeout(resolve, 500))
 
                 if (printRef.current) {
-                    const dataUrl = await toJpeg(printRef.current, { quality: 0.90, backgroundColor: 'white' })
+                    // Use higher quality for premium feel
+                    const dataUrl = await toJpeg(printRef.current, {
+                        quality: 0.95,
+                        backgroundColor: 'white',
+                        pixelRatio: 2 // Higher resolution for print
+                    })
                     const base64Data = dataUrl.split(',')[1]
                     folder?.file(`Page_${i + 1}.jpg`, base64Data, { base64: true })
                 }
             }
 
+            toast.loading("Compressing and starting download...", { id: toastId })
             const content = await zip.generateAsync({ type: "blob" })
             saveAs(content, `tickets-batch-${batchId.slice(0, 8)}.zip`)
-            toast.success("Download started!")
+            toast.success("Download started!", { id: toastId })
 
         } catch (error) {
             console.error(error)
-            toast.error("Failed to process batch print")
+            toast.error("Failed to process batch print", { id: toastId })
         } finally {
             setProcessingBatch(null)
             setPrintData(null)
