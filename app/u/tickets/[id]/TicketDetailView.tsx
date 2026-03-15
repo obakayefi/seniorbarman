@@ -131,25 +131,7 @@ export default function TicketDetailView() {
                                     </div>
                                 </section>
 
-                                <section className='bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-6 mt-4'>
-                                    <div className='flex flex-col md:flex-row gap-6 sm:gap-10 justify-center'>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <MdStadium className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Venue</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{eventInfo?.venue}</p>
-                                        </div>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <FaClock className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Time</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{eventInfo?.time}</p>
-                                        </div>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <BsFillCalendarDateFill className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Date</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{new Date(eventInfo?.date).toDateString()}</p>
-                                        </div>
-                                    </div>
-                                </section>
+
                             </div>
 
                             {/* <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
@@ -210,7 +192,7 @@ export default function TicketDetailView() {
                                                 </div>
                                                 <div className="flex flex-col gap-0.5">
                                                     <p className='text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em]'>Time</p>
-                                                    <p className='text-white text-base sm:text-xl font-bold'>{eventInfo?.time}</p>
+                                                    <p className='text-white text-base sm:text-xl font-bold'>{eventInfo?.date ? new Date(eventInfo.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>

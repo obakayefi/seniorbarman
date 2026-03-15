@@ -39,9 +39,15 @@ export default function NativeNavbar
     //     },
     // ];
 
+
+
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const router = useRouter();
+    const { user } = useApp();
+
     const navItems = [
         {
-            name: "Ranger's Tickets",
+            name: "Ranger's Matches",
             link: "/rangers",
         },
         {
@@ -49,19 +55,14 @@ export default function NativeNavbar
             link: "/events",
         },
         {
-            name: "Tickets",
-            link: "/u/tickets",
+            name: "Dashboard",
+            link: ((user?.role === "admin") || (user?.role === "bouncer")) ? "/u/a/dashboard" : "/u/dashboard",
         },
         {
             name: "How It Works",
             link: "/rangers#howItWorks",
         },
     ];
-
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const router = useRouter();
-    const { user } = useApp();
-
 
     const logUserIn = () => {
         setIsMobileMenuOpen(false)

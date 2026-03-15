@@ -361,6 +361,25 @@ export function formatTime(time: string) {
     return time;
 }
 
+/**
+ * Extracts and formats the time portion from a Date object or ISO date string.
+ * Returns a human-readable string like "07:30 PM".
+ * Use this everywhere an event's time needs to be displayed, since the API
+ * no longer returns a separate `time` field — the time is embedded in `date`.
+ */
+export function formatEventTime(date: Date | string | undefined | null, fallback = 'N/A'): string {
+    if (!date) return fallback;
+    try {
+        return new Date(date).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+    } catch {
+        return fallback;
+    }
+}
+
 export function getBaseUrl() {
     // Check if we are in the browser
     if (typeof window !== "undefined") {

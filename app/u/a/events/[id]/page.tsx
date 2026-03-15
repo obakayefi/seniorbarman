@@ -127,7 +127,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.totalTickets}</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.totalTickets}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Units Sold</p>
                         </CardContent>
                     </Card>
@@ -140,7 +140,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">₦{stats.totalRevenue.toLocaleString()}</div>
+                            <div className="text-3xl text-zinc-100 font-black">₦{stats.totalRevenue.toLocaleString()}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Gross Potential</p>
                         </CardContent>
                     </Card>
@@ -153,7 +153,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.checkedInCount}</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.checkedInCount}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Attendees At Venue</p>
                         </CardContent>
                     </Card>
@@ -166,7 +166,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.checkInRate.toFixed(1)}%</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.checkInRate.toFixed(1)}%</div>
                             <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                                 <div
                                     className="bg-purple-500 h-full transition-all duration-1000"

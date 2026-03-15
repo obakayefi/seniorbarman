@@ -78,7 +78,7 @@ export default function ResetPassword() {
                 <Button
                     form="reset-form"
                     type="submit"
-                    className="w-full disabled:bg-zinc-800"
+                    className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-800"
                     disabled={isLoading || !email.value}
                 >
                     Send Reset Link {isLoading && <Spinner />}

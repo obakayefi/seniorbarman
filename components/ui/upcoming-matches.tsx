@@ -112,7 +112,7 @@ export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: 
 
             <section className={'flex flex-col md:grid md:grid-cols-2 gap-4 mt-10'}>
                 {upcomingMatches.length ? upcomingMatches.map((match, index) => (
-                    <FootballMatch match={match} isNextMatch={index === 0} />
+                    <FootballMatch key={match._id} match={match} isNextMatch={index === 0} />
                 )) : <div><h3 className={'text-zinc-600'}>Loading upcoming matches</h3></div>}
             </section>
         </section>

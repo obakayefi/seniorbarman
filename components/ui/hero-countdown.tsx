@@ -3,19 +3,22 @@ import { useEffect, useState } from "react";
 
 function TimeBlock({ value, label }: { value: number; label: string }) {
     return (
-        <section className="flex flex-col items-center min-w-[40px] sm:min-w-[50px]">
-            <span className="text-lg sm:text-xl lg:text-3xl font-semibold">
+        <section className="flex flex-col items-center justify-center flex-1 gap-0.5 sm:gap-1">
+            <span className="text-base xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-bold tabular-nums leading-none">
                 {String(value).padStart(2, "0")}
             </span>
-            <span className="text-gray-600 text-[10px] sm:text-xs whitespace-nowrap">{label}</span>
+            <span className="text-gray-500 text-[9px] xs:text-[10px] sm:text-xs md:text-sm 2xl:text-base uppercase tracking-widest whitespace-nowrap">
+                {label}
+            </span>
         </section>
     );
 }
 
 function Divider() {
-    return <div className="h-8 sm:h-10 lg:h-12 bg-gray-300/10 w-0.5" />;
+    return (
+        <div className="self-stretch w-[1px] bg-gray-300/10 mx-1 sm:mx-2 shrink-0" />
+    );
 }
-
 
 function getTimeLeft(target: Date) {
     const now = new Date().getTime();
@@ -26,68 +29,37 @@ function getTimeLeft(target: Date) {
     }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-    );
-    const minutes = Math.floor(
-        (diff % (1000 * 60 * 60)) / (1000 * 60)
-    );
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
     return { days, hours, minutes, seconds };
 }
 
-
 export default function HeroCountdown({ targetDate }: { targetDate: Date }) {
-    const TARGET_DATE = new Date(targetDate).getTime() + 16 * 60 * 60 * 1000;
-    const [timeLeft, setTimeLeft] = useState(() =>
-        getTimeLeft(TARGET_DATE));
+    const TARGET_DATE = new Date(targetDate).getTime();
+    const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(new Date(TARGET_DATE)));
     const [loadingCountdown, setLoadingCountdown] = useState(true);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setTimeLeft(getTimeLeft(TARGET_DATE));
+            setTimeLeft(getTimeLeft(new Date(TARGET_DATE)));
             setLoadingCountdown(false);
         }, 1000);
-
         return () => clearInterval(interval);
-    }, []);
-    if (loadingCountdown) return <div className="h-10 invisible" />; // Placeholder to maintain layout
+    }, [TARGET_DATE]);
+
+    if (loadingCountdown) return <div className="h-16 sm:h-20 invisible" />;
 
     return (
-        <div className="gap-2 sm:gap-3 lg:gap-5 items-center rounded flex pt-3 w-full justify-center">
+        <div className="flex items-stretch w-full py-4 sm:py-5 lg:py-6 2xl:py-8">
             <TimeBlock value={timeLeft.days} label="Days" />
             <Divider />
             <TimeBlock value={timeLeft.hours} label="Hours" />
-
             <Divider />
             <TimeBlock value={timeLeft.minutes} label="Minutes" />
             <Divider />
             <TimeBlock value={timeLeft.seconds} label="Seconds" />
         </div>
-    )
+    );
 }
-
-// return (
-//     <div className={' gap-8 items-center rounded flex pt-3'}>
-//         <section className={'flex flex-col items-center'}>
-//             <span className={'text-xl lg:text-3xl'}>02</span>
-//             <span className={'text-gray-600 text-xs'}>Days</span>
-//         </section>
-//         <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-//         <section className={'flex flex-col items-center'}>
-//             <span className={'text-xl lg:text-3xl'}>11</span>
-//             <span className={'text-gray-600 text-xs'}>Hours</span>
-//         </section>
-//         <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-//         <section className={'flex flex-col items-center'}>
-//             <span className={'text-xl lg:text-3xl'}>31</span>
-//             <span className={'text-gray-600 text-xs'}>Minutes</span>
-//         </section>
-//         <div className={'h-12 bg-gray-300/10 w-0.5'}/>
-//         <section className={'flex flex-col items-center'}>
-//             <span className={'text-xl lg:text-3xl'}>31</span>
-//             <span className={'text-gray-600 text-xs'}>Seconds</span>
-//         </section>
-//     </div>
-// )

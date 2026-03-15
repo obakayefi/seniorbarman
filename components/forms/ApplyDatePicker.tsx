@@ -14,15 +14,16 @@ import {
 } from "@/components/ui/popover"
 
 function formatDate(date: Date | undefined) {
-  if (!date) {
+  if (!date || isNaN(date.getTime())) {
     return ""
   }
 
   return date.toLocaleDateString("en-US", {
-    day: "2-digit",
+    weekday: "short",
     month: "long",
+    day: "numeric",
     year: "numeric",
-  })
+  }).replace(/,/g, '') // remove commas to match exactly "Sun March 15 2026"
 }
 
 function isValidDate(date: Date | undefined) {
@@ -43,11 +44,6 @@ type Props = {
 
 export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, setEventDate, setMonth }: Props) {
   const [open, setOpen] = React.useState(false)
-  // const [date, setDate] = React.useState<Date | undefined>(
-  //   new Date(Date.now())
-  // )
-  // const [month, setMonth] = React.useState<Date | undefined>(date)
-  // const [value, setValue] = React.useState(formatDate(date))
 
   return (
     <div className="flex flex-col gap-3">
@@ -57,20 +53,13 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
       <div className="relative flex gap-2">
         <Input
           id="date"
-          value={String(dateValue)}
-          placeholder="July 01, 2025"
-          className="border-zinc-800 bg-black text-white pr-10"
-          onChange={(e) => {
-            const date = new Date(e.target.value)
-            setDateValue(new Date(e.target.value))
-            if (isValidDate(date)) {
-              setEventDate(new Date(date))
-              // onDateChange(date)
-              setMonth(date)
-            }
-          }}
+          value={formatDate(dateValue)}
+          readOnly
+          placeholder="Sun March 15 2026"
+          className="border-zinc-800 bg-black text-white pr-10 cursor-pointer"
+          onClick={() => setOpen(true)}
           onKeyDown={(e) => {
-            if (e.key === "ArrowDown") {
+            if (e.key === "ArrowDown" || e.key === "Enter") {
               e.preventDefault()
               setOpen(true)
             }
@@ -81,9 +70,9 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
             <Button
               id="date-picker"
               variant="ghost"
-              className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
+              className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-white hover:bg-transparent hover:text-white"
             >
-              <CalendarIcon className="size-3.5" />
+              <CalendarIcon className="size-4" />
               <span className="sr-only">Select date</span>
             </Button>
           </PopoverTrigger>
@@ -103,7 +92,7 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
                 // setDate(date)
                 setEventDate(date)
                 // onDateChange(date)
-                setDateValue(new Date(formatDate(date)))
+                setDateValue(date)
                 setOpen(false)
               }}
             />

@@ -23,7 +23,7 @@ export async function connectDB() {
             bufferCommands: true,
             serverSelectionTimeoutMS: 20000
         }).then(m => {
-            
+
             console.log(`[MongoDB] Successfully connected to ${dbName}`);
             cached.conn = m;
             return m;
