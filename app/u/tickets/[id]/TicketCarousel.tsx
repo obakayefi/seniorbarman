@@ -370,7 +370,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                 </div>
 
                 {/* Ticket Details */}
-                <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
+                {/* <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
                     <section className='flex flex-col gap-4'>
                         <div>
                             <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
@@ -383,7 +383,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                             <p className="text-white">{user ? `${user.firstName} ${user.lastName}` : (currentTicket.createdBy?.firstName ? `${currentTicket.createdBy.firstName} ${currentTicket.createdBy.lastName}` : (currentTicket.email || 'Guest'))}</p>
                         </div>
                     </section>
-                </div>
+                </div> */}
 
                 {/* Present at Gate Button */}
                 <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 sm:py-4 rounded-lg mt-4 sm:mt-6 flex items-center justify-center gap-2 transition-colors text-sm sm:text-base">
