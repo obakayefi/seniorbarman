@@ -88,6 +88,14 @@ export function AppSidebar({ links }: { links: SidebarLink[] }) {
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem className={'text-zinc-200'}>
+                <SidebarMenuButton asChild>
+                  <a href="/u/a/ticket-orders">
+                    <Tickets className="w-4 h-4" />
+                    <span>Ticket Orders</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

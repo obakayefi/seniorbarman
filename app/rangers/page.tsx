@@ -7,7 +7,7 @@ import api from "@/lib/axios";
 
 export default function RangersPage() {
     const [nextMatch, setNextMatch] = useState<any>(null)
-    const [upcomingMatches, setUpcomingMatches] = useState([])
+    const [upcomingMatches, setUpcomingMatches] = useState<any[]>([])
 
     useEffect(() => {
         async function loadMatches() {
@@ -31,7 +31,7 @@ export default function RangersPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-red-600/30 z-10" />
 
                 {/* content */}
-                <div className="relative z-20 flex py-20 mx-4 lg:mx-60 h-full">
+                <div className="relative z-20 flex py-20 px-6 lg:px-12 xl:px-20 h-full max-w-[1600px] mx-auto">
                     <Hero nextMatch={nextMatch} />
                 </div>
             </div>

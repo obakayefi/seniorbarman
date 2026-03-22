@@ -79,7 +79,13 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
             {event.type === "sports" ? (
                 <Link href={`/u/tickets/${event._id}`}>
                     <div
-                        className='group border-2 border-zinc-900 hover:border-orange-500/50 hover:bg-zinc-900/50 cursor-pointer duration-500 bg-zinc-900/40 backdrop-blur-xl flex flex-col rounded-2xl shadow-xl overflow-hidden min-h-[350px]'>
+                        className='group border-2 border-zinc-900 hover:border-orange-500/50 hover:bg-zinc-900/50 cursor-pointer duration-500 bg-zinc-900/40 backdrop-blur-xl flex flex-col rounded-2xl shadow-xl overflow-hidden min-h-[350px] relative'>
+                        {event.hasPendingOrders && (
+                            <div className="bg-red-600/90 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 flex items-center justify-center gap-2 shadow-inner w-full">
+                                <AlertTriangle size={14} />
+                                Ungenerated Orders Available
+                            </div>
+                        )}
                         <section className="flex justify-between border-b border-white/5 p-4 px-6 bg-black/20">
                             <div className="flex items-center gap-2 text-zinc-500 group-hover:text-zinc-300 transition-colors">
                                 <BsFillCalendarDateFill className="text-orange-500/60" />
@@ -147,7 +153,7 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
                 <Link href={`/u/tickets/${event._id}`} className="overflow-hidden ">
 
                     <div
-                        className='group relative border-2 border-zinc-900 hover:border-orange-500/50 cursor-pointer duration-500 flex flex-col rounded-2xl overflow-hidden min-h-[350px] shadow-2xl'
+                        className='group relative border-2 border-zinc-900 hover:border-orange-500/50 cursor-pointer duration-500 flex flex-col rounded-2xl overflow-hidden min-h-[350px] shadow-2xl z-0'
                         style={{
                             backgroundImage: `url(${event.image || 'https://www.vibe.com/wp-content/uploads/2023/10/GettyImages-1502049780.jpg?w=1024'})`,
                             backgroundSize: 'cover',
@@ -155,10 +161,16 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
                         }}
                     >
                         {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-zinc-950/80 to-zinc-900/40 group-hover:via-zinc-950/70 transition-all duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-zinc-950/80 to-zinc-900/40 group-hover:via-zinc-950/70 transition-all duration-500 z-0" />
 
                         {/* Content */}
                         <div className="relative z-10 flex flex-col h-full justify-between flex-1">
+                            {event.hasPendingOrders && (
+                                <div className="bg-red-600/90 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 flex items-center justify-center gap-2 shadow-inner w-full mb-0 border-b border-red-700">
+                                    <AlertTriangle size={14} />
+                                    Ungenerated Orders Available
+                                </div>
+                            )}
                             <section className="flex justify-between items-center backdrop-blur-md bg-black/40 p-4 px-6 border-b rounded-t-2xl border-white/5">
                                 <div className="flex items-center gap-2 text-zinc-300">
                                     <BsFillCalendarDateFill className="text-orange-500" size={14} />

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
-    ArrowLeft, Edit, Printer, Calendar, MapPin, Search
+    ArrowLeft, Edit, Printer, Calendar, MapPin, Search, Plus, Download
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
@@ -103,10 +103,20 @@ export default function EventDetailPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap justify-end">
                         <Button asChild variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800">
                             <Link href={`/u/a/events/${event._id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Event
+                            </Link>
+                        </Button>
+                        <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-black w-full md:w-auto uppercase tracking-tighter">
+                            <Link href={`/u/a/events/${id}/generate-wizard`}>
+                                <Plus size={16} className="mr-2" /> Generate Tickets for Sale
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="border-zinc-800 text-orange-500 hover:bg-zinc-900 font-bold w-full md:w-auto">
+                            <Link href={`/u/a/events/${id}/tickets-for-sale`}>
+                                <Download size={16} className="mr-2" /> Print Tickets For Sale
                             </Link>
                         </Button>
                         <Button asChild className="bg-orange-600 hover:bg-orange-700">
