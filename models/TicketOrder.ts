@@ -7,10 +7,12 @@ const TicketOrderSchema = new Schema({
     },
     user: {
         type: Schema.Types.ObjectId,
-        requred: true,
+        ref: 'User',
+        required: true,
     },
     event: {
         type: Schema.Types.ObjectId,
+        ref: 'Event',
         required: true,
     },
     paymentStatus: {
@@ -30,5 +32,10 @@ const TicketOrderSchema = new Schema({
     }
 }, { timestamps: true })
 
-const TicketOrder = models.TicketOrder || model('TicketOrder', TicketOrderSchema)
+// Force delete model to prevent caching issues in dev
+if (models.TicketOrder) {
+    delete models.TicketOrder;
+}
+
+const TicketOrder = model('TicketOrder', TicketOrderSchema)
 export default TicketOrder
