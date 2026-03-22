@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
-    ArrowLeft, Edit, Printer, Calendar, MapPin, Search
+    ArrowLeft, Edit, Printer, Calendar, MapPin, Search, Plus, Download
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
@@ -103,10 +103,20 @@ export default function EventDetailPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap justify-end">
                         <Button asChild variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800">
                             <Link href={`/u/a/events/${event._id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Event
+                            </Link>
+                        </Button>
+                        <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-black w-full md:w-auto uppercase tracking-tighter">
+                            <Link href={`/u/a/events/${id}/generate-wizard`}>
+                                <Plus size={16} className="mr-2" /> Generate Tickets for Sale
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="border-zinc-800 text-orange-500 hover:bg-zinc-900 font-bold w-full md:w-auto">
+                            <Link href={`/u/a/events/${id}/tickets-for-sale`}>
+                                <Download size={16} className="mr-2" /> Print Tickets For Sale
                             </Link>
                         </Button>
                         <Button asChild className="bg-orange-600 hover:bg-orange-700">
@@ -127,7 +137,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.totalTickets}</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.totalTickets}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Units Sold</p>
                         </CardContent>
                     </Card>
@@ -140,7 +150,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">₦{stats.totalRevenue.toLocaleString()}</div>
+                            <div className="text-3xl text-zinc-100 font-black">₦{stats.totalRevenue.toLocaleString()}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Gross Potential</p>
                         </CardContent>
                     </Card>
@@ -153,7 +163,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.checkedInCount}</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.checkedInCount}</div>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Attendees At Venue</p>
                         </CardContent>
                     </Card>
@@ -166,7 +176,7 @@ export default function EventDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
-                            <div className="text-3xl font-black">{stats.checkInRate.toFixed(1)}%</div>
+                            <div className="text-3xl text-zinc-100 font-black">{stats.checkInRate.toFixed(1)}%</div>
                             <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                                 <div
                                     className="bg-purple-500 h-full transition-all duration-1000"

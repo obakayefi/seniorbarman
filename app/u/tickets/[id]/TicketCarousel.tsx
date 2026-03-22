@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { useQRCode } from "next-qrcode";
-import { extractTicketStatus, formattedDate, formatTime, getBaseUrl } from "@/lib/utils";
+import { extractTicketStatus, formattedDate, formatTime, formatEventTime, getBaseUrl } from "@/lib/utils";
 import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
@@ -145,7 +145,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                         ? `${eventInfo.homeTeam} vs ${eventInfo.awayTeam}`
                         : eventInfo?.title,
                     eventDate: new Date(eventInfo?.date).toDateString(),
-                    eventTime: formatTime(eventInfo?.time) || '17:00',
+                    eventTime: formatEventTime(eventInfo?.date),
                     eventVenue: eventInfo?.venue,
                     ticketType: currentTicket.stand || currentTicket.ticketType || 'General',
                     qrCodeUrl: `${getBaseUrl()}/tickets/p/${currentTicket.checkInToken}/`,
@@ -235,7 +235,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
     return (
         <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-4">
             {/* Header with status badge */}
-            <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
+            <div className="w-full flex flex-col sm:flex-row justify-center                                                                                                                                                                                      items-center gap-3 mb-4">
                 <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
                     {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
                 </div>
@@ -314,7 +314,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                             </div>
                             <div className="flex flex-col gap-1 items-center text-center">
                                 <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Kickoff</p>
-                                <p className="text-white font-bold text-sm sm:text-lg">{formatTime(eventInfo?.time) || '17:00'}</p>
+                                <p className="text-white font-bold text-sm sm:text-lg">{formatEventTime(eventInfo?.date)}</p>
                             </div>
                         </div>
 
@@ -370,28 +370,20 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                 </div>
 
                 {/* Ticket Details */}
-                <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
+                {/* <div className="flex justify-between gap-4 border-t border-zinc-800 pt-6">
                     <section className='flex flex-col gap-4'>
                         <div>
-                            <p className="text-zinc-500 uppercase text-xs mb-1">Venue</p>
-                            <p className="text-white">{eventInfo?.venue}</p>
-                        </div>
-                        <div>
                             <p className="text-zinc-500 uppercase text-xs mb-1">Section</p>
-                            <p className="text-white">{currentTicket.stand || currentTicket.ticketType || 'General Admission'}</p>
+                            <p className="text-white">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
                         </div>
                     </section>
                     <section className='flex flex-col gap-4 items-end text-right'>
-                        <div>
-                            <p className="text-zinc-500 uppercase text-xs mb-1">Order ID</p>
-                            <p className="text-white text-xs">#{currentTicket._id?.slice(-8) || 'N/A'}</p>
-                        </div>
                         <div>
                             <p className="text-zinc-500 uppercase text-xs mb-1">Holder</p>
                             <p className="text-white">{user ? `${user.firstName} ${user.lastName}` : (currentTicket.createdBy?.firstName ? `${currentTicket.createdBy.firstName} ${currentTicket.createdBy.lastName}` : (currentTicket.email || 'Guest'))}</p>
                         </div>
                     </section>
-                </div>
+                </div> */}
 
                 {/* Present at Gate Button */}
                 <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 sm:py-4 rounded-lg mt-4 sm:mt-6 flex items-center justify-center gap-2 transition-colors text-sm sm:text-base">

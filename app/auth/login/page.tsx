@@ -117,7 +117,7 @@ export default function Login() {
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
                     <Button type="submit" disabled={isLoading || !formFilled}
-                        className="mt-6 disabled:bg-slate-600 w-full">
+                        className="mt-6 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-600 w-full">
                         Login {isLoading ? <Spinner /> : null}
                     </Button>
                     {/* <Button variant="outline" className="w-full">

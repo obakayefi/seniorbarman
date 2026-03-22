@@ -157,7 +157,7 @@ export default function Register() {
                     <Button
                         type="submit"
                         disabled={isLoading || !formFilled}
-                        className="w-full disabled:bg-slate-600"
+                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-slate-600"
                     >
                         Register {isLoading ? <Spinner /> : null}
                     </Button>

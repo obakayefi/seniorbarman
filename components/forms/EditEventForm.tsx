@@ -263,25 +263,29 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                             </>
                         )}
 
+                        {currentEventType !== 'sports' && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex flex-col gap-2">
+                                        <Label className="text-gray-400">Regular Price</Label>
+                                        <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Label className="text-gray-400">VIP Price</Label>
+                                        <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={vipPrice} onChange={(e) => setVipPrice(e.target.value)} />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Label className="text-gray-400">Update Banner (Optional)</Label>
+                                    <FileUpload key={resetKey} onChange={setFiles} />
+                                </div>
+                            </>
+                        )}
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                <Label className="text-gray-400">Regular Price</Label>
-                                <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="text-gray-400">VIP Price</Label>
-                                <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={vipPrice} onChange={(e) => setVipPrice(e.target.value)} />
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            <Label className="text-gray-400">Update Banner (Optional)</Label>
-                            <FileUpload key={resetKey} onChange={setFiles} />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-2">
-                                <Label className="text-gray-400">Date</Label>
+                                {/* <Label className="text-gray-400">Date</Label> */}
                                 <ApplyDatePicker
                                     dateValue={dateValue}
                                     eventDate={eventDate}

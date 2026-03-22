@@ -51,10 +51,11 @@ function formatDate(date: Date | undefined) {
     }
 
     return date.toLocaleDateString("en-US", {
-        day: "2-digit",
+        weekday: "short",
         month: "long",
+        day: "numeric",
         year: "numeric",
-    })
+    }).replace(/,/g, '') // match Exactly "Sun March 15 2026"
 }
 
 function isValidDate(date: Date | undefined) {
@@ -121,13 +122,22 @@ const CreateEventForm = () => {
     const onFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+
+        const combinedDate = eventDate ? new Date(eventDate) : undefined;
+        if (combinedDate && eventTime.value) {
+            const [hours, minutes] = eventTime.value.split(':').map(Number);
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                combinedDate.setHours(hours, minutes, 0, 0);
+            }
+        }
+
         const eventDetails = {
             eventType: currentEventType ?? "N/A",
             homeTeam,
             awayTeam,
             eventVenue,
             eventTitle: eventTitle.value ?? "N/A",
-            eventDate: eventDate,
+            eventDate: combinedDate,
             imageFile: files[0],
             eventTime: eventTime.value,
             regularPrice,
@@ -205,8 +215,25 @@ const CreateEventForm = () => {
         }
     }
 
+    const formFilled = React.useMemo(() => {
+        if (!eventDate || !eventTime.value || !eventVenue) {
+            return false;
+        }
+
+        if (currentEventType === "sports") {
+            return Boolean(homeTeam && awayTeam);
+        } else {
+            return Boolean(eventTitle.value && regularPrice && vipPrice && files.length > 0);
+        }
+    }, [currentEventType, eventDate, eventTime.value, eventVenue, regularPrice, vipPrice, files, homeTeam, awayTeam, eventTitle.value]);
+
     return (
         <Card className="w-full border-zinc-800 sm:max-w-xl">
+            <div className="p-6 h-24">
+                <h1 className="text-4xl text-left text-white">CreateEvent</h1>
+                <p className='text-amber-500 '>Events you create here can be shown on the homepage</p>
+            </div>
+            <div className="bg-zinc-800 mb-4 h-px" />
             <form onSubmit={onFormSubmit}>
                 <CardContent className="flex flex-col gap-4">
 
@@ -361,7 +388,7 @@ const CreateEventForm = () => {
                         <Button type="button" variant="outline" onClick={() => router.push('/u/dashboard')}>
                             Cancel
                         </Button>
-                        <Button className="bg-orange-500 hover:bg-orange-600" disabled={isLoading} type="submit">
+                        <Button className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-600" disabled={isLoading || !formFilled} type="submit">
                             {isLoading && <Spinner />}
                             Submit
                         </Button>

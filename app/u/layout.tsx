@@ -26,12 +26,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             icon: LayoutDashboard,
         },
         {
-            title: "Browse Upcoming Events",
+            title: "Upcoming Events",
             url: sitemap.user.eventsTicketPurchase,
             icon: BiParty,
         },
         {
-            title: "Buy Ranger's Ticket",
+            title: "Rangers Matches",
             url: sitemap.user.rangersTicketPurchase,
             icon: TbSoccerField,
         },

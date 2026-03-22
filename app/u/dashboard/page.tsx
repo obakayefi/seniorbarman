@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { CalendarDays, Tickets, TrendingUp, ArrowRight } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
+import { MdOutlineStadium } from "react-icons/md";
+
 
 const UserDashboard = () => {
   const { user } = useApp()
@@ -50,6 +52,14 @@ const UserDashboard = () => {
       url: sitemap.user.eventsTicketPurchase,
       color: "text-blue-500",
       bg: "bg-blue-500/10"
+    },
+    {
+      title: "Ranger's Home Matches",
+      description: "View upcoming Rangers home matches",
+      icon: MdOutlineStadium,
+      url: sitemap.user.rangersTicketPurchase,
+      color: "text-red-500",
+      bg: "bg-red-500/10"
     }
   ]
 

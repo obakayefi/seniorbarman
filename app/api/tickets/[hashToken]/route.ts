@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { cookies } from "next/headers";
 import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
+import TicketOrder from "@/models/TicketOrder";
 import User from "@/models/User";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
@@ -35,6 +36,7 @@ export async function GET(req: Request, { params }: Params) {
 
         const event = await Event.findById(eventId);
         const tickets = await Ticket.find({ createdBy: userId }).populate("event");
+        const pendingOrders = await TicketOrder.find({ event: eventId, user: userId, isGenerated: false }).lean();
 
         const ticketCount: Record<string, Record<string, number>> = {};
 
@@ -62,7 +64,7 @@ export async function GET(req: Request, { params }: Params) {
             return ticketEventId === eventId;
         });
 
-        if (matchedTickets.length === 0 && !event) {
+        if (matchedTickets.length === 0 && pendingOrders.length === 0 && !event) {
             return NextResponse.json(
                 { error: "Could not find event or tickets for this ID" },
                 { status: 404 }
@@ -75,7 +77,8 @@ export async function GET(req: Request, { params }: Params) {
                 event: event || { _id: eventId },
                 tickets: matchedTickets
             },
-            summary: transformedSummary
+            summary: transformedSummary,
+            pendingOrders
         }
 
         return NextResponse.json(

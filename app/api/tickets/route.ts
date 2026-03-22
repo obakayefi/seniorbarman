@@ -9,6 +9,7 @@ import axios from "axios";
 import api from "@/lib/axios";
 import crypto from 'crypto'
 import Ticket from "@/models/Ticket";
+import TicketOrder from "@/models/TicketOrder";
 import mongoose from "mongoose";
 import { getUserFromCookie, verifyAuth } from "@/lib/auth";
 import { StandType } from "@/types/components";
@@ -30,9 +31,19 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // }
 
 
-async function SortTicketsForView(events: any[], tickets: any[]) {
+async function SortTicketsForView(events: any[], tickets: any[], pendingOrders: any[] = []) {
     const ticketCount: Record<string, Record<string, number>> = {};
     const orphanedEventIds = new Set<string>();
+    const pendingEventIds = new Set<string>();
+
+    for (const order of pendingOrders) {
+        const eventId = order.event?._id?.toString() || order.event?.toString();
+        if (eventId) {
+            pendingEventIds.add(eventId);
+            const eventExists = events.some(e => e._id.toString() === eventId);
+            if (!eventExists) orphanedEventIds.add(eventId);
+        }
+    }
 
     for (const ticket of tickets) {
         // Use the raw ID if the event is null (orphaned)
@@ -57,30 +68,36 @@ async function SortTicketsForView(events: any[], tickets: any[]) {
 
     // Process existing events
     const extendedEvents = events.map(event => {
+        const eventIdStr = event._id.toString();
         const plain = event.toObject ? event.toObject() : event;
-        const matchedStands = ticketCount[event._id.toString()];
+        const matchedStands = ticketCount[eventIdStr];
         const transformedSummary = matchedStands ? Object.entries(matchedStands).map(([name, value]) => ({
             name,
             value
         })) : [];
 
-        return { ...plain, transformedSummary };
+        return { 
+            ...plain, 
+            transformedSummary,
+            hasPendingOrders: pendingEventIds.has(eventIdStr)
+        };
     });
 
     // Add orphaned events placeholders
     const orphanedGroups = Array.from(orphanedEventIds).map(eventId => {
         const matchedStands = ticketCount[eventId];
-        const transformedSummary = Object.entries(matchedStands).map(([name, value]) => ({
+        const transformedSummary = matchedStands ? Object.entries(matchedStands).map(([name, value]) => ({
             name,
             value
-        }));
+        })) : [];
 
         return {
             _id: eventId,
             title: "Deleted Event",
             isOrphaned: true,
             transformedSummary,
-            type: 'event' // Default to event for display
+            type: 'event', // Default to event for display
+            hasPendingOrders: pendingEventIds.has(eventId)
         };
     });
 
@@ -114,8 +131,11 @@ export async function GET(req: Request) {
             .find({ createdBy: userId })
             .lean()
 
+        // Fetch pending ticket orders by this user
+        const pendingOrders = await TicketOrder.find({ user: userId, isGenerated: false }).lean()
+
         // Handle case where user has no events
-        if (!tickets.length) {
+        if (!tickets.length && !pendingOrders.length) {
             return NextResponse.json({
                 message: "No tickets found for this user",
                 tickets: [],
@@ -129,11 +149,11 @@ export async function GET(req: Request) {
         console.log(`[API] Total raw tickets found: ${tickets.length}`);
         console.log(`[API] Total events found: ${events.length}`);
 
-        const eventsSortedWithTickets = await SortTicketsForView(events, tickets)
+        const eventsSortedWithTickets = await SortTicketsForView(events, tickets, pendingOrders)
 
-        // Filter out empty summaries (no tickets for that event)
+        // Filter out empty summaries (no tickets for that event) OR if they don't have pending orders
         const validTickets = eventsSortedWithTickets.filter(group =>
-            group.transformedSummary && group.transformedSummary.length > 0
+            (group.transformedSummary && group.transformedSummary.length > 0) || group.hasPendingOrders
         );
 
         console.log(`[API] Valid ticket groups after filtering: ${validTickets.length}`);

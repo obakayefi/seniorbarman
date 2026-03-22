@@ -22,6 +22,7 @@ export default function TicketDetailView() {
     const [tickets, setTickets] = useState([])
     const [eventInfo, setEventInfo] = useState<any>({})
     const [ticketSummary, setTicketSummary] = useState<{}[]>([])
+    const [pendingOrders, setPendingOrders] = useState<any[]>([])
     const params = useParams()
     const { user } = useApp()
     const [loading, setLoading] = useState(true)
@@ -33,8 +34,9 @@ export default function TicketDetailView() {
             setLoading(true)
             const { data } = await api.get(`/tickets/${params.id}`);
             setEventInfo(data.response.event);
-            setTickets(data.response.tickets.tickets || []);
+            setTickets(data.response.tickets?.tickets || []);
             setTicketSummary(data.response.summary);
+            setPendingOrders(data.response.pendingOrders || []);
         } catch (error) {
             console.error(error)
         } finally {
@@ -63,6 +65,25 @@ export default function TicketDetailView() {
         }
     }
 
+    const [generating, setGenerating] = useState<string | null>(null)
+
+    const handleGenerate = async (reference: string) => {
+        try {
+            setGenerating(reference)
+            // Call the generation endpoint passing the reference ID 
+            const res = await api.get(`/ticket-order?reference=${reference}`)
+            if (res.data.createdTickets) {
+                toast.success("Tickets successfully generated!")
+                // Refresh data
+                getTickets()
+            }
+        } catch (error: any) {
+            toast.error("Failed to generate tickets: " + (error.response?.data?.error || error.message))
+        } finally {
+            setGenerating(null)
+        }
+    }
+
     return (
         <>
             {loading ? (
@@ -77,6 +98,58 @@ export default function TicketDetailView() {
                             <span className={'text-zinc-700'}>Back to Tickets</span>
                         </Link>
                     </div>
+
+                    {/* Pending Orders Section */}
+                    {pendingOrders.length > 0 && (
+                        <div className="mb-8 bg-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full" />
+                            <div className="flex items-center gap-3 mb-6 relative">
+                                <div className="p-2 bg-red-500/10 rounded-xl">
+                                    <AlertTriangle className="text-red-500 w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-white uppercase tracking-tight leading-tight">Generate Purchased Tickets</h2>
+                                    <p className="text-xs text-zinc-400">You have ungenerated tickets. Generate them now to reveal your QR codes.</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3 relative">
+                                {pendingOrders.map(order => (
+                                    <div key={order._id} className="bg-zinc-950/60 border border-white/5 p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-zinc-950/80">
+                                        <div className="space-y-2">
+                                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Order Ref: <span className="text-zinc-300 font-mono ml-2">{order.reference}</span></p>
+                                            <div className="flex flex-wrap gap-2 text-sm">
+                                                {Object.entries(order.tickets || {}).map(([type, qty]: [string, any]) => {
+                                                    // Handle robust ticket formats
+                                                    const ticketType = typeof qty === 'object' ? (qty.name || type) : type;
+                                                    const ticketQty = typeof qty === 'object' ? (qty.quantity || qty.qty || 1) : qty;
+                                                    return (
+                                                        <span key={type} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-lg flex items-center">
+                                                            <span className="text-zinc-400 mr-2 text-[10px] uppercase font-black tracking-widest">{ticketType}</span>
+                                                            <span className="font-bold text-white text-sm">×{ticketQty}</span>
+                                                        </span>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            onClick={() => handleGenerate(order.reference)}
+                                            disabled={generating === order.reference}
+                                            className="bg-red-600 hover:bg-red-700 text-white font-black h-12 px-8 shrink-0 uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-red-900/20"
+                                        >
+                                            {generating === order.reference ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    <span>Generating...</span>
+                                                </div>
+                                            ) : (
+                                                "Generate Now"
+                                            )}
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Orphaned Event Banner */}
                     {eventInfo?.isOrphaned && (
@@ -131,25 +204,7 @@ export default function TicketDetailView() {
                                     </div>
                                 </section>
 
-                                <section className='bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-6 mt-4'>
-                                    <div className='flex flex-col md:flex-row gap-6 sm:gap-10 justify-center'>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <MdStadium className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Venue</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{eventInfo?.venue}</p>
-                                        </div>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <FaClock className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Time</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{eventInfo?.time}</p>
-                                        </div>
-                                        <div className="flex-col flex gap-1 items-center">
-                                            <BsFillCalendarDateFill className='text-orange-400' size={20} />
-                                            <p className='text-slate-500 text-xs sm:text-sm'>Date</p>
-                                            <p className='text-orange-400 text-sm sm:text-base'>{new Date(eventInfo?.date).toDateString()}</p>
-                                        </div>
-                                    </div>
-                                </section>
+
                             </div>
 
                             {/* <section className='flex items-center flex-col md:flex-row w-full gap-2 justify-center text-center'>
@@ -210,7 +265,7 @@ export default function TicketDetailView() {
                                                 </div>
                                                 <div className="flex flex-col gap-0.5">
                                                     <p className='text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em]'>Time</p>
-                                                    <p className='text-white text-base sm:text-xl font-bold'>{eventInfo?.time}</p>
+                                                    <p className='text-white text-base sm:text-xl font-bold'>{eventInfo?.date ? new Date(eventInfo.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -250,6 +305,68 @@ export default function TicketDetailView() {
                             <p className="text-zinc-500 mt-2">Unable to display tickets for this event.</p>
                         </div>
                     )}
+                </div>
+            ) : pendingOrders.length > 0 && eventInfo ? (
+                <div>
+                    <div className="mb-6">
+                        <Link href={'/u/tickets'} className={'text-zinc-700 flex items-center gap-2'}>
+                            <MoveLeft />
+                            <span className={'text-zinc-700'}>Back to Tickets</span>
+                        </Link>
+                    </div>
+                    {/* Pending Orders Section (Rendered even if 0 generated tickets exist) */}
+                    <div className="mb-8 bg-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full" />
+                        <div className="flex items-center gap-3 mb-6 relative">
+                            <div className="p-2 bg-red-500/10 rounded-xl">
+                                <AlertTriangle className="text-red-500 w-5 h-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-white uppercase tracking-tight leading-tight">Generate Purchased Tickets</h2>
+                                <p className="text-xs text-zinc-400">You have ungenerated tickets. Generate them now to reveal your QR codes.</p>
+                            </div>
+                        </div>
+                        <div className="space-y-3 relative">
+                            {pendingOrders.map(order => (
+                                <div key={order._id} className="bg-zinc-950/60 border border-white/5 p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-zinc-950/80">
+                                    <div className="space-y-2">
+                                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Order Ref: <span className="text-zinc-300 font-mono ml-2">{order.reference}</span></p>
+                                        <div className="flex flex-wrap gap-2 text-sm">
+                                            {Object.entries(order.tickets || {}).map(([type, qty]: [string, any]) => {
+                                                const ticketType = typeof qty === 'object' ? (qty.name || type) : type;
+                                                const ticketQty = typeof qty === 'object' ? (qty.quantity || qty.qty || 1) : qty;
+                                                return (
+                                                    <span key={type} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-lg flex items-center">
+                                                        <span className="text-zinc-400 mr-2 text-[10px] uppercase font-black tracking-widest">{ticketType}</span>
+                                                        <span className="font-bold text-white text-sm">×{ticketQty}</span>
+                                                    </span>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleGenerate(order.reference)}
+                                        disabled={generating === order.reference}
+                                        className="bg-red-600 hover:bg-red-700 text-white font-black h-12 px-8 shrink-0 uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-red-900/20"
+                                    >
+                                        {generating === order.reference ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <span>Generating...</span>
+                                            </div>
+                                        ) : (
+                                            "Generate Now"
+                                        )}
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="text-center py-20 bg-zinc-900/20 rounded-2xl border border-white/5 mt-8">
+                        <h2 className="text-2xl font-black text-zinc-600 uppercase tracking-tight">No Tickets Active</h2>
+                        <p className="text-zinc-500 mt-2 text-sm">Generate your pending orders above to access your tickets.</p>
+                    </div>
                 </div>
             ) : (
                 <div className="text-center py-20">

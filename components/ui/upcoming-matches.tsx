@@ -101,10 +101,10 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
     )
 }
 
-export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: [] }) {
+export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: any[] }) {
 
     return (
-        <section className={'px-2 xl:px-60 mb-20'} id={'upcomingMatches'}>
+        <section className={'px-6 lg:px-12 xl:px-20 mb-20 max-w-[1600px] mx-auto'} id={'upcomingMatches'}>
             <div>
                 <h2 className={'text-xl lg:text-3xl'}>Upcoming Home Matches</h2>
                 <span className={'text-gray-400 text-xs'}>Secure your tickets for Enugu Rangers FC home games</span>
@@ -112,7 +112,7 @@ export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: 
 
             <section className={'flex flex-col md:grid md:grid-cols-2 gap-4 mt-10'}>
                 {upcomingMatches.length ? upcomingMatches.map((match, index) => (
-                    <FootballMatch match={match} isNextMatch={index === 0} />
+                    <FootballMatch key={match._id} match={match} isNextMatch={index === 0} />
                 )) : <div><h3 className={'text-zinc-600'}>Loading upcoming matches</h3></div>}
             </section>
         </section>

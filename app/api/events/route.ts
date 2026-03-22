@@ -135,11 +135,14 @@ export async function POST(req: Request) {
 
         let finalDate = new Date(date);
 
-        if (time) {
-            const [hours, minutes] = time.split(':').map(Number);
-            if (!isNaN(hours) && !isNaN(minutes)) {
-                finalDate.setHours(hours, minutes);
-            }
+        // Use a 4.5 minute buffer so that selecting exactly 5 minutes on the dot 
+        // doesn't fail due to seconds currently elapsed.
+        const fourHalfMinsFromNow = new Date(Date.now() + 4.5 * 60000);
+        if (finalDate <= fourHalfMinsFromNow) {
+            return NextResponse.json(
+                { error: "Event date must be at least 5 minutes from now" },
+                { status: 400 }
+            );
         }
 
         let newEvent = type === "sports" ? {
