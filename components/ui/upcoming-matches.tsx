@@ -101,10 +101,10 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
     )
 }
 
-export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: [] }) {
+export default function UpcomingMatches({ upcomingMatches }: { upcomingMatches: any[] }) {
 
     return (
-        <section className={'px-2 xl:px-60 mb-20'} id={'upcomingMatches'}>
+        <section className={'px-6 lg:px-12 xl:px-20 mb-20 max-w-[1600px] mx-auto'} id={'upcomingMatches'}>
             <div>
                 <h2 className={'text-xl lg:text-3xl'}>Upcoming Home Matches</h2>
                 <span className={'text-gray-400 text-xs'}>Secure your tickets for Enugu Rangers FC home games</span>

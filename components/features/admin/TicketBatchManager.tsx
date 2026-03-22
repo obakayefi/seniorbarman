@@ -75,11 +75,11 @@ export default function TicketBatchManager({ eventId }: TicketBatchManagerProps)
                 await new Promise(resolve => setTimeout(resolve, 500))
 
                 if (printRef.current) {
-                    // Use higher quality for premium feel
+                    // Optimized for speed, file size, and printers, but keeping pixelRatio high for QR sharpness
                     const dataUrl = await toJpeg(printRef.current, {
-                        quality: 0.95,
+                        quality: 0.85, 
                         backgroundColor: 'white',
-                        pixelRatio: 2 // Higher resolution for print
+                        pixelRatio: 2 
                     })
                     const base64Data = dataUrl.split(',')[1]
                     folder?.file(`Page_${i + 1}.jpg`, base64Data, { base64: true })

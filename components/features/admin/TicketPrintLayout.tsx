@@ -29,7 +29,7 @@ const TicketPrintLayout = forwardRef<HTMLDivElement, TicketPrintLayoutProps>(({ 
 
                             <QRCodeSVG
                                 value={`${baseUrl}/tickets/p/${ticket.checkInToken}`}
-                                size={105}
+                                size={135} // Increased to take up max available width
                                 level="H"
                                 includeMargin={false}
                             />
@@ -64,29 +64,18 @@ const TicketPrintLayout = forwardRef<HTMLDivElement, TicketPrintLayoutProps>(({ 
 
                     return (
                         <div key={ticket._id} className="border-[0.5pt] border-zinc-200 rounded-2xl flex flex-col h-[65mm] relative overflow-hidden bg-white shadow-sm">
-                            {/* Top Banner / Event Image */}
-                            <div className="h-[22mm] w-full relative overflow-hidden bg-zinc-900">
-                                {ticket.event?.image ? (
-                                    <img
-                                        src={ticket.event.image}
-                                        alt=""
-                                        className="w-full h-full object-cover opacity-60"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-orange-600 to-orange-900 opacity-80" />
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                            {/* Top Banner / Event Title (Optimized for B&W Printers) */}
+                            <div className="h-[22mm] w-full relative overflow-hidden bg-white border-b-[0.5pt] border-zinc-200">
+                                <div className="absolute top-2 left-3">
+                                    <span className="text-[7px] font-black text-zinc-500 tracking-[0.2em] uppercase">SeniorBarman Official</span>
+                                </div>
                                 <div className="absolute bottom-2 left-3 right-3 flex justify-between items-end">
-                                    <h3 className="text-[11px] font-black uppercase text-white leading-tight line-clamp-2 drop-shadow-md">
+                                    <h3 className="text-[11px] font-black uppercase text-black leading-tight line-clamp-2 pr-2">
                                         {eventTitle}
                                     </h3>
-                                    <span className="text-[8px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                    <span className="text-[8px] font-black border-[0.5pt] border-zinc-400 text-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter bg-zinc-50 whitespace-nowrap">
                                         {ticket.stand || "REGULAR"}
                                     </span>
-                                </div>
-                                {/* Header Branding */}
-                                <div className="absolute top-2 left-3">
-                                    <span className="text-[7px] font-black text-white/40 tracking-[0.2em] uppercase">SeniorBarman Official</span>
                                 </div>
                             </div>
 
@@ -130,12 +119,12 @@ const TicketPrintLayout = forwardRef<HTMLDivElement, TicketPrintLayoutProps>(({ 
                                     </div>
                                 </div>
 
-                                {/* QR Column */}
-                                <div className="w-[28mm] flex flex-col items-center justify-center bg-zinc-50 rounded-xl p-1.5 border border-zinc-100">
+                                {/* QR Column - Widened for larger QR code */}
+                                <div className="w-[34mm] flex flex-col items-center justify-center bg-zinc-50 rounded-xl p-1.5 border border-zinc-100">
                                     <QRCodeSVG
                                         value={`${baseUrl}/tickets/p/${ticket.checkInToken}`}
-                                        size={75}
-                                        level="H"
+                                        size={95} // Increased from 75 for better scanning
+                                        level="H" // High error correction for smudges
                                         includeMargin={false}
                                     />
                                     <div className="mt-1.5 flex flex-col items-center">

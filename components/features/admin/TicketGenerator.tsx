@@ -51,13 +51,15 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
 
     // Construct mock tickets for the "Live Preview"
     const mockTickets = React.useMemo(() => {
-        if (tickets.length > 0) return tickets.slice(0, 8);
+        const perPage = config.type === 'standard' ? 20 : 8;
 
-        // Generate 4 mock tickets for preview
-        return Array.from({ length: 4 }).map((_, i) => ({
+        if (tickets.length > 0) return tickets.slice(0, perPage);
+
+        // Generate a full A4 page of mock tickets for preview
+        return Array.from({ length: perPage }).map((_, i) => ({
             _id: `mock-${i}`,
-            ticketNumber: `PREVIEW-${i + 1}`,
-            checkInToken: "preview-token",
+            ticketNumber: `PREVIEW-${(i + 1).toString().padStart(6, '0')}`,
+            checkInToken: `preview-token-${i}`,
             stand: config.stand,
             price: config.price,
             holderName: config.holderName || "Guest",
@@ -101,7 +103,7 @@ export default function TicketGenerator({ eventId }: TicketGeneratorProps) {
         if (printRef.current === null) return
 
         try {
-            const dataUrl = await toJpeg(printRef.current, { quality: 0.95, backgroundColor: 'white' })
+            const dataUrl = await toJpeg(printRef.current, { quality: 0.85, backgroundColor: 'white', pixelRatio: 2 })
             const link = document.createElement('a')
             link.download = `tickets-${eventId}-${Date.now()}.jpeg`
             link.href = dataUrl

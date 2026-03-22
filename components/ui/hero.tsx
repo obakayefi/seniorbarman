@@ -10,8 +10,8 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function Hero({ nextMatch }: { nextMatch: any }) {
     return (
-        <header className={'flex flex-col xl:flex-row w-full items-center justify-between'}>
-            <div className="flex gap-2 flex-col">
+        <header className={'flex flex-col xl:flex-row w-full items-center justify-between gap-12'}>
+            <div className="flex gap-2 flex-col xl:w-1/2">
                 <section className="bg-red-600 max-w-fit px-2 rounded mb-2">
                     <span>Official Ticketing Partner</span>
                 </section>
@@ -63,7 +63,7 @@ export default function Hero({ nextMatch }: { nextMatch: any }) {
                 </section>
             </div>
 
-            <section className={'flex mx-auto border border-zinc-900 lg:mx-0 rounded z-20 items-stretch mt-6 lg:mt-11 w-full md:min-w-[380px] lg:min-w-[420px] xl:min-w-[460px] 2xl:min-w-[520px]'}>
+            <section className={'flex mx-auto border border-zinc-900 lg:mx-0 rounded z-20 items-stretch mt-6 lg:mt-11 w-full xl:w-1/2'}>
                 <div className={'bg-black/80 flex-1 z-50 px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 2xl:px-8 2xl:py-6'}>
                     <div className="border-b border-gray-800 pb-2 sm:pb-3">
                         <h2 className={'text-[10px] sm:text-xs lg:text-sm 2xl:text-base text-gray-400 uppercase tracking-widest mb-1'}>Next Match</h2>

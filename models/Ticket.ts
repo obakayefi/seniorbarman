@@ -76,6 +76,11 @@ const ticketSchema = new Schema({
         type: Boolean,
         default: false
     },
+    generatedBy: {
+        type: String,
+        enum: ['wizard', 'online-sale', 'third-party', 'store-sale', 'gate-sale'],
+        default: 'gate-sale'
+    },
     checkInLogs: [CheckInLogSchema]
 }, {
     timestamps: true,
