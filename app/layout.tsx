@@ -5,6 +5,7 @@ import Footer from "@/components/ui/Footer";
 import {Toaster} from "sonner";
 import {AppProvider} from "@/context/AppContext";
 import NativeNavbar from "@/components/ui/navbar";
+import {Analytics} from "@vercel/analytics/next";
 
 const gabaritoFonts = Gabarito({
     variable: "--font-gabarito",
@@ -32,6 +33,7 @@ export default function RootLayout({
         </AppProvider>
         <Toaster/>
         <Footer/>
+        <Analytics/>
         </body>
         </html>
     );
