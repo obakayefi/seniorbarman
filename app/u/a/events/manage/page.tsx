@@ -138,6 +138,7 @@ export default function EventManagementPage() {
                                     <TableHead className="text-zinc-400">Type</TableHead>
                                     <TableHead className="text-zinc-400">Date & Time</TableHead>
                                     <TableHead className="text-zinc-400">Venue</TableHead>
+                                    <TableHead className="text-zinc-400">Creator</TableHead>
                                     <TableHead className="text-zinc-400 text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -171,6 +172,16 @@ export default function EventManagementPage() {
                                             <div className="flex items-center gap-1 text-zinc-500 text-sm">
                                                 <MapPin size={14} className="shrink-0" />
                                                 <span className="truncate max-w-[150px]">{event.venue}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="text-zinc-300 text-sm font-bold">
+                                                    {event.createdBy?.firstName} {event.createdBy?.lastName}
+                                                </span>
+                                                <span className="text-zinc-500 text-[10px] lowercase truncate max-w-[150px]">
+                                                    {event.createdBy?.email}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right p-4">

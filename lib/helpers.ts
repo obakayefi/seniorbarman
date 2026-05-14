@@ -34,3 +34,18 @@ export const OnFreeOrder = async (ticketsToPrint: any[], eventId: string) => {
         throw error
     }
 }
+
+export const HunchoRoleChecker = (role?: string) => {
+    if (!role) return false
+    return role === 'dev' || role === 'admin'
+}
+
+export const OrganizerRoleChecker = (role?: string) => {
+    if (!role) return false
+    return role === 'organizer'
+}
+
+export const EventCreatorRoleChecker = (role?: string) => {
+    if (!role) return false
+    return role === 'dev' || role === 'admin' || role === 'organizer'
+}

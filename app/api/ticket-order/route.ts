@@ -20,7 +20,7 @@ export async function POST(req: Request) {
             event: eventId,
             user: user?.id,
             reference,
-            paymentStatus: 'success'
+            paymentStatus: 'pending'
         })
         // console.log({ newTicketOrder })
         return NextResponse.json({ message: "Ticket order created" }, { status: 200 })

@@ -4,7 +4,8 @@ import Ticket from "@/models/Ticket";
 import User from "@/models/User";
 import Event from "@/models/Event";
 import { PrepareEventStats } from "@/lib/utils";
-import eventBus from "@/lib/eventbus";
+import { redis } from "@/lib/redis";
+import { getUserFromCookie } from "@/lib/auth";
 
 type Params = {
     params: Promise<{ hashToken: string }>
@@ -13,15 +14,20 @@ type Params = {
 export async function POST(req: Request, { params }: Params) {
     try {
         await connectDB()
+        User.init(); // Prevents Next.js 15 from tree-shaking the User model before .populate()
+
         const { hashToken } = await params
         const body = await req.json().catch(() => ({}));
         const { eventId } = body;
+
+        const user = await getUserFromCookie();
 
         const gateAction = {
             action: "exit",
             method: "QR Code",
             time: new Date(),
-            location: "Gate 1"
+            location: "Gate 1",
+            performedBy: user?.id
         }
 
         //  console.log({hashToken, gateAction})
@@ -83,11 +89,35 @@ export async function POST(req: Request, { params }: Params) {
         const ticketsForEvent = await Ticket.find({ event: ticket.event })
         const eventTicketStats = PrepareEventStats(ticketsForEvent);
 
-        eventBus.emit(`event_update:${ticket.event}`, {
-            type: "ticket.check_out",
-            ticket: ticket,
+        const payload = {
+            type: "new_scan",
+            eventId: ticket.event._id.toString(),
+            scan: {
+                time: new Date().toLocaleTimeString(),
+                userName: ticket.createdBy?.firstName || "Unknown User",
+                stand: ticket.stand || "General",
+                status: "OUT",
+                success: true
+            },
             eventTicketStats
-        });
+        };
+
+        try {
+            const publishPromise = redis.publish(`event_update:${ticket.event._id.toString()}`, JSON.stringify(payload));
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Redis broadcast timeout exceeded (5s)")), 5000)
+            );
+            
+            await Promise.race([publishPromise, timeoutPromise]);
+        } catch (pubErr: any) {
+             console.error("Non-fatal: Failed to broadcast check-out to Live Dashboard", pubErr);
+             await import('@/lib/errorLogger').then(m => m.logSilentError(
+                 "Redis Broadcast Failure (Check-Out)",
+                 pubErr.message,
+                 "/api/tickets/[hash]/check-ticket-out",
+                 pubErr.stack
+             ));
+        }
 
         return NextResponse.json(
             {

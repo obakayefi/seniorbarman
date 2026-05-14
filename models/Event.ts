@@ -57,15 +57,51 @@ const EventSchema = new mongoose.Schema(
             type: String,
             required: false
         },
-        regularPrice: {
-            type: Number,
-            default: 0
+        ticketTypes: [
+            {
+                name: { type: String, required: true },
+                price: { type: Number, required: true, default: 0 },
+                max: { type: Number, default: 0 } // Optional max capacity per type
+            }
+        ],
+        // --- Application / Registration Feature ---
+        requiresApplication: {
+            type: Boolean,
+            default: false,
         },
-        vipPrice: {
+        applicationFee: {
             type: Number,
-            default: 0
+            default: 0, // 0 = free to apply
         },
-
+        formFields: [
+            {
+                label: { type: String, required: true },
+                type: {
+                    type: String,
+                    enum: ["text", "radio", "checkbox"],
+                    required: true,
+                },
+                options: [{ type: String }], // for radio & checkbox
+                required: { type: Boolean, default: false },
+            },
+        ],
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+        // --- Audition Specific Features ---
+        isAudition: {
+            type: Boolean,
+            default: false,
+        },
+        requestPicture: {
+            type: Boolean,
+            default: false,
+        },
+        allowNoTickets: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

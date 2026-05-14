@@ -12,10 +12,10 @@ import NButton from "@/components/native/NButton";
 import { FaLocationPin, FaLocationPinLock } from "react-icons/fa6";
 import { SlLocationPin } from "react-icons/sl";
 import RegularEventCard from "@/components/ui/RegularEventCard";
-import { SettingsIcon } from "lucide-react";
+import { SettingsIcon, CalendarX2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-
+import api from "@/lib/axios";
 
 export default function EventsPage() {
     const [events, setEvents] = useState([])
@@ -23,14 +23,8 @@ export default function EventsPage() {
 
     useEffect(() => {
         fetch('/api/events?type=event')
-            .then(res => {
-                console.log({ res })
-                return res.json()
-            })
-            .then(data => {
-                console.log({ events: data.events })
-                setEvents(data.events)
-            })
+            .then(res => res.json())
+            .then(data => setEvents(data.events))
             .finally(() => setLoadingEvents(false))
     }, [])
 
@@ -43,7 +37,7 @@ export default function EventsPage() {
                 <div
                     className="absolute inset-0 bg-cover h-[50vh] lg:h-full bg-bottom bg-no-repeat z-0"
                     style={{
-                        backgroundImage: "linear-gradient(to left, rgba(0,0,0,0.001), rgba(0,0,0,0.001)), url('/party-in-the-park.jpeg')"
+                        backgroundImage: "linear-gradient(to left, rgba(0,0,0,0.001), rgba(0,0,0,0.001)), url('/premium_event_crowd.png')"
                     }}
                 />
 
@@ -92,7 +86,22 @@ export default function EventsPage() {
                                 <RegularEventCard key={event._id} event={event} />
                             ))
                         ) : (
-                            <p>No events found</p>
+                            <div className="col-span-1 md:col-span-2 2xl:col-span-3 flex flex-col items-center justify-center p-12 sm:p-20 rounded-[2.5rem] bg-zinc-900/30 backdrop-blur-xl border border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] my-4 group transition-all duration-500 hover:bg-zinc-900/50 hover:border-white/10">
+                                <div className="p-6 rounded-full bg-black/40 border border-white/5 mb-6 group-hover:scale-110 transition-transform duration-500 shadow-[inset_0_4px_20px_rgba(255,255,255,0.02)]">
+                                    <CalendarX2 size={42} className="text-zinc-600 group-hover:text-amber-500 transition-colors duration-500" />
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-3 text-center uppercase">
+                                    No Active Events
+                                </h3>
+                                <p className="text-zinc-500 font-medium text-center max-w-sm leading-relaxed text-sm">
+                                    There are currently no scheduled events. We are actively curating new events, so check back shortly!
+                                </p>
+                                <div className="mt-8 flex gap-2 justify-center">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-600/50" />
+                                    <div className="h-1.5 w-8 rounded-full bg-amber-600" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-600/50" />
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>

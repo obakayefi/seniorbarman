@@ -3,15 +3,17 @@ import { connectDB } from "@/lib/mongodb";
 import TicketOrder from "@/models/TicketOrder";
 import User from "@/models/User";
 import { getUserFromCookie } from "@/lib/auth";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
         await connectDB();
-        const admin = await getUserFromCookie();
+        const user = await getUserFromCookie();
+        const canAccessResource = HunchoRoleChecker(user?.role)
 
-        if (!admin || admin.role !== 'admin') {
+        if (!canAccessResource) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -23,13 +25,13 @@ export async function GET(req: Request) {
         }
 
         // Find user by email
-        const user = await User.findOne({ email }).lean();
-        if (!user) {
+        const userEmail = await User.findOne({ email }).lean();
+        if (!userEmail) {
             return NextResponse.json({ orders: [] }, { status: 200 });
         }
 
         // Find orders associated with user
-        const orders = await TicketOrder.find({ user: user._id })
+        const orders = await TicketOrder.find({ user: userEmail._id })
             .populate('event', 'title homeTeam awayTeam date type image')
             .populate('user', 'firstName lastName email')
             .sort({ createdAt: -1 })

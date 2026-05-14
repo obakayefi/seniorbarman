@@ -5,18 +5,18 @@ import { getUserFromCookie } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 import { recordAuditLog } from "@/lib/audit";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 // POST: Admin creates or looks up a user by email
 export async function POST(req: Request) {
     try {
         await connectDB();
 
-        const admin = await getUserFromCookie();
-        if (!admin || admin.role !== "admin") {
-            return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
-                { status: 401 }
-            );
+        const user = await getUserFromCookie();
+        const canAccessResource = HunchoRoleChecker(user?.role)
+
+        if (!canAccessResource) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { firstName, lastName, email, password } = await req.json();
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
         // Record Audit Log
         await recordAuditLog({
-            adminId: admin.id,
+            adminId: user!.id,
             action: "CREATE_USER",
             targetType: "USER",
             targetId: newUser._id.toString(),
@@ -100,12 +100,11 @@ export async function GET(req: Request) {
     try {
         await connectDB();
 
-        const admin = await getUserFromCookie();
-        if (!admin || admin.role !== "admin") {
-            return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
-                { status: 401 }
-            );
+        const user = await getUserFromCookie();
+        const canAccessResource = HunchoRoleChecker(user?.role)
+
+        if (!canAccessResource) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { searchParams } = new URL(req.url);

@@ -10,14 +10,22 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         // Auth Check
         const user = await getUserFromCookie();
-        if (!user || user.role !== 'admin') {
+        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
             return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
+                { error: "Unauthorized: Access required" },
                 { status: 401 }
             );
         }
 
         const { id: eventId } = await params;
+
+        // Verify event ownership for organizer
+        if (user.role === 'organizer') {
+            const event = await mongoose.model('Event').findById(eventId);
+            if (!event || event.createdBy?.toString() !== user.id) {
+                return NextResponse.json({ error: "Forbidden: Not your event" }, { status: 403 });
+            }
+        }
 
         // Aggregate to find batches
         // We want: batchId, count, createdAt (min), holderName (first), isPrinted (any)

@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import api from "@/lib/axios";
 import { Spinner } from "@/components/ui/spinner";
 import { formatEvent, formatTime } from "@/lib/utils";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 export default function PreviewTickets() {
     const [currentTicket, setCurrentTicket] = useState<null | undefined>(undefined);
@@ -77,7 +78,7 @@ export default function PreviewTickets() {
                 <div className={'flex items-center gap-2'}> <span>Loading Ticket</span> <Spinner /></div>
             )}
 
-            {user?.role === "admin" ? (
+            {HunchoRoleChecker(user?.role) ? (
                 <div className={'bg-slate-100/20 border-1 rounded p-4 text-slate-700'}>
                     <h2 className={'text-slate-400 text-xl'}>Admin Actions</h2>
 

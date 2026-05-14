@@ -22,7 +22,7 @@ import { toast } from "sonner"
 
 export default function CreateAdmin() {
     const [isLoading, setIsLoading] = useState(false)
-    const [roleType, setRoleType] = useState<'bouncer' | 'admin'>('bouncer')
+    const [roleType, setRoleType] = useState<'bouncer' | 'admin' | 'organizer'>('bouncer')
     const email = useInput('')
     const firstName = useInput('')
     const lastName = useInput('')
@@ -136,13 +136,14 @@ export default function CreateAdmin() {
                             /> */}
                                 <Select
                                     value={roleType}
-                                    onValueChange={(value: 'bouncer' | 'admin') => { setRoleType(value); }}
+                                    onValueChange={(value: 'bouncer' | 'admin' | 'organizer') => { setRoleType(value); }}
                                 >
                                     <SelectTrigger className="w-full border-zinc-800">
                                         <SelectValue placeholder="Select Event Type" />
                                     </SelectTrigger>
                                     <SelectContent className={'border-zinc-800'}>
                                         <SelectItem value="bouncer">Bouncer</SelectItem>
+                                        <SelectItem value="organizer">Organizer</SelectItem>
                                         <SelectItem value="admin">Admin</SelectItem>
                                     </SelectContent>
                                 </Select>

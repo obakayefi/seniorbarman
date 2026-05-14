@@ -1,5 +1,5 @@
 "use client"
-import { AlarmClock, MapPin } from 'lucide-react';
+import { AlarmClock, MapPin, ClipboardList } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './button';
 import { EventType, IEvent } from '@/types/components';
@@ -12,13 +12,14 @@ import { CLUBS, formatEvent } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
 import { toast } from 'sonner';
 import api from '@/lib/axios';
+import { HunchoRoleChecker } from '@/lib/helpers';
 
 export const EventCard = ({ event }: { event: EventType }) => {
     const { user } = useApp()
     const router = useRouter()
     const [matchInformation, setMatchInformation] = useState<EventType>({} as EventType)
 
-    const isAdmin = user?.role === 'admin'
+    const isAdmin = HunchoRoleChecker(user?.role)
 
     const onDelete = async () => {
         if (!confirm("Removing this match will nullify all associated tickets. Do you also want to permanently delete its associated tickets as well?")) return
@@ -52,6 +53,12 @@ export const EventCard = ({ event }: { event: EventType }) => {
                 <span className=' uppercase'>{matchInformation.month}</span>
                 <span className='text-gray-400'>{matchInformation.year}</span>
             </Link>
+            {event.requiresApplication && (
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 rounded-md text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest mt-[-8px]">
+                    <ClipboardList size={12} />
+                    Application Required
+                </div>
+            )}
             <section className='flex w-full items-center flex-col justify-center'>
 
                 <div className='flex items-center flex-col gap-2'>
@@ -97,7 +104,7 @@ export const EventCard = ({ event }: { event: EventType }) => {
                             </div>
 
                             {/* Admin Quick Actions */}
-                            {isAdmin && (
+                            {(isAdmin) && (
                                 <div className="flex gap-1 flex-col">
                                     <Button
                                         variant="outline"

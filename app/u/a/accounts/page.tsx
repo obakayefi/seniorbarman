@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input"
 import { Loader2, Search, Users } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/axios"
+import { hasSecureOchEnv } from "@/app/actions/getSecureEnv"
 
 const Accounts = () => {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
+  const [canEscalateDev, setCanEscalateDev] = useState(false)
 
   const fetchUsers = async () => {
     try {
@@ -27,6 +29,7 @@ const Accounts = () => {
   }
 
   useEffect(() => {
+    hasSecureOchEnv().then(setCanEscalateDev)
     fetchUsers()
   }, [])
 
@@ -52,6 +55,7 @@ const Accounts = () => {
 
   const getRoleBadgeStyle = (role: string) => {
     switch (role) {
+      case 'dev': return 'bg-purple-500/10 text-purple-500 border-purple-500/20'
       case 'admin': return 'bg-red-500/10 text-red-500 border-red-500/20'
       case 'bouncer': return 'bg-orange-500/10 text-orange-500 border-orange-500/20'
       case 'organizer': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
@@ -122,7 +126,7 @@ const Accounts = () => {
                           onValueChange={(v) => handleRoleChange(user._id, v)}
                           defaultValue={user.role}
                         >
-                          <SelectTrigger className="w-32 bg-zinc-900 border-zinc-800 text-xs h-8">
+                          <SelectTrigger className="w-32 bg-zinc-900 border-zinc-800 text-xs h-8 text-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
@@ -130,6 +134,7 @@ const Accounts = () => {
                             <SelectItem value="organizer">Organizer</SelectItem>
                             <SelectItem value="bouncer">Bouncer</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
+                            {canEscalateDev && <SelectItem value="dev">Developer</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>

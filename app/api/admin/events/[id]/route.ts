@@ -14,7 +14,7 @@ export async function GET(
         await connectDB();
         const user = await getUserFromCookie();
 
-        if (!user || user.role !== 'admin') {
+        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -24,6 +24,11 @@ export async function GET(
         const event = await Event.findById(id).lean();
         if (!event) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
+        }
+
+        // Restrict organizers to their own events
+        if (user.role === 'organizer' && event.createdBy?.toString() !== user.id) {
+            return NextResponse.json({ error: "Forbidden: You can only view events you created" }, { status: 403 });
         }
 
         // Fetch all tickets for this event

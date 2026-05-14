@@ -8,6 +8,7 @@ import { CalendarDays, Tickets, TrendingUp, ArrowRight } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import { MdOutlineStadium } from "react-icons/md";
+import { HunchoRoleChecker } from '@/lib/helpers';
 
 
 const UserDashboard = () => {
@@ -17,6 +18,22 @@ const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!user) return
+
+    // Role-based redirection
+    if (HunchoRoleChecker(user?.role)) {
+      router.push(sitemap.admin.dashboard)
+      return
+    }
+    if (user.role === 'organizer') {
+      router.push(sitemap.organizer.dashboard)
+      return
+    }
+    if (user.role === 'bouncer') {
+      router.push(sitemap.bouncer.dashboard)
+      return
+    }
+
     const fetchDashboardData = async () => {
       try {
         const [ticketsRes, eventsRes] = await Promise.all([

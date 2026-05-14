@@ -107,8 +107,7 @@ export async function POST(req: Request) {
         const homeTeam = formData.get("homeTeam") as string;
         const awayTeam = formData.get("awayTeam") as string;
         const imageFile = formData.get("imageFile") as File;
-        const regularPrice = formData.get("regularPrice") as string;
-        const vipPrice = formData.get("vipPrice") as string;
+        const ticketTypesStr = formData.get("ticketTypes") as string;
 
         if (type === "event" && !title) {
             return NextResponse.json(
@@ -122,6 +121,13 @@ export async function POST(req: Request) {
                 { error: "Sports events require home and away teams" },
                 { status: 400 }
             );
+        }
+
+        let ticketTypes = [];
+        try {
+            if (ticketTypesStr) ticketTypes = JSON.parse(ticketTypesStr);
+        } catch (e) {
+            console.error("Failed to parse ticketTypes:", e);
         }
 
         let imageUrl = "";
@@ -148,8 +154,9 @@ export async function POST(req: Request) {
             venue,
             type,
             date,
-            regularPrice: Number(regularPrice) || 0,
-            vipPrice: Number(vipPrice) || 0,
+            ticketTypes: ticketTypes,
+            redirectUrl: "",
+            description: "Join us for an exciting match!",
             image: imageUrl
         } : {
             title,
@@ -157,8 +164,9 @@ export async function POST(req: Request) {
             type,
             time,
             venue,
-            regularPrice: Number(regularPrice) || 0,
-            vipPrice: Number(vipPrice) || 0,
+            ticketTypes: ticketTypes,
+            redirectUrl: "",
+            description: "Join us for an exciting event!",
             image: imageUrl
         };
 

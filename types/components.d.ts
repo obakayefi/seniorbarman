@@ -6,9 +6,7 @@ export interface IEvent {
   id: string;
   day: string;
   month: string;
-  day: string;
   year: string;
-  // date: { month: string; year: string; day: string };
   time: string;
   homeTeam: string;
   homeLogo?: string;
@@ -35,7 +33,6 @@ export interface EventType {
   type: "event" | "sports";
 }
 
-
 export interface IUser {
   avatar?: string;
   firstName: string;
@@ -43,5 +40,5 @@ export interface IUser {
   name: string;
   email: string;
   id: string;
-  role: "admin" | "user" | "bouncer";
+  role: "admin" | "user" | "bouncer" | "dev" | "organizer";
 }

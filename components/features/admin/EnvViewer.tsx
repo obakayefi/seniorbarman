@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Settings, Copy, Check, Loader2 } from "lucide-react"
 import api from "@/lib/axios"
 import { toast } from "sonner"
+import { useDevFeatures } from "@/lib/devFeatures"
 
 export default function EnvViewer() {
+    const { showEnvViewer } = useDevFeatures();
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [envData, setEnvData] = useState<any>(null)
@@ -40,6 +42,8 @@ export default function EnvViewer() {
         setTimeout(() => setCopiedKey(null), 2000)
     }
 
+    if (!showEnvViewer) return null;
+
     return (
         <Dialog open={open} onOpenChange={handleOpen}>
             <DialogTrigger asChild>
@@ -70,20 +74,14 @@ export default function EnvViewer() {
                     </div>
                 ) : envData ? (
                     <div className="overflow-y-auto flex-1 space-y-4 pr-2">
-                        {/* Timestamp */}
                         <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
                             <p className="text-xs text-zinc-500">
                                 Last fetched: {new Date(envData.timestamp).toLocaleString()}
                             </p>
                         </div>
-
-                        {/* Environment Variables */}
                         <div className="space-y-2">
                             {Object.entries(envData.environment).map(([key, value]: [string, any]) => (
-                                <div
-                                    key={key}
-                                    className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors group"
-                                >
+                                <div key={key} className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors group">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
@@ -91,26 +89,15 @@ export default function EnvViewer() {
                                                     {key}
                                                 </h4>
                                                 {value === '✓ Set' && (
-                                                    <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded border border-green-500/20">
-                                                        Set
-                                                    </span>
+                                                    <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Set</span>
                                                 )}
                                                 {value === '✗ Not set' && (
-                                                    <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded border border-red-500/20">
-                                                        Not Set
-                                                    </span>
+                                                    <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded border border-red-500/20">Not Set</span>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-zinc-300 font-mono break-all">
-                                                {value || <span className="text-zinc-600 italic">undefined</span>}
-                                            </p>
+                                            <p className="text-sm text-zinc-300 font-mono break-all">{value || <span className="text-zinc-600 italic">undefined</span>}</p>
                                         </div>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => copyToClipboard(key, value)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
+                                        <Button size="sm" variant="ghost" onClick={() => copyToClipboard(key, value)} className="opacity-0 group-hover:opacity-100 transition-opacity">
                                             {copiedKey === key ? (
                                                 <Check className="h-4 w-4 text-green-500" />
                                             ) : (
@@ -123,26 +110,11 @@ export default function EnvViewer() {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center py-12 text-zinc-500">
-                        No data loaded
-                    </div>
+                    <div className="text-center py-12 text-zinc-500">No data loaded</div>
                 )}
-
                 <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800">
-                    <Button
-                        variant="outline"
-                        onClick={() => fetchEnvVars()}
-                        disabled={loading}
-                        className="border-zinc-700"
-                    >
-                        Refresh
-                    </Button>
-                    <Button
-                        onClick={() => setOpen(false)}
-                        className="bg-orange-600 hover:bg-orange-700"
-                    >
-                        Close
-                    </Button>
+                    <Button variant="outline" onClick={() => fetchEnvVars()} disabled={loading} className="border-zinc-700">Refresh</Button>
+                    <Button onClick={() => setOpen(false)} className="bg-orange-600 hover:bg-orange-700">Close</Button>
                 </div>
             </DialogContent>
         </Dialog>

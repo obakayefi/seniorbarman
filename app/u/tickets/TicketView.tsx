@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import EventTicket from './EventTicket'
 import { useParams, useRouter } from 'next/navigation'
 import { useApp } from "@/context/AppContext";
+//import { redis } from '@/lib/redis'
 
 const TicketsPageView = () => {
     const [eventsWithTickets, setEventsWithTickets] = useState([])
@@ -22,21 +23,28 @@ const TicketsPageView = () => {
 
     useEffect(() => {
         async function getTickets() {
-            const data = await api(`/tickets?event-number${3141048014}`)
-            setEventsWithTickets(data.data.tickets)
-            setTicketSummary(data.data.summary)
-            //console.log({data, summary: data.data.summary})
+            const data = await fetch(`/api/tickets?event-number${3141048014}`)
+            const json = await data.json()
+            setEventsWithTickets(json.tickets)
+            setTicketSummary(json.summary)
             setLoading(false)
         }
 
         getTickets()
     }, [])
 
-    const filteredTickets = eventsWithTickets.filter((t: any) => {
-        // Handle potential nested event structure or direct property
-        const type = t.type || t.event?.type || (t.homeTeam ? 'sports' : 'event'); // Fallback logic if type is missing but homeTeam exists
-        return type === viewMode;
-    });
+    const filteredTickets = eventsWithTickets
+        .filter((t: any) => {
+            // Handle potential nested event structure or direct property
+            const type = t.type || t.event?.type || (t.homeTeam ? 'sports' : 'event'); // Fallback logic if type is missing but homeTeam exists
+            return type === viewMode;
+        })
+        // Sort from most recently created/purchased to oldest
+        .sort((a: any, b: any) => {
+            const dateA = new Date(a.createdAt || a.date || 0).getTime();
+            const dateB = new Date(b.createdAt || b.date || 0).getTime();
+            return dateB - dateA;
+        });
 
 
     return (
