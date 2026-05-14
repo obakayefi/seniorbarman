@@ -9,6 +9,8 @@ import User from "@/models/User";
 import { PrepareEventStats } from "@/lib/utils";
 import { emitWebhook } from "@/services/webhookService";
 import eventBus from "@/lib/eventbus";
+import { redis } from "@/lib/redis";
+import { getUserFromCookie } from "@/lib/auth";
 
 type Params = {
     params: Promise<{ hashToken: string }>;
@@ -39,6 +41,8 @@ const ProcessLogsForGameStats = (tickets: { checkInLogs: [] }[], gateAction: any
 export async function POST(req: Request, { params }: Params) {
     try {
         await connectDB();
+        User.init(); // Prevents Next.js 15 from tree-shaking the User model before .populate()
+        
         const { hashToken } = await params;
         const body = await req.json().catch(() => ({}));
         const { eventId } = body;
@@ -97,11 +101,14 @@ export async function POST(req: Request, { params }: Params) {
             );
         }
 
+        const user = await getUserFromCookie();
+
         const gateAction = {
             time: new Date(),
             action: "entry",
             method: "QR Code",
-            location: "Gate 1"
+            location: "Gate 1",
+            performedBy: user?.id
         }
         ticket.isInside = true;
         ticket.checkInLogs.push(gateAction)
@@ -111,20 +118,53 @@ export async function POST(req: Request, { params }: Params) {
         const ticketsForEvent = await Ticket.find({ event: ticket.event })
         const eventTicketStats = PrepareEventStats(ticketsForEvent);
 
-        emitWebhook("ticket.check_in", {
-            ticketId: ticket._id,
-            userId: ticket,
-            eventId: ticket.event,
-            stand: ticket.stand,
-            location: gateAction.location,
-            method: gateAction.method,
-        })
+        // emitWebhook("ticket.check_in", {
+        //     ticketId: ticket._id,
+        //     userId: ticket,
+        //     eventId: ticket.event,
+        //     stand: ticket.stand,
+        //     location: gateAction.location,
+        //     method: gateAction.method,
+        // })
 
-        eventBus.emit(`event_update:${ticket.event}`, {
-            type: "ticket.check_in",
-            ticket: ticket,
+        console.log('Before Emission', ticket.event)
+
+        // eventBus.emit(`event_update:${ticket.event}`, {
+        //     type: "ticket.check_in",
+        //     ticket: ticket,
+        //     eventTicketStats
+        // });
+        const payload = {
+            type: "new_scan",
+            eventId: ticket.event._id.toString(),
+            scan: {
+                time: new Date().toLocaleTimeString(),
+                userName: ticket.createdBy?.firstName || "Unknown User",
+                stand: ticket.stand || "General",
+                status: "IN",
+                success: true
+            },
             eventTicketStats
-        });
+        };
+
+        try {
+            const publishPromise = redis.publish(`event_update:${ticket.event._id.toString()}`, JSON.stringify(payload));
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Redis broadcast timeout exceeded (5s)")), 5000)
+            );
+            
+            await Promise.race([publishPromise, timeoutPromise]);
+            console.log('After Emission', { payload })
+        } catch (pubErr: any) {
+            // Prevent Upstash Network Drops from crashing the actual Ticket check-in!!
+            console.error("Non-fatal: Failed to broadcast to Live Dashboard", pubErr)
+            await import('@/lib/errorLogger').then(m => m.logSilentError(
+                 "Redis Broadcast Failure (Check-In)",
+                 pubErr.message,
+                 "/api/tickets/[hash]/check-ticket-in",
+                 pubErr.stack
+            ));
+        }
 
         return NextResponse.json(
             {

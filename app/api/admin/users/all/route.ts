@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { getUserFromCookie } from "@/lib/auth";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 export async function GET(req: Request) {
     try {
-        const admin = await getUserFromCookie();
-        if (!admin || admin.role !== 'admin') {
+        const user = await getUserFromCookie();
+        const canAccessResource = HunchoRoleChecker(user?.role)
+
+        if (!canAccessResource) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

@@ -16,6 +16,7 @@ import { ScanError } from "@/types/scan-error";
 
 type Props = {
     canScan: boolean;
+    isAudition: boolean;
     handleScanAction: (detectedCodes: any) => Promise<void>;
     toggleScanModeAction: () => void;
     openApprovalModalAction: boolean;
@@ -56,8 +57,10 @@ export default function TicketScanner({
     ticketOperation,
     resetTicketOperationAction,
     scanError,
-    onResetError
+    onResetError,
+    isAudition
 }: Props) {
+    const [showAnswers, setShowAnswers] = React.useState(false);
 
 
     return (
@@ -66,7 +69,9 @@ export default function TicketScanner({
             {/* DESKTOP SCANNER */}
             <div className="w-full flex flex-col gap-2">
                 <div className={'mb-1 py-4'}>
-                    <h2 className={'text-2xl md:text-4xl'}>Ticket Operations</h2>
+                    <h2 className={isAudition ? 'text-xl md:text-2xl font-black' : 'text-2xl md:text-4xl font-bold'}>
+                        Gate Operations
+                    </h2>
                     <div className={'flex items-center gap-4 mt-2'}>
                         {ticketOperation ?
                             <div className={'flex items-center gap-4 mt-2'}>
@@ -86,17 +91,17 @@ export default function TicketScanner({
                     {!ticketOperation ? (
                         <div className={'grid grid-cols-2 gap-2 w-full'}>
                             <NButton
-                                className={'py-10 bg-green-500 hover:bg-green-200 hover:text-green-900 text-lg'}
-                                icon={<UserCheck />}
+                                className={`${isAudition ? 'py-6 text-sm' : 'py-10 text-lg'} bg-green-500 hover:bg-green-200 hover:text-green-900`}
+                                icon={<UserCheck size={isAudition ? 18 : 24} />}
                                 onClick={() => selectTicketOperationAction('check-in')}>
-                                Check Fan In
+                                {isAudition ? "Check Applicant In" : "Check Fan In"}
                             </NButton>
 
                             <NButton
-                                className={'py-10 bg-rose-500 hover:bg-rose-200 hover:text-rose-900 text-lg'}
-                                icon={<UserMinus />}
+                                className={`${isAudition ? 'py-6 text-sm' : 'py-10 text-lg'} bg-rose-500 hover:bg-rose-200 hover:text-rose-900`}
+                                icon={<UserMinus size={isAudition ? 18 : 24} />}
                                 onClick={() => selectTicketOperationAction('check-out')}>
-                                Check Fan Out
+                                {isAudition ? "Check Applicant Out" : "Check Fan Out"}
                             </NButton>
 
                             {/* <NButton
@@ -142,7 +147,7 @@ export default function TicketScanner({
                     <DialogHeader>
                         <DialogTitle className={'text-xl font-black text-white uppercase tracking-wider flex items-center gap-2'}>
                             <QrCode className="text-orange-500" size={24} />
-                            Ticket Verification
+                            {isAudition ? "Audition Verification" : "Ticket Verification"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -237,10 +242,10 @@ export default function TicketScanner({
                             <>
                                 {/* Validation Badge */}
                                 <div className="flex justify-center">
-                                    {(selectedEvent && currentTicket) && selectedEvent.toString() === currentTicket.event?._id?.toString() ? (
+                                    {(selectedEvent && currentTicket) && selectedEvent.toString() === (currentTicket.event?._id || currentTicket.event)?.toString() ? (
                                         <div className='flex items-center gap-2 text-green-400 bg-green-500/10 border border-green-500/30 px-6 py-3 rounded-2xl'>
                                             <RiVerifiedBadgeFill size={28} />
-                                            <span className="font-bold text-lg">Valid Ticket</span>
+                                            <span className="font-bold text-lg">Valid {isAudition ? "Application" : "Ticket"}</span>
                                         </div>
                                     ) : (
                                         <div className='flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/30 px-6 py-3 rounded-2xl'>
@@ -279,23 +284,79 @@ export default function TicketScanner({
 
                                         {/* Ticket Details */}
                                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                                            {/* Bio Data / Picture for Audition */}
+                                            {isAudition && (currentTicket as any).applicantPicture && (
+                                                <div className="col-span-2 flex justify-center mb-4">
+                                                    <div className="h-40 w-40 rounded-2xl overflow-hidden border-2 border-orange-500/30">
+                                                        <img
+                                                            src={(currentTicket as any).applicantPicture}
+                                                            alt="Applicant"
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Stand/Section */}
                                             <div className='flex flex-col items-center gap-2 bg-zinc-800/50 p-3 rounded-xl'>
                                                 <MdStadium size={24} className="text-orange-500" />
-                                                <span className="text-xs text-zinc-500 uppercase tracking-wider">Stand</span>
+                                                <span className="text-xs text-zinc-500 uppercase tracking-wider">{isAudition ? "Category" : "Stand"}</span>
                                                 <span className='text-white font-bold'>{currentTicket.stand || 'General'}</span>
                                             </div>
 
                                             {/* Ticket Holder */}
                                             <div className='flex flex-col items-center gap-2 bg-zinc-800/50 p-3 rounded-xl'>
                                                 <User2Icon size={24} className="text-orange-500" />
-                                                <span className="text-xs text-zinc-500 uppercase tracking-wider">Holder</span>
+                                                <span className="text-xs text-zinc-500 uppercase tracking-wider">{isAudition ? "Applicant" : "Holder"}</span>
                                                 <span className='text-white font-bold text-center'>
                                                     {currentTicket?.createdBy?.firstName && currentTicket?.createdBy?.lastName
                                                         ? `${currentTicket.createdBy.firstName} ${currentTicket.createdBy.lastName}`
                                                         : currentTicket?.createdBy?.firstName || 'N/A'}
                                                 </span>
                                             </div>
+                                        </div>
+
+                                        {/* View Audition Answers Button */}
+                                        {isAudition && (currentTicket as any).formAnswers?.length > 0 && (
+                                            <div className="pt-4">
+                                                <Button
+                                                    onClick={() => setShowAnswers(!showAnswers)}
+                                                    variant="outline"
+                                                    className="w-full border-zinc-800 text-zinc-400 hover:text-white text-[10px] font-black uppercase tracking-widest"
+                                                >
+                                                    {showAnswers ? "Hide Form Answers" : "View Audition Answers"}
+                                                </Button>
+
+                                                {showAnswers && (
+                                                    <div className="mt-4 space-y-4 bg-black/40 p-4 rounded-xl border border-white/5 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                        {(currentTicket as any).formAnswers.map((ans: any, idx: number) => (
+                                                            <div key={idx} className="space-y-1">
+                                                                <p className="text-[9px] font-black uppercase text-zinc-600 tracking-wider">{ans.fieldLabel}</p>
+                                                                <p className="text-sm text-zinc-300 font-medium">{ans.answer || "N/A"}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        <div className="pt-4">
+                                            {ticketOperation === 'check-in' ? (
+                                                <PreCheckInActions
+                                                    loading={loading}
+                                                    eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
+                                                    handleCheckingUserIn={handleCheckingUserInAction}
+                                                    handleBlockingTicket={handleBlockingTicketAction}
+                                                />
+                                            ) : (
+                                                <PostCheckInActions
+                                                    loading={loading}
+                                                    eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
+                                                    handleCheckingUserOut={handleCheckingUserOutAction}
+                                                    handleBlockingTicket={handleBlockingTicketAction}
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                 )}

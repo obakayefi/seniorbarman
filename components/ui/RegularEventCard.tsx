@@ -1,7 +1,7 @@
 import { SiCalendly } from "react-icons/si";
 import NButton from "../native/NButton";
 import { SlLocationPin } from "react-icons/sl";
-import { Calendar1 } from "lucide-react";
+import { Calendar1, ClipboardList } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
 import { BookRegularEventModal } from "../modals/book-regular-event";
 import { DeleteConfirmModal } from "../modals/delete-confirm-modal";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import api from "@/lib/axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 export default function RegularEventCard({ event }: { event: any }) {
     const { user } = useApp()
@@ -27,7 +28,7 @@ export default function RegularEventCard({ event }: { event: any }) {
         }
     }, [event.date])
 
-    const isAdmin = user?.role === 'admin'
+    const isAdmin = HunchoRoleChecker(user?.role)
 
     const [isDeleting, setIsDeleting] = useState(false)
 
@@ -59,11 +60,11 @@ export default function RegularEventCard({ event }: { event: any }) {
     }
 
     return (
-        <section className="min-w-76 w-full rounded-xl border-[1.5px] border-zinc-900 overflow-hidden group transition-shadow duration-500 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:border-zinc-800">
-            <Link href={`/events/${event._id}`} className="block bg-zinc-800 overflow-hidden">
+        <section className="min-w-76 w-full rounded-xl border-[1.5px] border-zinc-900 overflow-hidden group transition-shadow duration-500 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:border-zinc-800 flex flex-col h-full">
+            <Link href={`/events/${event._id}`} className="block bg-zinc-800 overflow-hidden shrink-0">
                 <img src={event.image || "https://www.vibe.com/wp-content/uploads/2023/10/GettyImages-1502049780.jpg?w=1024"} alt="" className='w-full h-62 object-cover transition-transform duration-300 ease-in-out group-hover:scale-110' />
             </Link>
-            <div className="p-2 py-6 flex flex-col gap-8 text-zinc-100 bg-zinc-950 px-6">
+            <div className="p-2 py-6 flex flex-col gap-8 text-zinc-100 bg-zinc-950 px-6 flex-1 justify-between">
                 <section className="flex gap-2 flex-col">
                     <section className="flex flex-col gap-2">
                         <Link href={`/events/${event._id}`} className="hover:text-amber-500 transition-colors">
@@ -71,30 +72,28 @@ export default function RegularEventCard({ event }: { event: any }) {
                         </Link>
                         <p className="text-sm flex gap-2 text-zinc-600"><span><Calendar1 size={16} /></span>{formattedDate}</p>
                         <p className="flex items-center gap-2 text-sm text-zinc-600"><span><SlLocationPin /></span> {event.venue}</p>
+                        {event.requiresApplication && (
+                            <div className="flex w-fit items-center gap-1.5 px-2 py-1 mt-1 bg-blue-500/10 rounded-md text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest">
+                                <ClipboardList size={12} />
+                                Application Required
+                            </div>
+                        )}
                     </section>
                 </section>
                 <section className="flex w-full items-end justify-between">
                     <div className="flex flex-col gap-1">
-                        <div>
-                            <span className="text-xs text-zinc-600">REGULAR</span>
-                            <p className="text-xl text-green-400 font-semibold">
-                                {Number(event.regularPrice || 0) <= 0 ? "FREE" : (
-                                    <>
-                                        ₦ <span className="text-white">{Number(event.regularPrice).toLocaleString()}</span>
-                                    </>
-                                )}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-xs text-zinc-600">VIP</span>
-                            <p className="text-xl text-yellow-500 font-semibold">
-                                {Number(event.vipPrice || 0) <= 0 ? "FREE" : (
-                                    <>
-                                        ₦ <span className="text-white">{Number(event.vipPrice).toLocaleString()}</span>
-                                    </>
-                                )}
-                            </p>
-                        </div>
+                        {event.ticketTypes?.slice(0, 2).map((ticket: any, index: number) => (
+                            <div key={index}>
+                                <span className="text-xs text-zinc-600 uppercase">{ticket.name}</span>
+                                <p className={`text-xl font-semibold ${index === 0 ? 'text-green-400' : 'text-yellow-500'}`}>
+                                    {Number(ticket.price || 0) <= 0 ? "FREE" : (
+                                        <>
+                                            ₦ <span className="text-white">{Number(ticket.price).toLocaleString()}</span>
+                                        </>
+                                    )}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                     <div className="flex flex-col gap-2">
                         {isAdmin && (

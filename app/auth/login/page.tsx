@@ -21,6 +21,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { toast } from "sonner"
+import { HunchoRoleChecker } from "@/lib/helpers"
 
 export default function Login() {
     const router = useRouter()
@@ -50,9 +51,32 @@ export default function Login() {
             setUser(data.user)
             toast.success('Welcome back ' + data.user.firstName)
 
-            // Role-based redirection
-            if (data.user.role === 'admin') {
+            // Application Intent
+            const intentRaw = localStorage.getItem('pendingApplication')
+            if (intentRaw) {
+                try {
+                    const intent = JSON.parse(intentRaw)
+                    toast("Continue your application?", {
+                        description: `You were applying for ${intent.eventTitle}.`,
+                        action: {
+                            label: "Continue Application",
+                            onClick: () => router.push(`/events/${intent.eventId}`)
+                        },
+                        duration: 10000,
+                    })
+                    // Fall back to default dashboard if they ignore the toast
+                    if (HunchoRoleChecker(data.user.role)) router.replace(sitemap.admin.dashboard)
+                    else if (data.user.role === 'organizer') router.replace(sitemap.organizer.dashboard)
+                    else router.replace(sitemap.user.dashboard)
+                    return;
+                } catch (e) {}
+            }
+
+            // Default Role-based redirection
+            if (HunchoRoleChecker(data.user.role)) {
                 router.replace(sitemap.admin.dashboard)
+            } else if (data.user.role === 'organizer') {
+                router.replace(sitemap.organizer.dashboard)
             } else {
                 router.replace(sitemap.user.dashboard)
             }

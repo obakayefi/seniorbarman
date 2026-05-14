@@ -5,23 +5,11 @@ import { verifyToken } from "@/lib/jwt";
 import Ticket from "@/models/Ticket";
 import Event from "@/models/Event";
 
+import { getBaseUrl } from "@/lib/utils";
+
 const PAYSTACK_API_KEY = process.env.PAYSTACK_API_KEY as string;
 
-// export async function POST(req: Request) {
-//     try {
-//         await connectDB();
-//         const { amount } = await req.json()
-//         const headers = {
-//             "Authorization": "Bearer " + PAYSTACK_API
-//         }
-//         console.log({ amount })
-//         const result = await axios.post("/https://api.paystack.co/transaction/initialize", amount, { headers })
-//         console.log({ result })
-//         return NextResponse.json({ success: true })
-//     } catch (error: any) {
-//         return NextResponse.json({ error: error.message }, { status: 500 })
-//     }
-// }
+// ... (other functions)
 
 export async function POST(req: Request) {
     const { eventId, ticketId, email, amount } = await req.json();
@@ -46,7 +34,11 @@ export async function POST(req: Request) {
         const paystackPayload = {
             email,
             amount: amount * 100, // convert from KOBO to naira,
-            callback_url: process.env.NODE_ENV == "production" ? process.env.PAYSTACK_CALLBACK_URL_PROD : process.env.PAYSTACK_CALLBACK_URL_TEST
+            callback_url: `${getBaseUrl()}/verify`,
+            metadata: {
+                type: "ticket",
+                eventId,
+            }
         }
 
         const headers = {

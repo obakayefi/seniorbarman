@@ -27,6 +27,8 @@ import { CLUBS, STADIUMS } from "@/lib/utils"
 import Image from "next/image"
 import { useRouter } from "next/navigation";
 import { FileUpload } from "../ui/file-upload";
+import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
+import EventFormBuilder, { FormField } from "./EventFormBuilder"
 
 interface EditEventFormProps {
     eventId: string
@@ -52,13 +54,19 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [homeTeam, setHomeTeam] = React.useState('')
     const [awayTeam, setAwayTeam] = React.useState('')
-    const [regularPrice, setRegularPrice] = React.useState('')
-    const [vipPrice, setVipPrice] = React.useState('')
+    const [ticketTypes, setTicketTypes] = React.useState<{name: string, price: number}[]>([])
     const [eventVenue, setEventVenue] = React.useState('')
     const [files, setFiles] = React.useState<File[]>([])
 
     const eventTitle = useInput('')
     const eventTime = useInput('16:00')
+
+    // Application Settings
+    const [requiresApplication, setRequiresApplication] = React.useState(false)
+    const [applicationFee, setApplicationFee] = React.useState(0)
+    const [applicationFeeDisplay, setApplicationFeeDisplay] = React.useState("")
+    const [formFields, setFormFields] = React.useState<FormField[]>([])
+    const [showFormBuilder, setShowFormBuilder] = React.useState(false)
 
     const [resetKey, setResetKey] = React.useState(0)
 
@@ -74,8 +82,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                 setAwayTeam(data.awayTeam || '')
                 eventTitle.setValue(data.title || '')
                 eventTime.setValue(data.time || '16:00')
-                setRegularPrice(String(data.regularPrice || ''))
-                setVipPrice(String(data.vipPrice || ''))
+                setTicketTypes(data.ticketTypes || [])
                 setEventVenue(data.venue || '')
 
                 if (data.date) {
@@ -89,6 +96,12 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                     const minutes = parsedDate.getMinutes().toString().padStart(2, '0');
                     eventTime.setValue(`${hours}:${minutes}`);
                 }
+
+                // Application settings
+                setRequiresApplication(data.requiresApplication || false)
+                setApplicationFee(data.applicationFee || 0)
+                setApplicationFeeDisplay((data.applicationFee || 0).toLocaleString())
+                setFormFields(data.formFields || [])
             } catch (error) {
                 console.error("Error fetching event:", error)
                 toast.error("Failed to load event data")
@@ -111,11 +124,14 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
         formData.append("eventType", currentEventType);
         formData.append("eventTime", eventTime.value);
         formData.append("eventVenue", eventVenue);
-        formData.append("regularPrice", regularPrice);
-        formData.append("vipPrice", vipPrice);
+        formData.append("ticketTypes", JSON.stringify(ticketTypes));
         if (eventDate) {
             formData.append("eventDate", eventDate.toISOString());
         }
+
+        formData.append("requiresApplication", String(requiresApplication));
+        formData.append("applicationFee", String(applicationFee));
+        formData.append("formFields", JSON.stringify(formFields));
 
         if (currentEventType === "sports") {
             formData.append("homeTeam", homeTeam);
@@ -248,6 +264,36 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                         </SelectContent>
                                     </Select>
                                 </div>
+
+                                <div className="flex flex-col gap-4 border-t border-zinc-800 pt-4">
+                                    <Label className="text-gray-400">Ticket Stands</Label>
+                                    {ticketTypes.map((ticket, index) => (
+                                        <div key={index} className="flex gap-4 items-center">
+                                            <Input 
+                                                className="text-white flex-1 border-zinc-800 bg-zinc-900/50" 
+                                                value={ticket.name} 
+                                                onChange={(e) => {
+                                                    const newTickets = [...ticketTypes];
+                                                    newTickets[index].name = e.target.value;
+                                                    setTicketTypes(newTickets);
+                                                }} 
+                                                placeholder="Stand Name" 
+                                            />
+                                            <Input 
+                                                type="number" 
+                                                min={0}
+                                                className="text-white w-32 border-zinc-800 bg-zinc-900/50" 
+                                                value={ticket.price === 0 ? '' : ticket.price} 
+                                                onChange={(e) => {
+                                                    const newTickets = [...ticketTypes];
+                                                    newTickets[index].price = Number(e.target.value) || 0;
+                                                    setTicketTypes(newTickets);
+                                                }} 
+                                                placeholder="Price (₦)" 
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </>
                         ) : (
                             <>
@@ -265,15 +311,138 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
                         {currentEventType !== 'sports' && (
                             <>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex flex-col gap-2">
-                                        <Label className="text-gray-400">Regular Price</Label>
-                                        <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={regularPrice} onChange={(e) => setRegularPrice(e.target.value)} />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <Label className="text-gray-400">VIP Price</Label>
-                                        <Input type="number" className={'text-white bg-zinc-900/50 border-zinc-800'} value={vipPrice} onChange={(e) => setVipPrice(e.target.value)} />
-                                    </div>
+                                <div className="flex flex-col gap-4 border-t border-zinc-800 pt-4">
+                                    <Label className="text-gray-400">Ticket Types (Minimum 4)</Label>
+                                    {ticketTypes.map((ticket, index) => (
+                                        <div key={index} className="flex gap-4 items-center">
+                                            <Input 
+                                                className="text-white flex-1 border-zinc-800 bg-zinc-900/50" 
+                                                value={ticket.name} 
+                                                onChange={(e) => {
+                                                    const newTickets = [...ticketTypes];
+                                                    newTickets[index].name = e.target.value;
+                                                    setTicketTypes(newTickets);
+                                                }} 
+                                                placeholder="Ticket Name (e.g., Regular, VIP)" 
+                                            />
+                                            <Input 
+                                                type="number" 
+                                                min={0}
+                                                className="text-white w-32 border-zinc-800 bg-zinc-900/50" 
+                                                value={ticket.price === 0 ? '' : ticket.price} 
+                                                onChange={(e) => {
+                                                    const newTickets = [...ticketTypes];
+                                                    newTickets[index].price = Number(e.target.value) || 0;
+                                                    setTicketTypes(newTickets);
+                                                }} 
+                                                placeholder="Price (₦)" 
+                                            />
+                                            <Button 
+                                                type="button" 
+                                                variant="ghost" 
+                                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                                onClick={() => {
+                                                    const newTickets = [...ticketTypes];
+                                                    newTickets.splice(index, 1);
+                                                    setTicketTypes(newTickets);
+                                                }}
+                                                disabled={ticketTypes.length <= 4}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        className="w-fit border-zinc-700 bg-zinc-100 text-black hover:bg-white font-bold transition-all"
+                                        onClick={() => setTicketTypes([...ticketTypes, { name: '', price: 0 }])}
+                                    >
+                                        Add Ticket Type
+                                    </Button>
+                                </div>
+
+                                {/* Application Settings */}
+                                <div className="border border-zinc-800 rounded-2xl overflow-hidden mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setRequiresApplication(v => !v)}
+                                        className={`w-full flex items-center justify-between p-4 transition-colors ${
+                                            requiresApplication ? "bg-orange-500/10" : "bg-zinc-900/40 hover:bg-zinc-900/60"
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                                                requiresApplication ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-500"
+                                            }`}>
+                                                <ClipboardList size={20} />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-black text-white text-sm">Requires Application</p>
+                                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                    People must apply before attending
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+                                            requiresApplication ? "bg-orange-500" : "bg-zinc-700"
+                                        }`}>
+                                            <span className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${
+                                                requiresApplication ? "translate-x-5" : "translate-x-0"
+                                            }`} />
+                                        </div>
+                                    </button>
+
+                                    {requiresApplication && (
+                                        <div className="p-5 space-y-5 border-t border-zinc-800 bg-zinc-950/40">
+                                            <div className="space-y-2">
+                                                <Label className="text-zinc-400">Application Fee</Label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-bold">₦</span>
+                                                    <Input
+                                                        type="text"
+                                                        className="text-white border-zinc-800 bg-zinc-900/50 pl-8 pr-16"
+                                                        value={applicationFeeDisplay}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value.replace(/,/g, "")
+                                                            if (raw === "") { setApplicationFeeDisplay(""); setApplicationFee(0); return }
+                                                            const num = Number(raw)
+                                                            if (!isNaN(num)) {
+                                                                setApplicationFee(num)
+                                                                setApplicationFeeDisplay(num.toLocaleString())
+                                                            }
+                                                        }}
+                                                        placeholder="0"
+                                                    />
+                                                    {applicationFee === 0 && (
+                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-green-500 font-black">FREE</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowFormBuilder(v => !v)}
+                                                    className="flex items-center gap-2 text-sm font-bold text-orange-400 hover:text-orange-300 transition-colors"
+                                                >
+                                                    {showFormBuilder ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                    {showFormBuilder ? "Hide" : "Build"} Application Form
+                                                    {formFields.length > 0 && (
+                                                        <span className="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded-full font-black">
+                                                            {formFields.length} {formFields.length === 1 ? "field" : "fields"}
+                                                        </span>
+                                                    )}
+                                                </button>
+
+                                                {showFormBuilder && (
+                                                    <div className="mt-4">
+                                                        <EventFormBuilder fields={formFields} onChange={setFormFields} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col gap-2">

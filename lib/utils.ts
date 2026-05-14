@@ -31,7 +31,7 @@ export function getInitials(fullName: string): string {
         .split(/\s+/)
         .map(name => name[0]?.toUpperCase())
         .join('')
-        .slice(0, 2); // Optional: limit to 2 letters (e.g. JD)
+        .slice(0, 3); // Optional: limit to 2 letters (e.g. JD)
 }
 
 export function giveTeamLogo(teamName: string) {
@@ -80,6 +80,10 @@ export const CLUBS = [
     {
         name: "Bayelsa United FC",
         icon: "/clubs/bayelsa-logo.png"
+    },
+    {
+        name: "Barau FC",
+        icon: "/clubs/barau-logo.png"
     },
     {
         name: "Bendel Insurance FC",
@@ -138,7 +142,7 @@ export const CLUBS = [
         icon: "/clubs/plateau.png"
     },
     {
-        name: "Rangers International FC",
+        name: "Rangers FC",
         icon: "/clubs/rangers-logo.png"
     },
     {
@@ -245,7 +249,7 @@ export const STADIUMS = [
 
 export function giveLogo(clubName: string) {
     const _club = CLUBS.filter(club => club.name === clubName)[0]
-    const data = _club ? _club.icon : '/club/rangers-logo.png'
+    const data = _club ? _club.icon : '/clubs/rangers-logo.png'
     return data
 }
 
@@ -383,19 +387,32 @@ export function formatEventTime(date: Date | string | undefined | null, fallback
 export function getBaseUrl() {
     // Check if we are in the browser
     if (typeof window !== "undefined") {
+        const hostname = window.location.hostname;
+        if (hostname.includes("sbmstaging.netlify.app")) {
+            return "https://sbmstaging.netlify.app";
+        }
+        if (hostname.includes("seniorbarman.com")) {
+            return "https://seniorbarman.com";
+        }
         return window.location.origin;
     }
 
-    // Server-side
+    // Server-side environment variables are preferred
     if (process.env.NEXT_PUBLIC_BASE_URL) {
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
 
+    // Fallback based on NODE_ENV
     if (process.env.NODE_ENV === "development") {
         return "http://localhost:3000";
     }
 
-    // Default for production if not set
+    // Netlify specific env (often available during build/runtime)
+    if (process.env.CONTEXT === "deploy-preview" || process.env.CONTEXT === "branch-deploy") {
+        return process.env.DEPLOY_PRIME_URL || "https://sbmstaging.netlify.app";
+    }
+
+    // Default to production
     return "https://seniorbarman.com";
 }
 
@@ -420,15 +437,23 @@ export const sitemap = {
         eventsTicketPurchase: "/events"
     },
     bouncer: {
+        dashboard: "/u/bouncer/dashboard",
         scanner: "/u/a/scanner",
+    },
+    organizer: {
+        dashboard: "/u/organizer/dashboard",
+        createEvent: "/u/organizer/events/create",
     },
     admin: {
         dashboard: "/u/a/dashboard",
+        manageActivities: "/u/a/events/manage",
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
         createEvent: "/u/a/events/create",
         ticketSearch: "/u/a/tickets/search",
         ticketGrantWizard: "/u/a/ticket-grant-wizard",
-        auditLogs: "/u/a/audit"
+        auditLogs: "/u/a/audit",
+        errorLogs: "/u/a/errors",
+        ticketOrders: "/u/a/ticket-orders"
     },
 }

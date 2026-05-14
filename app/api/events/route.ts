@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
-import { verifyAuth } from "@/lib/auth";
+import { verifyAuth, getUserFromCookie } from "@/lib/auth";
+import { requireRole } from "@/lib/requireRole";
 import cloudinary from "@/lib/cloudinary";
 import upcomingEvents from "@/components/ui/upcoming-events";
 
@@ -14,18 +15,30 @@ export async function GET(req: Request) {
 
     try {
         await connectDB()
+        const user = await getUserFromCookie();
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        const upcomingActivities = await Event.find({
+        const query: any = {
             type: eventType,
             date: { $gte: today }
-        })
-            .sort({ date: 1 })
+        };
+
+        // If for scanner, restrict based on role
+        if (forScanner && user) {
+            if (user.role === 'organizer') {
+                query.createdBy = user.id;
+            }
+        }
+
+        const upcomingActivities = await Event.find(query)
+            .sort({ date: -1 })
             .lean()
 
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         const nowInWat = new Date(watTime);
+
+        console.log({ upcomingActivities })
 
         const filteredEvents = upcomingActivities.filter((event: any) => {
             const eventDate = new Date(event.date)
@@ -90,17 +103,31 @@ export async function POST(req: Request) {
     try {
         await connectDB();
 
+        // Verify user has permission to create events
+        const authResult = await requireRole(["admin", "dev", "organizer"]);
+        if (authResult instanceof NextResponse) return authResult;
+
         const formData = await req.formData();
         const title = formData.get("eventTitle") as string;
         const type = formData.get("eventType") as string;
+
+        // Organizers can only create regular events, not sports
+        if (authResult.role === "organizer" && type === "sports") {
+            return NextResponse.json(
+                { error: "Organizers can only create regular events, not sports events" },
+                { status: 403 }
+            );
+        }
         const time = formData.get("eventTime") as string;
         const date = formData.get("eventDate") as string;
         const venue = formData.get("eventVenue") as string;
         const homeTeam = formData.get("homeTeam") as string;
         const awayTeam = formData.get("awayTeam") as string;
         const imageFile = formData.get("imageFile") as File;
-        const regularPrice = formData.get("regularPrice") as string;
-        const vipPrice = formData.get("vipPrice") as string;
+        const ticketTypesStr = formData.get("ticketTypes") as string;
+        const requiresApplication = formData.get("requiresApplication") === "true";
+        const applicationFee = Number(formData.get("applicationFee") || 0);
+        const formFieldsStr = formData.get("formFields") as string;
 
         if (type === "event" && !title) {
             return NextResponse.json(
@@ -114,6 +141,20 @@ export async function POST(req: Request) {
                 { error: "Sports events require home and away teams" },
                 { status: 400 }
             );
+        }
+
+        let ticketTypes = [];
+        try {
+            if (ticketTypesStr) ticketTypes = JSON.parse(ticketTypesStr);
+        } catch (e) {
+            console.error("Failed to parse ticketTypes:", e);
+        }
+
+        let formFields = [];
+        try {
+            if (formFieldsStr) formFields = JSON.parse(formFieldsStr);
+        } catch (e) {
+            console.error("Failed to parse formFields:", e);
         }
 
         let imageUrl = "";
@@ -148,22 +189,28 @@ export async function POST(req: Request) {
         let newEvent = type === "sports" ? {
             homeTeam,
             awayTeam,
-            // time,
             venue,
             type,
             date: finalDate,
-            regularPrice: Number(regularPrice) || 0,
-            vipPrice: Number(vipPrice) || 0,
-            image: imageUrl
+            description: "Join us for an exciting match!",
+            ticketTypes: ticketTypes,
+            image: imageUrl,
+            createdBy: authResult.id
         } : {
             title,
             date: finalDate,
             type,
-            // time,
             venue,
-            regularPrice: Number(regularPrice) || 0,
-            vipPrice: Number(vipPrice) || 0,
-            image: imageUrl
+            description: "Join us for an exciting event!",
+            ticketTypes: ticketTypes,
+            image: imageUrl,
+            requiresApplication,
+            applicationFee: requiresApplication ? applicationFee : 0,
+            formFields: requiresApplication ? formFields : [],
+            createdBy: authResult.id,
+            isAudition: formData.get("isAudition") === "true",
+            requestPicture: formData.get("requestPicture") === "true",
+            allowNoTickets: formData.get("allowNoTickets") === "true",
         };
 
         const event = await Event.create(newEvent);
@@ -196,6 +243,9 @@ export async function DELETE(req: Request) {
             { status: 400 }
         );
     }
+
+
+
 
     try {
         await connectDB();

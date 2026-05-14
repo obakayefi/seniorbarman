@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
+import { getUserFromCookie } from "@/lib/auth";
 import Event from "@/models/Event";
 import cloudinary from "@/lib/cloudinary";
 
@@ -31,12 +32,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const homeTeam = formData.get("homeTeam") as string;
         const awayTeam = formData.get("awayTeam") as string;
         const imageFile = formData.get("imageFile") as File;
-        const regularPrice = formData.get("regularPrice") as string;
-        const vipPrice = formData.get("vipPrice") as string;
+        const ticketTypesStr = formData.get("ticketTypes") as string;
+        const requiresApplication = formData.get("requiresApplication");
+        const applicationFee = formData.get("applicationFee");
+        const formFieldsStr = formData.get("formFields") as string;
+
+        let ticketTypes = [];
+        try {
+            if (ticketTypesStr) ticketTypes = JSON.parse(ticketTypesStr);
+        } catch (e) {
+            console.error("Failed to parse ticketTypes:", e);
+        }
+
+        let formFields: any[] = [];
+        try {
+            if (formFieldsStr) formFields = JSON.parse(formFieldsStr);
+        } catch (e) {
+            console.error("Failed to parse formFields:", e);
+        }
 
         const existingEvent = await Event.findById(id);
         if (!existingEvent) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
+        }
+
+        const user = await getUserFromCookie();
+        if (!user || (user.role !== 'admin' && user.role !== 'dev' && existingEvent.createdBy?.toString() !== user.id)) {
+            return NextResponse.json({ error: "Forbidden: You do not have permission to edit this event" }, { status: 403 });
         }
 
         let imageUrl = existingEvent.image;
@@ -76,13 +98,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 
         const updatedData: any = {
-            // time,
             venue,
-            date: finalDate || date, // Fallback to provided date if no time merge logic ran, or undefined if not provided
-            regularPrice: Number(regularPrice) || 0,
-            vipPrice: Number(vipPrice) || 0,
+            date: finalDate || date,
+            ticketTypes: ticketTypes.length > 0 ? ticketTypes : existingEvent.ticketTypes,
             image: imageUrl
         };
+
+        // Only update application fields if they were explicitly provided
+        if (requiresApplication !== null && requiresApplication !== undefined) {
+            updatedData.requiresApplication = requiresApplication === "true";
+            updatedData.applicationFee = updatedData.requiresApplication ? Number(applicationFee || 0) : 0;
+            updatedData.formFields = updatedData.requiresApplication ? formFields : [];
+        }
 
         if (type === "sports") {
             updatedData.homeTeam = homeTeam;
@@ -109,6 +136,17 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     try {
         const { id } = await params;
         await connectDB();
+        
+        const existingEvent = await Event.findById(id);
+        if (!existingEvent) {
+            return NextResponse.json({ error: "Event not found" }, { status: 404 });
+        }
+
+        const user = await getUserFromCookie();
+        if (!user || (user.role !== 'admin' && user.role !== 'dev' && existingEvent.createdBy?.toString() !== user.id)) {
+            return NextResponse.json({ error: "Forbidden: You do not have permission to delete this event" }, { status: 403 });
+        }
+
         const event = await Event.findByIdAndDelete(id);
         if (!event) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });

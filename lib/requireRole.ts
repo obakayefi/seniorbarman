@@ -19,7 +19,8 @@ export async function requireRole(allowedRoles: string[]) {
             throw new Error("Invalid token")
         }
 
-        if (!allowedRoles.includes((decoded as any).role)) {
+        const userRole = (decoded as any).role;
+        if (userRole !== 'dev' && !allowedRoles.includes(userRole)) {
             return NextResponse.json(
                 { error: "Forbidden: Insufficient role permissions" },
                 { status: 403 }

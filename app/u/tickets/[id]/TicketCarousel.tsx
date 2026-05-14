@@ -19,6 +19,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { HunchoRoleChecker } from '@/lib/helpers';
 
 interface TicketCarouselProps {
     tickets: any[];
@@ -445,7 +446,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     {isDownloading ? 'Downloading...' : 'Download PDF'}
                 </button>
 
-                {currentUser?.role === 'admin' && (
+                {HunchoRoleChecker(currentUser?.role) && (
                     <button
                         onClick={handleDeleteTicket}
                         disabled={isDeleting}

@@ -30,7 +30,7 @@ type PreCheckInActionsProps = {
     eventMismatch: boolean;
 }
 
-export const PreCheckInActions = ({ loading, handleCheckingUserIn, eventMismatch }: PreCheckInActionsProps) => {
+export const PreCheckInActions = ({ loading, handleCheckingUserIn, eventMismatch, handleBlockingTicket }: PreCheckInActionsProps & { handleBlockingTicket: () => void }) => {
     if (eventMismatch) return null
 
     return (
@@ -40,18 +40,17 @@ export const PreCheckInActions = ({ loading, handleCheckingUserIn, eventMismatch
                 disabled={loading}
                 onClick={handleCheckingUserIn}
                 icon={<ShieldCheckIcon />}
-                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
-                Check User In
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500 flex-1'>
+                Check In
             </NButton>
 
             <NButton
-                loading={false}
-                disabled={false}
-                onClick={() => {
-                }}
+                loading={loading}
+                disabled={loading}
+                onClick={handleBlockingTicket}
                 icon={<Delete />}
-                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500'>
-                Block Ticket
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500/20 text-red-500 flex-1'>
+                Void
             </NButton>
         </section>
     )
@@ -81,8 +80,8 @@ export const PostCheckInActions = ({
                 disabled={loading}
                 onClick={handleCheckingUserOut}
                 icon={<ShieldCheckIcon />}
-                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500'>
-                Check User Out
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500 flex-1'>
+                Check Out
             </NButton>
 
             <NButton
@@ -90,8 +89,8 @@ export const PostCheckInActions = ({
                 disabled={loading}
                 onClick={handleBlockingTicket}
                 icon={<Delete />}
-                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-white text-red-500'>
-                Block Ticket
+                className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-red-500/20 text-red-500 flex-1'>
+                Void
             </NButton>
         </section>
     )
@@ -165,11 +164,18 @@ const AdminTicketScanner = () => {
         const parts = rawValue.split('/').filter(Boolean)
         const ticketHash = parts[parts.length - 1]
 
+        const selectedEventData = events.find(e => e._id === selectedEvent);
+        const isAudition = selectedEventData?.isAudition;
+
         let operationUrl;
-        if (ticketOperation === 'check-in') {
-            operationUrl = `/tickets/${ticketHash}/check-ticket-in`
-        } else if (ticketOperation === 'check-out') {
-            operationUrl = `/tickets/${ticketHash}/check-ticket-out`
+        if (isAudition) {
+            operationUrl = `/api/applications/${ticketHash}/${ticketOperation === 'check-in' ? 'check-in' : 'check-out'}`;
+        } else {
+            if (ticketOperation === 'check-in') {
+                operationUrl = `/tickets/${ticketHash}/check-ticket-in`
+            } else if (ticketOperation === 'check-out') {
+                operationUrl = `/tickets/${ticketHash}/check-ticket-out`
+            }
         }
 
         if (!operationUrl || !ticketHash) {
@@ -187,8 +193,13 @@ const AdminTicketScanner = () => {
         try {
             const { data } = await api.post(operationUrl, { eventId: selectedEvent })
             const ticket = data.result.ticket
+            
+            // Map application fields to match ticket structure for UI if it's an audition
+            if (isAudition) {
+                ticket.createdBy = ticket.user; // Application uses 'user' instead of 'createdBy'
+                ticket.stand = "Audition";
+            }
 
-            // Ticket already has createdBy populated from API
             setCurrentTicket(ticket)
             setTicketStatus(ticket.status)
             setComputedStatus(extractTicketStatus(ticket.checkInLogs))
@@ -253,8 +264,14 @@ const AdminTicketScanner = () => {
                 const data = JSON.parse(event.data);
                 if (data.type === "connected") {
                     console.log("SSE connected for event:", data.eventId);
-                } else if (data.eventTicketStats) {
+                } 
+                
+                if (data.eventTicketStats) {
                     setEventStats(data.eventTicketStats);
+                }
+
+                if (data.type === "new_scan" && data.scan) {
+                    setRecentScans(prev => [data.scan, ...prev].slice(0, 10));
                 }
             };
 
@@ -273,13 +290,24 @@ const AdminTicketScanner = () => {
 
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
+        const isAudition = selectedEventData?.isAudition;
+        const url = isAudition 
+            ? `/api/applications/${targetHash}/check-out`
+            : `/tickets/${targetHash}/check-ticket-out`;
+
         try {
-            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-out`, { eventId: selectedEvent })
-            setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+            const { data } = await api.post(url, { eventId: selectedEvent })
+            const ticket = data.result.ticket;
+            if (isAudition) {
+                ticket.createdBy = ticket.user;
+                ticket.stand = "Audition";
+            }
+            setComputedStatus(extractTicketStatus(ticket.checkInLogs))
             if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
-            toast.success("User checked out successfully");
+            toast.success(`${isAudition ? 'Applicant' : 'User'} checked out successfully`);
+            setTimeout(() => cleanupDialogState(), 700);
         } catch (error) {
-            toast.error("Error checking out user");
+            toast.error("Error checking out");
         } finally {
             setIsCheckingUserOut(false)
         }
@@ -287,11 +315,24 @@ const AdminTicketScanner = () => {
 
     const handleBlockingTicket = async () => {
         setIsBlockingTicket(true)
+        const isAudition = selectedEventData?.isAudition;
+        
         try {
-            await api.post(`/tickets/${targetHash}/block-ticket`)
-            toast.success("Ticket blocked successfully");
+            if (isAudition) {
+                // Reject application at the gate
+                await api.patch(`/events/${selectedEvent}/applicants/${targetHash}`, { 
+                    status: 'rejected', 
+                    reason: 'Rejected at gate scanner' 
+                });
+                toast.success("Application revoked successfully");
+            } else {
+                // Block regular ticket
+                await api.post(`/tickets/${targetHash}/block-ticket`)
+                toast.success("Ticket blocked successfully");
+            }
+            cleanupDialogState();
         } catch (error) {
-            toast.error("Error blocking ticket");
+            toast.error(`Error ${isAudition ? 'revoking application' : 'blocking ticket'}`);
         } finally {
             setIsBlockingTicket(false)
         }
@@ -299,13 +340,24 @@ const AdminTicketScanner = () => {
 
     const handleCheckingUserIn = async () => {
         setLoading(true)
+        const isAudition = selectedEventData?.isAudition;
+        const url = isAudition 
+            ? `/api/applications/${targetHash}/check-in`
+            : `/tickets/${targetHash}/check-ticket-in`;
+
         try {
-            const { data } = await api.post(`/tickets/${targetHash}/check-ticket-in`, { eventId: selectedEvent })
-            setComputedStatus(extractTicketStatus(data.result.ticket.checkInLogs))
+            const { data } = await api.post(url, { eventId: selectedEvent })
+            const ticket = data.result.ticket;
+            if (isAudition) {
+                ticket.createdBy = ticket.user;
+                ticket.stand = "Audition";
+            }
+            setComputedStatus(extractTicketStatus(ticket.checkInLogs))
             if (data.result.eventTicketStats) setEventStats(data.result.eventTicketStats)
-            toast.success("User checked in successfully");
+            toast.success(`${isAudition ? 'Applicant' : 'User'} checked in successfully`);
+            setTimeout(() => cleanupDialogState(), 700);
         } catch (error) {
-            toast.error("Error checking in user");
+            toast.error("Error checking in");
         } finally {
             setLoading(false)
         }
@@ -568,6 +620,7 @@ const AdminTicketScanner = () => {
                                     updateOpenApprovalModalAction={setOpenApprovalModal}
                                     scanError={scanError}
                                     onResetError={() => setScanError(null)}
+                                    isAudition={selectedEventData?.isAudition}
                                 />
 
                                 <div className="bg-zinc-950 p-6 text-center">

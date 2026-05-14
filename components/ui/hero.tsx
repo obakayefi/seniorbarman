@@ -66,9 +66,9 @@ export default function Hero({ nextMatch }: { nextMatch: any }) {
             <section className={'flex w-full lg:w-auto lg:max-w-[50%] border border-zinc-900 rounded z-20 items-stretch mt-2 lg:mt-0 shrink-0'}>
                 <div className={'bg-black/80 flex-1 z-50 px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 2xl:px-8 2xl:py-6'}>
                     <div className="border-b border-gray-800 pb-2 sm:pb-3">
-                        <h2 className={'text-[10px] sm:text-xs lg:text-sm 2xl:text-base text-gray-400 uppercase tracking-widest mb-1'}>Next Match</h2>
+                        <h2 className={'text-[10px] sm:text-xs lg:text-sm 2xl:text-bapse text-gray-400 uppercase tracking-widest mb-1'}>Next Match</h2>
                         <div className="flex font-semibold gap-2 text-sm sm:text-base lg:text-lg 2xl:text-xl items-center justify-between">
-                            <h2 className="flex-1 break-words leading-tight">Enugu Rangers</h2>
+                            <h2 className="flex-1 break-words leading-tight">Rangers FC</h2>
                             <span className={'text-white h-5 w-5 sm:h-6 sm:w-6 text-[9px] sm:text-xs rounded-full bg-red-600 flex items-center justify-center font-normal shrink-0'}>
                                 vs
                             </span>

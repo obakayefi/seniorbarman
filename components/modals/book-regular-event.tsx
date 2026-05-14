@@ -28,10 +28,14 @@ export function BookRegularEventModal({ event }: { event: any }) {
     const [maxTickets, setMaxTickets] = useState(400)
 
     // Construct ticket types dynamically
-    const ticketTypes = [
-        { id: 1, name: "Regular", icon: Ticket, price: Number((event.regularPrice < 0 ? 0 : event.regularPrice) || 0), color: "text-blue-500", max: 20000 },
-        { id: 2, name: "VIP", price: Number(event.vipPrice || 0), icon: Crown, color: "text-yellow-500", max: 500 },
-    ]
+    const ticketTypes = event.ticketTypes?.map((t: any, idx: number) => ({
+        id: idx + 1,
+        name: t.name,
+        price: Number(t.price || 0),
+        icon: idx === 1 ? Crown : Ticket,
+        color: idx === 0 ? "text-blue-500" : idx === 1 ? "text-yellow-500" : "text-orange-500",
+        max: 500
+    })) || []
 
     const [payNowLoading, setPayNowLoading] = useState(false)
     const { user } = useApp()

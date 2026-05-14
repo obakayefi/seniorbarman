@@ -163,7 +163,7 @@ export function ChangePasswordModal({ isOpen, onOpenChange }: ChangePasswordModa
                                 />
                             </div>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="z-100">
                             <Button type="submit" className="w-full" disabled={isLoading || !newPassword || newPassword !== confirmPassword}>
                                 Change Password {isLoading && <Spinner className="ml-2" />}
                             </Button>

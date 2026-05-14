@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, Bug } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import EnvViewer from '@/components/features/admin/EnvViewer'
@@ -85,6 +85,14 @@ const AdminDashboard = () => {
             bg: "bg-zinc-500/10"
         },
         {
+            title: "Error Logs",
+            description: "Monitor silent runtime faults",
+            icon: Bug,
+            url: sitemap.admin.errorLogs,
+            color: "text-red-500",
+            bg: "bg-red-500/10"
+        },
+        {
             title: "Search Ticket",
             description: "Find and manage any ticket by ID",
             icon: Search,
@@ -110,42 +118,51 @@ const AdminDashboard = () => {
         }
     ]
 
+    const filteredActions = adminActions.filter(action => {
+        if (user?.role === 'organizer') {
+            return ['Create Event', 'Scanner'].includes(action.title);
+        }
+        return true;
+    });
+
     return (
         <div className='md:p-10 p-6 w-full space-y-10'>
-            <PageHeader title="Admin Oversight">
+            <PageHeader title={user?.role === 'organizer' ? "Organizer Hub" : "Admin Oversight"}>
                 <EnvViewer />
             </PageHeader>
 
-            {/* Admin Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-                    <div className="p-4 bg-orange-500/10 rounded-xl">
-                        <BarChart3 className="text-orange-500" size={32} />
+            {/* Admin Stats Grid - Only show for full admins */}
+            {user?.role !== 'organizer' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
+                        <div className="p-4 bg-orange-500/10 rounded-xl">
+                            <BarChart3 className="text-orange-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Events</p>
+                            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalEvents}</h3>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Events</p>
-                        <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalEvents}</h3>
-                    </div>
-                </div>
 
-                <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-                    <div className="p-4 bg-blue-500/10 rounded-xl">
-                        <Users className="text-blue-500" size={32} />
-                    </div>
-                    <div>
-                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Accounts</p>
-                        <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalUsers}</h3>
+                    <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
+                        <div className="p-4 bg-blue-500/10 rounded-xl">
+                            <Users className="text-blue-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Accounts</p>
+                            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalUsers}</h3>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Quick Actions Section */}
             <div className="space-y-6">
                 <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
-                    Management Tools
+                    {user?.role === 'organizer' ? "Quick Actions" : "Management Tools"}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {adminActions.map((action) => (
+                    {filteredActions.map((action) => (
                         <button
                             key={action.title}
                             onClick={() => router.push(action.url)}

@@ -6,9 +6,12 @@ import { Dialog, DialogTrigger } from "./dialog";
 import { BookEventModal } from "../modals/book-event";
 import NButton from "../native/NButton";
 import { useEffect, useState } from "react";
+import { useApp } from "@/context/AppContext";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: any }) {
     const [dateString, setDateString] = useState("")
+    const { user } = useApp()
 
     useEffect(() => {
         if (match.date) {
@@ -90,12 +93,12 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                     <BookEventModal eventId={(match as any)._id} />
                 </Dialog>
 
-                <NButton
+                {HunchoRoleChecker(user?.role || "") && (<NButton
                     onClick={() => window.location.href = `/u/a/events/${match._id}/edit`}
                     className={'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 w-full'}
                 >
                     Edit Event
-                </NButton>
+                </NButton>)}
             </div>
         </div>
     )

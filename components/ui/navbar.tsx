@@ -16,6 +16,7 @@ import useUser from "@/hooks/useUser";
 import NButton from "@/components/native/NButton";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import NotificationHub from "./NotificationHub";
 
 export default function NativeNavbar
     () {
@@ -56,11 +57,11 @@ export default function NativeNavbar
         },
         {
             name: "Dashboard",
-            link: ((user?.role === "admin") || (user?.role === "bouncer")) ? "/u/a/dashboard" : "/u/dashboard",
+            link: ((user?.role === "admin") || (user?.role === "bouncer") || (user?.role === "dev")) ? "/u/a/dashboard" : (user?.role === "organizer") ? "/u/organizer/dashboard" : "/u/dashboard",
         },
         {
             name: "How It Works",
-            link: "/rangers#howItWorks",
+            link: "/how-it-works",
         },
     ];
 
@@ -84,7 +85,8 @@ export default function NativeNavbar
                     <NavbarLogo />
                     <NavItems items={navItems} />
                     {isAuthenticated ? (
-                        <div className="flex items-center z-10 gap-4">
+                        <div className="flex items-center z-10 gap-6">
+                            <NotificationHub />
                             <NButton
                                 className={'cursor-pointer bg-white hover:text-zinc-400 hover:bg-zinc-800 text-zinc-900'}
                                 onClick={() => router.push('/auth/logout')}>Logout</NButton>
@@ -129,6 +131,10 @@ export default function NativeNavbar
                         ))}
                         {isAuthenticated ? (
                             <div className="flex w-full flex-col gap-4">
+                                <div className="flex items-center justify-between px-2 mb-2">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Alerts & System</span>
+                                    <NotificationHub />
+                                </div>
                                 <NavbarButton
                                     onClick={() => {
                                         router.push('/auth/logout')

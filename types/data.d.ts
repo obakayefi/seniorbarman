@@ -39,5 +39,12 @@ export type TicketSummary = {
     stand?: string;
     createdBy?: {
         firstName: string;
+        lastName?: string;
     };
+    applicantPicture?: string;
+    formAnswers?: {
+        fieldLabel: string;
+        fieldType: string;
+        answer: any;
+    }[];
 }

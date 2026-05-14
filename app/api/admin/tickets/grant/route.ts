@@ -6,17 +6,17 @@ import crypto from "crypto";
 import mongoose from "mongoose";
 
 import { recordAuditLog } from "@/lib/audit";
+import { HunchoRoleChecker } from "@/lib/helpers";
 
 export async function POST(req: Request) {
     try {
         await connectDB();
 
-        const admin = await getUserFromCookie();
-        if (!admin || admin.role !== "admin") {
-            return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
-                { status: 401 }
-            );
+        const user = await getUserFromCookie();
+        const canAccessResource = HunchoRoleChecker(user?.role)
+
+        if (!canAccessResource) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { userId, eventId, stand, price, quantity, holderName } = await req.json();
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
         // Record Audit Log
         await recordAuditLog({
-            adminId: admin.id,
+            adminId: user!.id,
             action: "GRANT_TICKETS",
             targetType: "TICKET_BATCH",
             targetId: batchId,

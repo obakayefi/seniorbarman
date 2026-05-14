@@ -15,7 +15,10 @@ const CheckInLogSchema = new Schema({
     method: {
         type: String // e.g "QR Scan" or "Manual Scan"
     },
-
+    performedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    },
 })
 
 const ticketSchema = new Schema({

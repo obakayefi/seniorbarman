@@ -6,6 +6,7 @@ import Ticket from "@/models/Ticket";
 import TicketOrder from "@/models/TicketOrder";
 import User from "@/models/User";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { redis } from "@/lib/redis";
 
 
 type Params = {
@@ -16,6 +17,7 @@ export async function GET(req: Request, { params }: Params) {
     try {
         await connectDB();
         const token = (await cookies()).get("token")?.value;
+        console.log("Hash token request started...")
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
         if (typeof decoded === "string") {
@@ -34,6 +36,19 @@ export async function GET(req: Request, { params }: Params) {
         // ✅ Await v directly — not props.context.v
         const { hashToken: eventId } = await params;
 
+        // Retrieve from Upstash
+        const cacheKey = `user_event_tickets:${userId}:${eventId}`
+        const cachedData = await redis.get(cacheKey)
+        console.log({ cachedData, cacheKey });
+
+        if (cachedData) {
+            return NextResponse.json(
+                { message: "Ticket found(cached)", response: cachedData },
+                { status: 200 }
+            )
+        }
+
+        //Cache Miss - Retrieve from database
         const event = await Event.findById(eventId);
         const tickets = await Ticket.find({ createdBy: userId }).populate("event");
         const pendingOrders = await TicketOrder.find({ event: eventId, user: userId, isGenerated: false }).lean();
@@ -80,6 +95,8 @@ export async function GET(req: Request, { params }: Params) {
             summary: transformedSummary,
             pendingOrders
         }
+
+        const updateCache = await redis.set(cacheKey, response, { ex: 1800 })
 
         return NextResponse.json(
             { message: "Ticket found", response },

@@ -5,23 +5,40 @@ import { getUserFromCookie } from "@/lib/auth";
 import crypto from 'crypto';
 import mongoose from "mongoose";
 
+import Event from "@/models/Event";
+
 const MAX_TICKETS_PER_REQUEST = 400;
 
 export async function POST(req: Request) {
     try {
         await connectDB();
 
-        // Auth Check
-        const user = await getUserFromCookie();
-        if (!user || user.role !== 'admin') {
-            return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
-                { status: 401 }
-            );
-        }
-
         const body = await req.json();
         const { eventId, batches, holderName } = body;
+
+        // Auth Check
+        const user = await getUserFromCookie();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const isAdminOrDev = user.role === 'admin' || user.role === 'dev';
+        
+        if (!isAdminOrDev) {
+            // Check if user is the organizer of the event
+            const event = await Event.findById(eventId).lean() as any;
+            if (!event) {
+                return NextResponse.json({ error: "Event not found" }, { status: 404 });
+            }
+
+            const isOwner = event.createdBy?.toString() === user.id;
+            if (!isOwner) {
+                return NextResponse.json(
+                    { error: "Forbidden: You are not the organizer of this event" },
+                    { status: 403 }
+                );
+            }
+        }
 
         console.log('[WIZARD GENERATE] Request body:', { eventId, batches, holderName });
 
@@ -55,9 +72,9 @@ export async function POST(req: Request) {
         const batchId = crypto.randomUUID();
 
         for (const batch of batches) {
-            const { quantity, stand } = batch;
+            const { quantity, stand, price } = batch;
             const numQuantity = Number(quantity);
-            const price = 0; // Price to be determined by sellers
+            const numPrice = Number(price) || 0;
             
             for (let i = 0; i < numQuantity; i++) {
                 const ticketId = new mongoose.Types.ObjectId();
@@ -70,7 +87,7 @@ export async function POST(req: Request) {
                     event: eventId,
                     createdBy: ticketOwnerId,
                     stand: stand || "Regular",
-                    price: Number(price),
+                    price: numPrice,
                     ticketNumber: `${eventId.toString().slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`,
                     payment: {
                         status: 'success',

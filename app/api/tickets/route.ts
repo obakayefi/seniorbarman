@@ -15,6 +15,8 @@ import { getUserFromCookie, verifyAuth } from "@/lib/auth";
 import { StandType } from "@/types/components";
 import { getBaseUrl } from "@/lib/utils";
 import { summary } from "framer-motion/m";
+import { redis } from "@/lib/redis";
+
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -76,8 +78,8 @@ async function SortTicketsForView(events: any[], tickets: any[], pendingOrders: 
             value
         })) : [];
 
-        return { 
-            ...plain, 
+        return {
+            ...plain,
             transformedSummary,
             hasPendingOrders: pendingEventIds.has(eventIdStr)
         };
@@ -111,8 +113,8 @@ export async function GET(req: Request) {
 
         // Get token from cookies
         const token = (await cookies()).get("token")?.value;
-        const { searchParams } = new URL(req.url)
-        const eventNumber = searchParams.get("event-number")
+        // const { searchParams } = new URL(req.url)
+        // const eventNumber = searchParams.get("event-number")
 
         //console.log({eventNumber})
 
@@ -125,6 +127,17 @@ export async function GET(req: Request) {
         // Decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string, userId: string };
         const userId = decoded.id;
+
+        const cacheKey = `TICKETS_${userId}`
+        const cachedResponse = await redis.get(cacheKey)
+
+        if (cachedResponse) {
+            // console.log(`[API] Using cached tickets for user: ${userId}`)
+            return NextResponse.json({
+                message: "Tickets fetched successfully",
+                tickets: cachedResponse,
+            });
+        }
 
         // Fetch events created by this user
         const tickets = await Ticket
@@ -157,6 +170,10 @@ export async function GET(req: Request) {
         );
 
         console.log(`[API] Valid ticket groups after filtering: ${validTickets.length}`);
+
+        const updatedCache = await redis.set(cacheKey, validTickets)
+
+        console.log(`[API] Updated cache: ${updatedCache}`)
 
         return NextResponse.json({
             message: "tickets fetched successfully",

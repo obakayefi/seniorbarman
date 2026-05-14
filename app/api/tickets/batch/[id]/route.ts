@@ -9,9 +9,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         // Auth Check
         const user = await getUserFromCookie();
-        if (!user || user.role !== 'admin') {
+        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
             return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
+                { error: "Unauthorized: Access required" },
                 { status: 401 }
             );
         }
@@ -19,6 +19,14 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         const { id: batchId } = await params;
 
         const tickets = await Ticket.find({ batchId: batchId }).populate('event');
+
+        // Verify event ownership for organizer
+        if (user.role === 'organizer' && tickets.length > 0) {
+            const event = tickets[0].event;
+            if (event.createdBy?.toString() !== user.id) {
+                return NextResponse.json({ error: "Forbidden: Not your event" }, { status: 403 });
+            }
+        }
 
         return NextResponse.json({
             success: true,

@@ -11,15 +11,23 @@ export async function POST(req: Request) {
 
         // Auth Check
         const user = await getUserFromCookie();
-        if (!user || user.role !== 'admin') {
+        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
             return NextResponse.json(
-                { error: "Unauthorized: Admin access required" },
+                { error: "Unauthorized: Access required" },
                 { status: 401 }
             );
         }
 
         const body = await req.json();
         const { eventId, quantity, type, price, stand, holderName, targetUserId } = body;
+
+        // Verify event ownership if user is organizer
+        if (user.role === 'organizer') {
+            const event = await mongoose.model('Event').findById(eventId);
+            if (!event || event.createdBy?.toString() !== user.id) {
+                return NextResponse.json({ error: "Forbidden: You can only generate tickets for your own events" }, { status: 403 });
+            }
+        }
 
         console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName, targetUserId });
 
@@ -51,9 +59,16 @@ export async function POST(req: Request) {
             );
         }
 
+        if (numQuantity >= 400) {
+            return NextResponse.json(
+                { error: "Bulk Ticket Generation Initiated" },
+                { status: 200 }
+            );
+        }
+
         // Determine ticket owner
         let ticketOwnerId = user.id || user._id;
-        if (targetUserId && user.role === 'admin') {
+        if (targetUserId && (user.role === 'admin' || user.role === 'dev')) {
             ticketOwnerId = targetUserId;
             console.log(`[GENERATE] Admin generating tickets for target user: ${targetUserId}`);
         }
