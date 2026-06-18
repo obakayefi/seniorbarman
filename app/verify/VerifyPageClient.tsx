@@ -272,11 +272,13 @@ export default function VerifyPageClient() {
 
                             {eventData && (
                                 <Button
-                                    onClick={() => setShowApplyModal(true)}
+                                    asChild
                                     className="w-full h-16 bg-blue-600 hover:bg-white text-white hover:text-black font-black rounded-2xl text-lg uppercase tracking-tighter transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-[0_10px_30px_rgba(37,99,235,0.3)]"
                                 >
-                                    <ClipboardList size={22} className="mr-2" />
-                                    Open Application Form
+                                    <Link href={`/u/events/${eventId}/apply`}>
+                                        <ClipboardList size={22} className="mr-2" />
+                                        Open Application Form
+                                    </Link>
                                 </Button>
                             )}
 
@@ -308,24 +310,6 @@ export default function VerifyPageClient() {
                     </div>
                 )}
             </div>
-
-            {/* Application Modal */}
-            {eventData && (
-                <ApplyEventModal
-                    isOpen={showApplyModal}
-                    onOpenChange={setShowApplyModal}
-                    event={eventData}
-                    applicationStatus={applicationStatus}
-                    onSuccess={() => {
-                        // Refresh application status after form submit
-                        if (eventId) {
-                            fetch(`/api/events/${eventId}/apply`)
-                                .then(r => r.json())
-                                .then(d => { if (d.application) setApplicationStatus(d.application) })
-                        }
-                    }}
-                />
-            )}
         </div>
     );
 }

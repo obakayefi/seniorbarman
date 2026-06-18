@@ -379,33 +379,16 @@ export default function EventDetailPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all rounded-lg"
-                                                        onClick={() => setSelectedAppForView(app)}
-                                                    >
-                                                        <ExternalLink size={14} />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-8 px-4 text-[10px] bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_5px_15px_rgba(22,163,74,0.2)] hover:scale-105 active:scale-95"
-                                                        onClick={() => handleUpdateApplicant(app._id, 'approved')}
-                                                        disabled={app.status === 'approved'}
-                                                    >
-                                                        Approve
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-8 px-4 text-[10px] border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:scale-105 active:scale-95"
-                                                        onClick={() => setRejectionModal({ appId: app._id })}
-                                                        disabled={app.status === 'rejected'}
-                                                    >
-                                                        Reject
-                                                    </Button>
-                                                </div>
+                                                <Button
+                                                    asChild
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 px-4 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300"
+                                                >
+                                                    <Link href={`/u/applications/${app._id}`}>
+                                                        Review Submission
+                                                    </Link>
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -422,124 +405,6 @@ export default function EventDetailPage() {
                     </Card>
                 )}
             </div>
-
-            {/* View Answers Modal */}
-            <Dialog open={!!selectedAppForView} onOpenChange={(open) => !open && setSelectedAppForView(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black">Application Details</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Submitted by {selectedAppForView?.user?.firstName} {selectedAppForView?.user?.lastName}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4 space-y-6">
-                        <div className="grid grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
-                                <Badge variant="outline" className={`text-[9px] uppercase tracking-widest font-black border-none ${selectedAppForView?.status === 'approved' ? 'bg-green-500/10 text-green-500' :
-                                    selectedAppForView?.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                                        'bg-blue-500/10 text-blue-500'
-                                    }`}>
-                                    {selectedAppForView?.status?.replace('_', ' ')}
-                                </Badge>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Payment</p>
-                                <p className="text-xs text-white font-bold">{selectedAppForView?.paymentStatus?.toUpperCase()}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">Form Answers</h4>
-                            
-                            {selectedAppForView?.applicantPicture && (
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Applicant Photo</p>
-                                    <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10">
-                                        <img src={selectedAppForView.applicantPicture} alt="Applicant" className="object-cover w-full h-full" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {selectedAppForView?.formAnswers && selectedAppForView.formAnswers.length > 0 ? (
-                                <div className="space-y-4">
-                                    {selectedAppForView.formAnswers.map((ans: any, idx: number) => (
-                                        <div key={idx} className="space-y-1">
-                                            <p className="text-xs text-zinc-400 font-bold">{ans.fieldLabel}</p>
-                                            <p className="text-sm text-white bg-zinc-900/30 p-2 rounded-lg border border-white/5">
-                                                {Array.isArray(ans.answer) ? ans.answer.join(', ') : (ans.answer || '—')}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-xs text-zinc-600 italic">No custom answers provided.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button
-                            className="flex-1 bg-green-600 hover:bg-green-500 text-white hover:text-black font-black rounded-xl transition-all"
-                            onClick={() => {
-                                handleUpdateApplicant(selectedAppForView._id, 'approved')
-                                setSelectedAppForView(null)
-                            }}
-                            disabled={selectedAppForView?.status === 'approved'}
-                        >
-                            Approve
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black rounded-xl transition-all"
-                            onClick={() => {
-                                handleUpdateApplicant(selectedAppForView._id, 'rejected')
-                                setSelectedAppForView(null)
-                            }}
-                            disabled={selectedAppForView?.status === 'rejected'}
-                        >
-                            Reject
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            {/* Rejection Reason Modal */}
-            <Dialog open={!!rejectionModal} onOpenChange={(open) => !open && setRejectionModal(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black uppercase tracking-tighter">Reject Application</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Please provide a reason for rejecting this application. This is mandatory.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4">
-                        <textarea
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            placeholder="e.g. Photo does not meet requirements, experience insufficient..."
-                            className="w-full h-32 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 outline-none transition-all"
-                        />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={() => setRejectionModal(null)} className="flex-1 text-zinc-400">Cancel</Button>
-                        <Button 
-                            variant="destructive" 
-                            className="flex-1 font-black rounded-xl"
-                            disabled={!rejectionReason.trim()}
-                            onClick={() => {
-                                handleUpdateApplicant(rejectionModal!.appId, 'rejected', rejectionReason)
-                                setRejectionModal(null)
-                                setRejectionReason('')
-                            }}
-                        >
-                            Reject Application
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     )
 }

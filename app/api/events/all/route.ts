@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
 import { verifyAuth } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
-import upcomingEvents from "@/components/ui/upcoming-events";
+import { paginate } from "@/lib/pagination";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +11,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const eventType = searchParams.get("type");
     const forScanner = searchParams.get("forScanner") === "true";
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit") || "10";
 
     try {
         await connectDB()
@@ -24,17 +26,24 @@ export async function GET(req: Request) {
             )
         }
 
-        const upcomingActivities = await Event.find({
-            type: eventType,
-            date: { $gte: today }
-        })
-            .sort({ date: 1 })
-            .lean()
+        const paginatedActivities = await paginate(
+            Event,
+            {
+                type: eventType,
+                date: { $gte: today },
+                isArchived: { $ne: true }
+            },
+            {
+                page,
+                limit,
+                sort: { date: 1 }
+            }
+        );
 
         // const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         // const nowInWat = new Date(watTime);
 
-        console.log({ upcomingActivities });
+        // const nowInWat = new Date(watTime);
 
 
         // const filteredEvents = upcomingActivities.filter((event: any) => {
@@ -72,7 +81,10 @@ export async function GET(req: Request) {
         // });
 
         return NextResponse.json(
-            { events: upcomingActivities },
+            { 
+                events: paginatedActivities.data,
+                pagination: paginatedActivities.pagination
+            },
             { status: 200 }
         )
     } catch (error: any) {

@@ -45,6 +45,7 @@ export async function GET(req: Request) {
                 {
                     paymentStatus: "paid",
                     status: "pending_form",
+                    amountPaid: transaction.amount / 100, // store actual Naira amount
                 },
                 { new: true }
             ).populate('event user');

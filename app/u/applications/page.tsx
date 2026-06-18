@@ -1,6 +1,5 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -10,7 +9,6 @@ import {
 } from "lucide-react"
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { ApplyEventModal } from '@/components/modals/apply-event-modal'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     pending_payment: {
@@ -41,15 +39,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 }
 
 export default function ApplicationsPage() {
-    const router = useRouter()
     const [applications, setApplications] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-
-    // Modal state
-    const [selectedApp, setSelectedApp] = useState<any>(null)
-    const [selectedEvent, setSelectedEvent] = useState<any>(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [fetchingEventId, setFetchingEventId] = useState<string | null>(null)
 
     const verifiedRefs = React.useRef(new Set<string>());
 
@@ -115,21 +106,6 @@ export default function ApplicationsPage() {
             verifyPending();
         }
     }, [applications]);
-
-    const openForm = async (app: any) => {
-        try {
-            setFetchingEventId(app._id)
-            const res = await fetch(`/api/events/${app.event._id || app.event}`)
-            const eventData = await res.json()
-            setSelectedEvent(eventData)
-            setSelectedApp(app)
-            setIsModalOpen(true)
-        } catch {
-            toast.error("Failed to load event details")
-        } finally {
-            setFetchingEventId(null)
-        }
-    }
 
     if (loading) {
         return (
@@ -262,15 +238,14 @@ export default function ApplicationsPage() {
                                         {/* Fill Form */}
                                         {canFillForm && (
                                             <Button
+                                                asChild
                                                 size="sm"
-                                                onClick={() => openForm(app)}
-                                                disabled={!!fetchingEventId}
                                                 className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl gap-1"
                                             >
-                                                {fetchingEventId === app._id
-                                                    ? <Loader2 size={12} className="animate-spin" />
-                                                    : <ClipboardList size={12} />}
-                                                Fill Application Form
+                                                <Link href={`/u/events/${event?._id}/apply`}>
+                                                    <ClipboardList size={12} />
+                                                    Fill Application Form
+                                                </Link>
                                             </Button>
                                         )}
 
@@ -278,20 +253,18 @@ export default function ApplicationsPage() {
                                         {isApproved && (
                                             <div className="flex gap-2">
                                                 <Button
+                                                    asChild
                                                     size="sm"
-                                                    onClick={() => openForm(app)}
-                                                    disabled={!!fetchingEventId}
                                                     className="h-8 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-black rounded-xl gap-1"
                                                 >
-                                                    {fetchingEventId === app._id
-                                                        ? <Loader2 size={12} className="animate-spin" />
-                                                        : <QrCode size={12} />}
-                                                    View Entry Pass
+                                                    <Link href={`/u/applications/${app._id}`}>
+                                                        <QrCode size={12} />
+                                                        View Entry Pass
+                                                    </Link>
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     asChild
-                                                    disabled={!!fetchingEventId}
                                                     className="h-8 bg-orange-600 hover:bg-orange-700 text-white text-xs font-black rounded-xl gap-1"
                                                 >
                                                     <Link href={`/events/${event?._id}`}>
@@ -304,16 +277,14 @@ export default function ApplicationsPage() {
                                         {/* View Answers (read-only) */}
                                         {(app.status === 'completed' || app.status === 'approved' || app.status === 'rejected') && (
                                             <Button
+                                                asChild
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() => openForm(app)}
-                                                disabled={!!fetchingEventId}
                                                 className="h-8 border-zinc-800 text-zinc-400 hover:text-white text-xs rounded-xl gap-1"
                                             >
-                                                {fetchingEventId === app._id
-                                                    ? <Loader2 size={12} className="animate-spin" />
-                                                    : null}
-                                                View Answers
+                                                <Link href={`/u/applications/${app._id}`}>
+                                                    View Answers
+                                                </Link>
                                             </Button>
                                         )}
                                     </div>
@@ -323,17 +294,6 @@ export default function ApplicationsPage() {
                     })}
                 </div>
             </div>
-
-            {/* Modal */}
-            {selectedEvent && selectedApp && (
-                <ApplyEventModal
-                    isOpen={isModalOpen}
-                    onOpenChange={setIsModalOpen}
-                    event={selectedEvent}
-                    applicationStatus={selectedApp}
-                    onSuccess={fetchApplications}
-                />
-            )}
         </div>
     )
 }

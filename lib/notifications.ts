@@ -4,6 +4,7 @@ import Notification from '@/models/Notification';
 import { OrganizerPaymentAlert } from '@/components/emails/OrganizerPaymentAlert';
 import { ApplicantApprovalNotice } from '@/components/emails/ApplicantApprovalNotice';
 import { ApplicantRejectionNotice } from '@/components/emails/ApplicantRejectionNotice';
+import { ApplicantResetNotice } from '@/components/emails/ApplicantResetNotice';
 import React from 'react';
 
 export async function createInAppNotification({
@@ -167,5 +168,48 @@ export async function notifyApplicantOfRejection({
         message: `Your application for ${eventTitle} was not approved. Reason: ${reason}`,
         type: 'error',
         link: `/events`
+    });
+}
+
+export async function notifyApplicantOfReset({
+    userEmail,
+    userName,
+    userId,
+    eventTitle,
+    reason
+}: {
+    userEmail: string;
+    userName: string;
+    userId: string;
+    eventTitle: string;
+    reason: string;
+}) {
+    // 1. Send Email
+    try {
+        const emailHtml = await render(
+            React.createElement(ApplicantResetNotice, {
+                userName,
+                eventTitle,
+                reason
+            })
+        );
+
+        await resend.emails.send({
+            from: 'Senior Barman <notifications@seniorbarman.com>',
+            to: userEmail,
+            subject: `Application Reset Request: ${eventTitle}`,
+            html: emailHtml,
+        });
+    } catch (error) {
+        console.error("Email notification failed:", error);
+    }
+
+    // 2. In-App Notification
+    await createInAppNotification({
+        userId: userId,
+        title: 'Application Form Reset',
+        message: `Your application form for ${eventTitle} was reset by the organizer. Reason: ${reason}`,
+        type: 'warning',
+        link: `/u/applications`
     });
 }

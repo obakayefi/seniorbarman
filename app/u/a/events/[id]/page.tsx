@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
-    ArrowLeft, Edit, Printer, Calendar, MapPin, Search, Plus, Download,
-    ExternalLink
+    ArrowLeft, Edit, Calendar, MapPin, Search, Plus, Download,
+    ClipboardList, Wallet, Layers
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
@@ -33,11 +33,16 @@ export default function EventDetailPage() {
             const res = await api.get(`/admin/events/${id}`)
             if (res.data.success) {
                 setData(res.data)
-
-                // Fetch applicants if required
-                if (res.data.event.requiresApplication) {
+                console.log({ res: res.data })
+                // appStats.applications is now returned by the admin endpoint
+                // so we only fall back to a separate fetch if needed
+                if (res.data.event.requiresApplication && !res.data.appStats?.applications) {
                     const appRes = await api.get(`/events/${id}/applicants`)
+                    console.log({ res_within: res.data })
+
                     setApplicants(appRes.data.applicants || [])
+                } else if (res.data.appStats?.applications) {
+                    setApplicants(res.data.appStats.applications)
                 }
             }
         } catch (error) {
@@ -125,7 +130,8 @@ export default function EventDetailPage() {
         )
     }
 
-    const { event, stats, tickets } = data
+    const { event, stats, tickets, appStats } = data
+    const totalCombinedRevenue = (stats.totalRevenue || 0) + (appStats?.applicationRevenue || 0)
     const filteredTickets = tickets.filter((t: any) =>
         (t.holderName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
         (t.createdBy?.firstName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
@@ -204,13 +210,13 @@ export default function EventDetailPage() {
                     <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group">
                         <CardHeader className="p-4 pb-2 space-y-0">
                             <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
-                                Total Revenue
+                                Ticket Revenue
                                 <TrendingUp className="h-4 w-4 text-green-500 group-hover:scale-110 transition-transform" />
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
                             <div className="text-3xl text-zinc-100 font-black">₦{stats.totalRevenue.toLocaleString()}</div>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Gross Potential</p>
+                            <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">From ticket sales</p>
                         </CardContent>
                     </Card>
 
@@ -245,6 +251,66 @@ export default function EventDetailPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* ── Revenue Breakdown (only for events with application forms) ── */}
+                {appStats && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Ticket Revenue */}
+                        <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group relative">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-green-500/0 via-green-500 to-green-500/0" />
+                            <CardHeader className="p-4 pb-2 space-y-0">
+                                <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
+                                    Ticket Sales Revenue
+                                    <Ticket className="h-4 w-4 text-green-500 group-hover:scale-110 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-3xl text-green-400 font-black">₦{stats.totalRevenue.toLocaleString()}</div>
+                                <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">{stats.totalTickets} ticket{stats.totalTickets !== 1 ? 's' : ''} sold</p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Application Form Revenue */}
+                        <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group relative">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0" />
+                            <CardHeader className="p-4 pb-2 space-y-0">
+                                <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
+                                    Application Form Revenue
+                                    <ClipboardList className="h-4 w-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-3xl text-amber-400 font-black">₦{appStats.applicationRevenue.toLocaleString()}</div>
+                                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-2">
+                                    <span className="text-[10px] text-zinc-500 uppercase tracking-tighter">
+                                        {appStats.paidCount} paid · ₦{appStats.applicationFee.toLocaleString()} each
+                                    </span>
+                                    {appStats.freeCount > 0 && (
+                                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">{appStats.freeCount} free</span>
+                                    )}
+                                    {appStats.unpaidCount > 0 && (
+                                        <span className="text-[10px] text-red-500/70 uppercase tracking-tighter">{appStats.unpaidCount} unpaid</span>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Total Combined Revenue */}
+                        <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700 overflow-hidden group relative">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange-500/0 via-orange-500 to-red-500" />
+                            <CardHeader className="p-4 pb-2 space-y-0">
+                                <CardTitle className="text-zinc-400 text-xs font-black uppercase tracking-widest flex items-center justify-between">
+                                    Total Combined Revenue
+                                    <Layers className="h-4 w-4 text-orange-500 group-hover:scale-110 transition-transform" />
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0">
+                                <div className="text-3xl text-white font-black">₦{totalCombinedRevenue.toLocaleString()}</div>
+                                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-tighter">Tickets + Application forms</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Category Breakdown */}
@@ -405,33 +471,16 @@ export default function EventDetailPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-8 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all rounded-lg text-[10px] font-bold uppercase tracking-widest"
-                                                        onClick={() => setSelectedAppForView(app)}
-                                                    >
-                                                        View Responses
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-8 px-4 text-[10px] bg-green-600 hover:bg-green-500 text-white font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_5px_15px_rgba(22,163,74,0.2)] hover:scale-105 active:scale-95"
-                                                        onClick={() => handleUpdateApplicant(app._id, 'approved')}
-                                                        disabled={app.status === 'approved' || !['completed', 'approved', 'rejected'].includes(app.status)}
-                                                    >
-                                                        Approve
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-8 px-4 text-[10px] border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:scale-105 active:scale-95"
-                                                        onClick={() => setRejectionModal({ appId: app._id })}
-                                                        disabled={app.status === 'rejected'}
-                                                    >
-                                                        Reject
-                                                    </Button>
-                                                </div>
+                                                <Button
+                                                    asChild
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 px-4 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300"
+                                                >
+                                                    <Link href={`/u/applications/${app._id}`}>
+                                                        Review Submission
+                                                    </Link>
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -448,125 +497,6 @@ export default function EventDetailPage() {
                     </Card>
                 )}
             </div>
-
-            {/* View Answers Modal */}
-            <Dialog open={!!selectedAppForView} onOpenChange={(open) => !open && setSelectedAppForView(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black">Application Details</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Submitted by {selectedAppForView?.user?.firstName} {selectedAppForView?.user?.lastName}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4 space-y-6">
-                        <div className="grid grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
-                                <Badge variant="outline" className={`text-[9px] uppercase tracking-widest font-black border-none ${selectedAppForView?.status === 'approved' ? 'bg-green-500/10 text-green-500' :
-                                    selectedAppForView?.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                                        'bg-blue-500/10 text-blue-500'
-                                    }`}>
-                                    {selectedAppForView?.status?.replace('_', ' ')}
-                                </Badge>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Payment</p>
-                                <p className="text-xs text-white font-bold">{selectedAppForView?.paymentStatus?.toUpperCase()}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">Form Answers</h4>
-
-                            {selectedAppForView?.applicantPicture && (
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Applicant Photo</p>
-                                    <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10">
-                                        <img src={selectedAppForView.applicantPicture} alt="Applicant" className="object-cover w-full h-full" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {selectedAppForView?.formAnswers && selectedAppForView.formAnswers.length > 0 ? (
-                                <div className="space-y-4">
-                                    {selectedAppForView.formAnswers.map((ans: any, idx: number) => (
-                                        <div key={idx} className="space-y-1">
-                                            <p className="text-xs text-zinc-400 font-bold">{ans.fieldLabel}</p>
-                                            <p className="text-sm text-white bg-zinc-900/30 p-2 rounded-lg border border-white/5">
-                                                {Array.isArray(ans.answer) ? ans.answer.join(', ') : (ans.answer || '—')}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-xs text-zinc-600 italic">No custom answers provided.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button
-                            className="flex-1 bg-green-600 hover:bg-green-500 text-white hover:text-black font-black rounded-xl transition-all"
-                            onClick={() => {
-                                handleUpdateApplicant(selectedAppForView._id, 'approved')
-                                setSelectedAppForView(null)
-                            }}
-                            disabled={selectedAppForView?.status === 'approved' || !['completed', 'approved', 'rejected'].includes(selectedAppForView?.status)}
-                        >
-                            Approve
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black rounded-xl transition-all"
-                            onClick={() => {
-                                setRejectionModal({ appId: selectedAppForView._id })
-                                setSelectedAppForView(null)
-                            }}
-                            disabled={selectedAppForView?.status === 'rejected'}
-                        >
-                            Reject
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            {/* Rejection Reason Modal */}
-            <Dialog open={!!rejectionModal} onOpenChange={(open) => !open && setRejectionModal(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black uppercase tracking-tighter">Reject Application</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Please provide a reason for rejecting this application. This is mandatory.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4">
-                        <textarea
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            placeholder="e.g. Photo does not meet requirements, experience insufficient..."
-                            className="w-full h-32 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 outline-none transition-all"
-                        />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={() => setRejectionModal(null)} className="flex-1 text-zinc-400">Cancel</Button>
-                        <Button
-                            variant="destructive"
-                            className="flex-1 font-black rounded-xl"
-                            disabled={!rejectionReason.trim()}
-                            onClick={() => {
-                                handleUpdateApplicant(rejectionModal!.appId, 'rejected', rejectionReason)
-                                setRejectionModal(null)
-                                setRejectionReason('')
-                            }}
-                        >
-                            Reject Application
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     )
 }
