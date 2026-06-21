@@ -204,13 +204,18 @@ export default function RegularEventCard({ event }: { event: any }) {
 
                                 {/* User-facing CTA */}
                                 <div className="flex flex-col gap-2 min-w-[120px]">
-                                    {!noTickets && (
+                                    {!noTickets ? (
                                         <Dialog>
                                             <DialogTrigger asChild>
                                                 <NButton className="bg-green-800 hover:bg-green-700 w-full">BUY TICKETS</NButton>
                                             </DialogTrigger>
                                             <BookRegularEventModal event={event} />
                                         </Dialog>
+                                    ) : (
+                                        <Link
+                                            href={`/u/events/${event._id}/apply`}>
+                                            <NButton className="bg-orange-500 hover:bg-orange-600 w-full">APPLY HERE</NButton>
+                                        </Link>
                                     )}
                                 </div>
                             </section>
