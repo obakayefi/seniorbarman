@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SeniorBarman
 
-## Getting Started
+**SeniorBarman** is a modern, full-stack event management and ticketing platform designed to simplify the creation, management, and distribution of event tickets. It features robust payment processing, real-time QR code generation and scanning for ticket validation, and automated email communications for attendees.
 
-First, run the development server:
+## 🌟 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Event Discovery & Management**: Create events, manage capacities, and track ticket sales.
+- **Secure Ticketing**: Auto-generated QR codes for each ticket.
+- **On-site Validation**: Built-in QR scanner to validate tickets at the door.
+- **Seamless Payments**: Integrated with Paystack for secure online transactions in multiple environments (Test/Production).
+- **Automated Emails**: Order confirmations, tickets, and reminders sent reliably.
+- **Performance & Observability**: High performance with caching, background jobs, and complete error tracking/telemetry.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 💻 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+SeniorBarman is built with modern, scalable web technologies:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Framework & UI
+- **[Next.js](https://nextjs.org/)** (v16) - React framework for server-rendered UI and API routes.
+- **[React](https://react.dev/)** (v19) - Component-based user interfaces.
+- **[Tailwind CSS](https://tailwindcss.com/)** (v4) - Utility-first styling.
+- **[HeroUI](https://heroui.com/) & [Radix UI](https://www.radix-ui.com/)** - Accessible and customizable UI components.
+- **[Framer Motion](https://www.framer.com/motion/)** - Fluid animations and transitions.
 
-## Learn More
+### Data & State Management
+- **[MongoDB](https://www.mongodb.com/)** (via Mongoose) - Primary NoSQL database for events, users, and ticket records.
+- **[Upstash Redis](https://upstash.com/)** - Serverless Redis for caching, rate-limiting, and managing queues.
+- **[TanStack Query & Form](https://tanstack.com/)** - Advanced state management and robust form handling with **[Zod](https://zod.dev/)** validation.
 
-To learn more about Next.js, take a look at the following resources:
+### Integrations & Background Processing
+- **[Paystack](https://paystack.com/)** - Payment gateway integration for handling ticket purchases.
+- **[Resend](https://resend.com/) & [React Email](https://react.email/)** - Reliable and beautifully designed email delivery.
+- **[Cloudinary](https://cloudinary.com/)** - Cloud-based image and media asset management.
+- **[BullMQ](https://docs.bullmq.io/)** - Reliable background job processing (e.g., sending emails asynchronously).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Utilities & Observability
+- **QR Codes**: `react-qr-scanner`, `qrcode`, and `html5-qrcode` for ticket generation and check-in.
+- **Observability**: **[Sentry](https://sentry.io/)** for error tracking, and **[OpenTelemetry](https://opentelemetry.io/)** for tracing and monitoring.
+- **Security**: JWT for authentication and `bcryptjs` for password hashing.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 Getting Started
 
-## Deploy on Vercel
+### Prerequisites
+- Node.js (v20+)
+- MongoDB connection string
+- Paystack Account (Test & Live keys)
+- Resend API key
+- Cloudinary credentials
+- Upstash Redis credentials
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone the repository:**
+   ```bash
+   git clone <repo-url>
+   cd seniorbarman
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   Duplicate `.env.example` to `.env.local` and fill in your keys:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open the App:**
+   Visit [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](#) if you want to contribute.
+
+## 📄 License
+This project is proprietary and confidential.
