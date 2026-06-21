@@ -218,33 +218,16 @@ export default function AdminApplicationsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-8 border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[10px] uppercase tracking-widest"
-                                                    onClick={() => setSelectedApp(app)}
-                                                >
-                                                    View Responses
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    className="h-8 bg-green-600 hover:bg-green-500 text-white font-black uppercase text-[10px] rounded-full"
-                                                    onClick={() => handleUpdateApplicant(app._id, 'approved')}
-                                                    disabled={app.status === 'approved' || !['completed', 'approved', 'rejected'].includes(app.status)}
-                                                >
-                                                    Approve
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-8 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black uppercase text-[10px] rounded-full"
-                                                    onClick={() => setRejectionModal({ appId: app._id })}
-                                                    disabled={app.status === 'rejected'}
-                                                >
-                                                    Reject
-                                                </Button>
-                                            </div>
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-8 border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all duration-300"
+                                            >
+                                                <Link href={`/u/applications/${app._id}`}>
+                                                    Review Submission
+                                                </Link>
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -260,125 +243,6 @@ export default function AdminApplicationsPage() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* View Details Modal */}
-            <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black">Application Details</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Submitted by {selectedApp?.user?.firstName} {selectedApp?.user?.lastName}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4 space-y-6">
-                        <div className="grid grid-cols-2 gap-4 bg-zinc-900/50 p-4 rounded-2xl border border-white/5">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
-                                <Badge variant="outline" className={`text-[9px] uppercase tracking-widest font-black border-none ${selectedApp?.status === 'approved' ? 'bg-green-500/10 text-green-500' :
-                                    selectedApp?.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                                        'bg-blue-500/10 text-blue-500'
-                                    }`}>
-                                    {selectedApp?.status?.replace('_', ' ')}
-                                </Badge>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Event</p>
-                                <p className="text-xs text-white font-bold truncate">{selectedApp?.event?.title}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500 border-b border-zinc-800 pb-2">Form Answers</h4>
-
-                            {selectedApp?.applicantPicture && (
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Applicant Photo</p>
-                                    <div className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/10">
-                                        <img src={selectedApp.applicantPicture} alt="Applicant" className="object-cover w-full h-full" />
-                                    </div>
-                                </div>
-                            )}
-
-                            {selectedApp?.formAnswers && selectedApp.formAnswers.length > 0 ? (
-                                <div className="space-y-4">
-                                    {selectedApp.formAnswers.map((ans: any, idx: number) => (
-                                        <div key={idx} className="space-y-1">
-                                            <p className="text-xs text-zinc-400 font-bold">{ans.fieldLabel}</p>
-                                            <p className="text-sm text-white bg-zinc-900/30 p-2 rounded-lg border border-white/5">
-                                                {Array.isArray(ans.answer) ? ans.answer.join(', ') : (ans.answer || '—')}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-xs text-zinc-600 italic">No custom answers provided.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button
-                            className="flex-1 bg-green-600 hover:bg-green-500 text-white font-black rounded-xl"
-                            onClick={() => {
-                                handleUpdateApplicant(selectedApp._id, 'approved')
-                                setSelectedApp(null)
-                            }}
-                            disabled={selectedApp?.status === 'approved' || !['completed', 'approved', 'rejected'].includes(selectedApp?.status)}
-                        >
-                            Approve
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-black rounded-xl"
-                            onClick={() => {
-                                setRejectionModal({ appId: selectedApp._id })
-                                setSelectedApp(null)
-                            }}
-                            disabled={selectedApp?.status === 'rejected'}
-                        >
-                            Reject
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            {/* Rejection Reason Modal */}
-            <Dialog open={!!rejectionModal} onOpenChange={(open) => !open && setRejectionModal(null)}>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black uppercase tracking-tighter">Reject Application</DialogTitle>
-                        <DialogDescription className="text-zinc-500">
-                            Provide a reason for rejection.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="py-4">
-                        <textarea
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            placeholder="Reason for rejection..."
-                            className="w-full h-32 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-red-500 outline-none transition-all"
-                        />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={() => setRejectionModal(null)} className="flex-1 text-zinc-400">Cancel</Button>
-                        <Button
-                            variant="destructive"
-                            className="flex-1 font-black rounded-xl"
-                            disabled={!rejectionReason.trim()}
-                            onClick={() => {
-                                handleUpdateApplicant(rejectionModal!.appId, 'rejected', rejectionReason)
-                                setRejectionModal(null)
-                                setRejectionReason('')
-                            }}
-                        >
-                            Reject
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     )
 }

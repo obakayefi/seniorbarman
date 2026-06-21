@@ -1,0 +1,47 @@
+name: Development Branch CI
+
+on:
+  push:
+    branches:
+      - development
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  build:
+    name: Build and Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # Matches modern Next.js requirements
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          PAYSTACK_API_KEY: ${{ secrets.PAYSTACK_API_KEY }}
+          PAYSTACK_CALLBACK_URL_TEST: ${{ secrets.PAYSTACK_CALLBACK_URL_TEST }}
+          PAYSTACK_CALLBACK_URL_PROD: ${{ secrets.PAYSTACK_CALLBACK_URL_PROD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          OCH: ${{ secrets.OCH }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          UPSTASH_REDIS_URL: ${{ secrets.UPSTASH_REDIS_URL }}
+          UPSTASH_REDIS_TOKEN: ${{ secrets.UPSTASH_REDIS_TOKEN }}
+          NEXT_TELEMETRY_DEBUG: ${{ secrets.NEXT_TELEMETRY_DEBUG }}

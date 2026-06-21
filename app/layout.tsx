@@ -13,10 +13,33 @@ const gabaritoFonts = Gabarito({
     subsets: ["latin"]
 })
 
-export const metadata: Metadata = {
-    title: "Senior Barman",
-    description: "Learn about Enugu's top rated entertainment and hospitality expert",
-};
+import { connectDB } from "@/lib/mongodb";
+import Setting from "@/models/Setting";
+
+export async function generateMetadata(): Promise<Metadata> {
+    let title = "Senior Barman";
+    let description = "Learn about Enugu's top rated entertainment and hospitality expert";
+    
+    try {
+        await connectDB();
+        const settingsList = await Setting.find({ 
+            key: { $in: ['global_seo_title', 'global_seo_description'] } 
+        }).lean();
+        
+        const settings: Record<string, string> = {};
+        settingsList.forEach((s: any) => settings[s.key] = s.value);
+        
+        if (settings.global_seo_title) title = settings.global_seo_title;
+        if (settings.global_seo_description) description = settings.global_seo_description;
+    } catch (e) {
+        console.error("Failed to load global SEO settings", e);
+    }
+
+    return {
+        title,
+        description,
+    };
+}
 
 export default function RootLayout({
                                        children,

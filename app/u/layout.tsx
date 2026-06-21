@@ -133,6 +133,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             icon: "CalendarDays",
         },
         {
+            title: "Configurations",
+            url: "/u/a/configurations",
+            roles: ["admin", "dev"],
+            icon: "Settings2",
+        },
+        {
             title: "Manage Applications",
             url: "/u/a/applications",
             roles: ["admin", "dev"],

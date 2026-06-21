@@ -69,11 +69,8 @@ export default function PublicEventDetailPage() {
         // Check if returning from paystack
         if (searchParams.get('applicationPaid') === 'true') {
             toast.success("Payment verified. Please complete your application form.");
-            setIsApplyModalOpen(true);
-            
-            // Remove param from URL without reloading
-            const newUrl = window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
+            router.push(`/u/events/${id}/apply`);
+            return;
         }
         
         // Check local storage for pending intent (if they just logged in)
@@ -82,7 +79,7 @@ export default function PublicEventDetailPage() {
             try {
                 const intent = JSON.parse(intentRaw)
                 if (intent.eventId === id) {
-                    setIsApplyModalOpen(true)
+                    router.push(`/u/events/${id}/apply`);
                     localStorage.removeItem('pendingApplication')
                 }
             } catch (e) {}
@@ -103,7 +100,7 @@ export default function PublicEventDetailPage() {
             router.push(`/auth/register?redirect=/events/${id}`)
             return;
         }
-        setIsApplyModalOpen(true)
+        router.push(`/u/events/${id}/apply`)
     }
 
     if (loading) {
@@ -339,14 +336,6 @@ export default function PublicEventDetailPage() {
                     </div>
                 </div>
             </div>
-            
-            <ApplyEventModal 
-                isOpen={isApplyModalOpen} 
-                onOpenChange={setIsApplyModalOpen} 
-                event={event} 
-                applicationStatus={applicationStatus}
-                onSuccess={fetchApplicationStatus}
-            />
         </div>
     )
 }

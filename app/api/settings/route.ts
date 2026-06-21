@@ -14,7 +14,9 @@ export async function GET() {
         settings.forEach(s => configMap[s.key] = s.value);
         return NextResponse.json({ success: true, settings: configMap });
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("[Settings API] GET failed:", error.message);
+        // Return safe fallback so GlobalPageGuard doesn't break on transient DB issues
+        return NextResponse.json({ success: true, settings: {} });
     }
 }
 

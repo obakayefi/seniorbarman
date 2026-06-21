@@ -40,6 +40,8 @@ const EventApplicationSchema = new mongoose.Schema(
             default: "unpaid",
         },
         paymentRef: { type: String },
+        // Actual amount paid (in Naira) — recorded at time of payment verification
+        amountPaid: { type: Number, default: 0 },
 
         // Form answers submitted by applicant
         formAnswers: [FormAnswerSchema],
