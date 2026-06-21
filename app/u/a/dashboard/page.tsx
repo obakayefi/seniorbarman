@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, Bug } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, Bug, Settings2 } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import EnvViewer from '@/components/features/admin/EnvViewer'
@@ -115,6 +115,14 @@ const AdminDashboard = () => {
             url: "/u/a/ticket-orders",
             color: "text-sky-500",
             bg: "bg-sky-500/10"
+        },
+        {
+            title: "Configurations",
+            description: "Manage global settings and UI overrides",
+            icon: Settings2,
+            url: "/u/a/configurations",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10"
         }
     ]
 

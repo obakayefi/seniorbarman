@@ -20,12 +20,21 @@ import api from "@/lib/axios";
 export default function EventsPage() {
     const [events, setEvents] = useState([])
     const [loadingEvents, setLoadingEvents] = useState(true)
+    const [coverImage, setCoverImage] = useState("linear-gradient(to left, rgba(0,0,0,0.001), rgba(0,0,0,0.001)), url('/premium_event_crowd.png')")
 
     useEffect(() => {
         fetch('/api/events?type=event')
             .then(res => res.json())
             .then(data => setEvents(data.events))
             .finally(() => setLoadingEvents(false))
+            
+        api.get('/settings')
+            .then(res => {
+                if (res.data.settings?.events_page_cover_image) {
+                    setCoverImage(`linear-gradient(to left, rgba(0,0,0,0.001), rgba(0,0,0,0.001)), url('${res.data.settings.events_page_cover_image}')`)
+                }
+            })
+            .catch(() => {})
     }, [])
 
     return (
@@ -37,7 +46,7 @@ export default function EventsPage() {
                 <div
                     className="absolute inset-0 bg-cover h-[50vh] lg:h-full bg-bottom bg-no-repeat z-0"
                     style={{
-                        backgroundImage: "linear-gradient(to left, rgba(0,0,0,0.001), rgba(0,0,0,0.001)), url('/premium_event_crowd.png')"
+                        backgroundImage: coverImage
                     }}
                 />
 

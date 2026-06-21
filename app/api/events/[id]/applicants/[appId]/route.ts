@@ -58,6 +58,17 @@ export async function PATCH(
         const updateData: any = { status };
         if (status === "rejected") {
             updateData.rejectionReason = reason;
+        } else if (status === "pending_form") {
+            updateData.formAnswers = [];
+            updateData.$unset = {
+                applicantPicture: 1,
+                submittedAt: 1,
+                rejectionReason: 1
+            };
+        } else {
+            updateData.$unset = {
+                rejectionReason: 1
+            };
         }
 
         const application = await EventApplication.findByIdAndUpdate(
@@ -100,6 +111,18 @@ export async function PATCH(
                 userId: applicant._id.toString(),
                 eventTitle: event.title || `${event.homeTeam} vs ${event.awayTeam}`,
                 reason: reason
+            });
+        } else if (status === "pending_form") {
+            const event = application.event as any;
+            const applicant = application.user as any;
+            const { notifyApplicantOfReset } = await import('@/lib/notifications');
+
+            await notifyApplicantOfReset({
+                userEmail: applicant.email,
+                userName: applicant.firstName || applicant.username,
+                userId: applicant._id.toString(),
+                eventTitle: event.title || `${event.homeTeam} vs ${event.awayTeam}`,
+                reason: reason || "Form reset by the organizer. Please update your details."
             });
         }
 

@@ -14,8 +14,33 @@ import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
 import { FloatingNav } from "@/components/ui/floating-navbar";
 import UpcomingMatches from "@/components/ui/upcoming-matches";
 import UpcomingEvents from "@/components/ui/upcoming-events";
+import { connectDB } from "@/lib/mongodb";
+import Setting from "@/models/Setting";
+import Event from "@/models/Event";
 
-export default function Home() {
+export default async function Home() {
+    await connectDB();
+    const settingsList = await Setting.find({});
+    const settings: Record<string, any> = {};
+    settingsList.forEach(s => settings[s.key] = s.value);
+
+    let eventCardBgImage = 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("/party-in-the-park.jpeg")';
+    if (settings.root_event_card_event_id && settings.root_event_card_event_id !== "none") {
+        try {
+            const event = await Event.findById(settings.root_event_card_event_id).lean();
+            if (event && event.image) {
+                eventCardBgImage = `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("${event.image}")`;
+            }
+        } catch (e) {
+            console.error("Failed to load event card background event");
+        }
+    }
+
+    const eventHeading = settings.root_event_card_heading || "Concerts &\nParties";
+    const eventSubheading = settings.root_event_card_subheading || "From Afrobeats concerts to exclusive nightlife events across the city.";
+    
+    const pageHeroHeading = settings.root_hero_heading || "Buy Tickets for the Moments You Show Up For";
+    const pageHeroSubheading = settings.root_hero_subheading || "Home matches. Concerts. Parties. One trusted place to get in.";
     // const navItems = [
     //     {
     //         name: "Home",
@@ -39,8 +64,8 @@ export default function Home() {
     return (
         <section className={'h-full lg:h-screen flex flex-col items-center justify-center gap-10 py-10'}>
             <div className="flex flex-col items-center px-4">
-                <h3 className={'text-3xl'}>Buy Tickets for the Moments You Show Up For</h3>
-                <p className={'text-zinc-500'}>Home matches. Concerts. Parties. One trusted place to get in.</p>
+                <h3 className={'text-3xl'}>{pageHeroHeading}</h3>
+                <p className={'text-zinc-500'}>{pageHeroSubheading}</p>
             </div>
 
             {/* Action Cards Split View */}
@@ -108,8 +133,7 @@ export default function Home() {
                         className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                         data-alt="Exciting concert crowd with stage lights and energetic atmosphere"
                         style={{
-                            backgroundImage:
-                                'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url("/party-in-the-park.jpeg")',
+                            backgroundImage: eventCardBgImage,
                             backgroundSize: 'cover'
 
                         }}
@@ -129,13 +153,12 @@ export default function Home() {
                             </span>
                         </div>
 
-                        <h3 className="text-white text-3xl font-bold leading-tight mb-2">
-                            Concerts &amp;<br />Parties
-
+                        <h3 className="text-white text-3xl font-bold leading-tight mb-2 whitespace-pre-line">
+                            {eventHeading}
                         </h3>
 
                         <p className="text-gray-300 text-sm mb-6 line-clamp-2">
-                            From Afrobeats concerts to exclusive nightlife events across the city.
+                            {eventSubheading}
                         </p>
 
                         <Link href={'/events'}>

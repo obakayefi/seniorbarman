@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
+import EventApplication from "@/models/EventApplication";
 import { getUserFromCookie } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,7 @@ export async function GET(
         const { id } = await params;
 
         // Fetch event details
-        const event = await Event.findById(id).lean();
+        const event = await Event.findById(id).lean() as any;
         if (!event) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
@@ -37,7 +38,7 @@ export async function GET(
             .sort({ createdAt: -1 })
             .lean();
 
-        // Calculate statistics
+        // Calculate ticket statistics
         const totalTickets = tickets.length;
         const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
 
@@ -49,12 +50,7 @@ export async function GET(
             const stand = ticket.stand || "Regular";
             categoryBreakdown[stand] = (categoryBreakdown[stand] || 0) + 1;
 
-            // Check-in status (using the same logic as the virtual 'status' if possible, 
-            // but here we check logs directly for accuracy in the report)
             if (ticket.checkInLogs && ticket.checkInLogs.length > 0) {
-                const lastLog = ticket.checkInLogs[ticket.checkInLogs.length - 1];
-                // Simple logic: if ever checked in, count it? 
-                // Or better: use the 'isInside' flag or current status.
                 if (ticket.isInside) checkedInCount++;
             }
         });
@@ -71,11 +67,46 @@ export async function GET(
             }))
         };
 
+        // ── Application revenue stats (only relevant for events with applicationFee) ──
+        let appStats = null;
+        if (event.requiresApplication) {
+            const applications = await EventApplication.find({ event: id })
+                .populate('user', 'firstName lastName email createdAt')
+                .sort({ createdAt: -1 })
+                .lean() as any[];
+
+            // Force cast to number to avoid NaN/string concat bugs
+            const applicationFee = Number(event.applicationFee) || 0;
+            const paidApps = applications.filter((a: any) => a.paymentStatus === 'paid');
+            const freeApps = applications.filter((a: any) => a.paymentStatus === 'free');
+            const unpaidApps = applications.filter((a: any) => a.paymentStatus === 'unpaid');
+
+            // Sum actual amountPaid per application.
+            // Fall back to event.applicationFee for legacy records created before amountPaid was tracked.
+            const applicationRevenue = paidApps.reduce((sum: number, a: any) => {
+                const amountPaid = Number(a.amountPaid) || 0;
+                const paid = amountPaid > 0 ? amountPaid : applicationFee;
+                return sum + paid;
+            }, 0);
+
+            appStats = {
+                totalApplications: applications.length,
+                paidCount: paidApps.length,
+                freeCount: freeApps.length,
+                unpaidCount: unpaidApps.length,
+                applicationFee,
+                applicationRevenue,
+                // Pass through applications for the table
+                applications,
+            };
+        }
+
         return NextResponse.json({
             success: true,
             event,
             tickets,
-            stats
+            stats,
+            appStats,
         }, { status: 200 });
 
     } catch (error: any) {
@@ -86,3 +117,4 @@ export async function GET(
         );
     }
 }
+

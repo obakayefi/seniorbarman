@@ -185,7 +185,7 @@ export default function EventManagementPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right p-4">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                                 <Button size="icon" variant="outline" asChild className="h-8 w-8 border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-orange-400">
                                                     <Link href={`/u/a/events/${event._id}`}>
                                                         <Eye size={14} />

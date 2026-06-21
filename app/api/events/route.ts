@@ -5,6 +5,7 @@ import { verifyAuth, getUserFromCookie } from "@/lib/auth";
 import { requireRole } from "@/lib/requireRole";
 import cloudinary from "@/lib/cloudinary";
 import upcomingEvents from "@/components/ui/upcoming-events";
+import { paginateArray } from "@/lib/pagination";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const eventType = searchParams.get("type");
     const forScanner = searchParams.get("forScanner") === "true";
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit") || "5";
 
     try {
         await connectDB()
@@ -21,7 +24,8 @@ export async function GET(req: Request) {
 
         const query: any = {
             type: eventType,
-            date: { $gte: today }
+            date: { $gte: today },
+            isArchived: { $ne: true }
         };
 
         // If for scanner, restrict based on role
@@ -76,8 +80,13 @@ export async function GET(req: Request) {
             }
         });
 
+        const paginated = paginateArray(filteredEvents, { page, limit });
+
         return NextResponse.json(
-            { events: filteredEvents },
+            { 
+                events: paginated.data,
+                pagination: paginated.pagination 
+            },
             { status: 200 }
         )
     } catch (error: any) {
