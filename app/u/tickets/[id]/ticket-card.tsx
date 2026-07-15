@@ -6,7 +6,7 @@ import { toPng } from "html-to-image";
 import Link from "next/link";
 import { MoveLeft } from "lucide-react";
 import Image from "next/image";
-import { CLUBS, extractTicketStatus, formatTime, giveLogo } from "@/lib/utils";
+import { CLUBS, extractTicketStatus, formatTime, formatEventTime, giveLogo } from "@/lib/utils";
 import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
@@ -62,18 +62,18 @@ export default function TicketCard() {
                     <div className='bg-zinc-950/90 border-zinc-800 border-1 rounded justify-center flex flex-col items-center mb-4 py-4 md:py-6 px-2 md:px-4'>
                         <section className='flex flex-col sm:flex-row items-center gap-4 sm:gap-6 md:gap-10'>
                             <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
-                                <h2 className="text-xs sm:text-sm lg:text-xl font-medium sm:font-normal">{eventInfo?.homeTeam}</h2>
-                                <Image className={'w-10 sm:w-12 md:w-24'} src={giveLogo(eventInfo?.homeTeam)} alt='logo'
+                                <h2 className="text-xs sm:text-sm lg:text-xl font-medium sm:font-normal">{eventInfo?.homeTeam?.name ?? eventInfo?.homeTeam}</h2>
+                                <Image className={'w-10 sm:w-12 md:w-24'} src={eventInfo?.homeTeam?.logo || giveLogo(eventInfo?.homeTeam?.name || eventInfo?.homeTeam)} alt='logo'
                                     height={100}
                                     width={150} />
                             </div>
                             <span
                                 className='text-base sm:text-xl text-orange-400 bg-zinc-900 p-1.5 sm:p-2 h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full'>vs</span>
                             <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
-                                <Image className={'w-10 sm:w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo'
+                                <Image className={'w-10 sm:w-12 md:w-24'} src={eventInfo?.awayTeam?.logo || giveLogo(eventInfo?.awayTeam?.name || eventInfo?.awayTeam)} alt='logo'
                                     height={100}
                                     width={125} />
-                                <h2 className="text-xs sm:text-sm lg:text-xl font-medium sm:font-normal">{eventInfo?.awayTeam}</h2>
+                                <h2 className="text-xs sm:text-sm lg:text-xl font-medium sm:font-normal">{eventInfo?.awayTeam?.name ?? eventInfo?.awayTeam}</h2>
                             </div>
                         </section>
 
@@ -86,7 +86,7 @@ export default function TicketCard() {
                             <div className="flex-col flex gap-0.5 items-center">
                                 <FaClock className='text-slate-400' size={16} />
                                 <p className='text-[10px] sm:text-xs text-slate-500 uppercase tracking-tight'>Time</p>
-                                <p className='text-xs sm:text-sm md:text-base text-orange-400 font-medium'>{formatTime(eventInfo?.time)}</p>
+                                <p className='text-xs sm:text-sm md:text-base text-orange-400 font-medium'>{formatEventTime(eventInfo?.date)}</p>
                             </div>
                             <div className="flex-col flex gap-0.5 items-center col-span-2 md:col-span-1">
                                 <BsFillCalendarDateFill className='text-slate-400' size={16} />

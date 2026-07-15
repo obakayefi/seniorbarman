@@ -4,6 +4,7 @@ import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
 import EventApplication from "@/models/EventApplication";
 import { getUserFromCookie } from "@/lib/auth";
+import { ROLES, ROLE_GROUPS } from "@/lib/roles";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,20 +16,23 @@ export async function GET(
         await connectDB();
         const user = await getUserFromCookie();
 
-        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
+        if (!user || !ROLE_GROUPS.CAN_CREATE_EVENT.includes(user.role as any)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { id } = await params;
 
         // Fetch event details
-        const event = await Event.findById(id).lean() as any;
+        const event = await Event.findById(id)
+            .populate('homeTeam', 'name logo')
+            .populate('awayTeam', 'name logo')
+            .lean() as any;
         if (!event) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
 
-        // Restrict organizers to their own events
-        if (user.role === 'organizer' && event.createdBy?.toString() !== user.id) {
+        // Restrict organizers and team managers to their own events
+        if (ROLE_GROUPS.PROVIDERS.includes(user.role as any) && event.createdBy?.toString() !== user.id) {
             return NextResponse.json({ error: "Forbidden: You can only view events you created" }, { status: 403 });
         }
 

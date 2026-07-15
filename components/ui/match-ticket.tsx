@@ -2,7 +2,7 @@ import { useQRCode } from "next-qrcode";
 import { SiTarom } from "react-icons/si";
 import { AlarmClock, Calendar } from "lucide-react";
 import { SlLocationPin } from "react-icons/sl";
-import { formattedDate, formatTime, getBaseUrl } from "@/lib/utils";
+import { formattedDate, formatTime, formatEventTime, getBaseUrl } from "@/lib/utils";
 import { MdOutlineEvStation, MdOutlineStadium } from "react-icons/md";
 import { PiChair } from "react-icons/pi";
 
@@ -13,9 +13,9 @@ export default function MatchTicket({ ticket, user }: { ticket: any, user?: any 
         <section className='w-full max-w-sm border-2 border-zinc-900 flex flex-col rounded-2xl bg-zinc-950/40 backdrop-blur-xl shadow-2xl overflow-hidden group hover:border-orange-500/30 transition-all duration-500'>
             <div className={'p-5 gap-1 items-center bg-black/40 border-b border-white/5 backdrop-blur-md transition-colors group-hover:bg-black/60'}>
                 <div className="flex flex-col items-center gap-1">
-                    <h2 className={'text-base sm:text-lg font-black text-white text-center leading-tight tracking-tight'}>{ticket?.event.homeTeam}</h2>
+                    <h2 className={'text-base sm:text-lg font-black text-white text-center leading-tight tracking-tight'}>{ticket?.event.homeTeam?.name ?? ticket?.event.homeTeam}</h2>
                     <span className={'text-orange-500/40 text-[10px] font-black uppercase tracking-[0.3em] my-1'}>vs</span>
-                    <h2 className={'text-base sm:text-lg font-black text-white text-center leading-tight tracking-tight'}>{ticket?.event.awayTeam}</h2>
+                    <h2 className={'text-base sm:text-lg font-black text-white text-center leading-tight tracking-tight'}>{ticket?.event.awayTeam?.name ?? ticket?.event.awayTeam}</h2>
                 </div>
             </div>
 
@@ -60,7 +60,7 @@ export default function MatchTicket({ ticket, user }: { ticket: any, user?: any 
                     <h4 className={'text-zinc-600 font-black text-[9px] uppercase tracking-widest'}>TIME</h4>
                     <div className={'flex items-center gap-2'}>
                         <AlarmClock size={14} className="text-orange-500" />
-                        <span className="text-zinc-200 text-xs font-bold"> {formatTime(ticket.event.time) || "16:00"}</span>
+                        <span className="text-zinc-200 text-xs font-bold"> {formatEventTime(ticket.event.date) || "16:00"}</span>
                     </div>
                 </section>
 

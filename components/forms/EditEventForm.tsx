@@ -57,6 +57,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     const [ticketTypes, setTicketTypes] = React.useState<{name: string, price: number}[]>([])
     const [eventVenue, setEventVenue] = React.useState('')
     const [files, setFiles] = React.useState<File[]>([])
+    const [teams, setTeams] = React.useState<any[]>([])
 
     const eventTitle = useInput('')
     const eventTime = useInput('16:00')
@@ -69,6 +70,21 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     const [showFormBuilder, setShowFormBuilder] = React.useState(false)
 
     const [resetKey, setResetKey] = React.useState(0)
+
+    React.useEffect(() => {
+        const fetchTeams = async () => {
+            try {
+                const res = await fetch("/api/teams")
+                const data = await res.json()
+                if (data.success) {
+                    setTeams(data.teams)
+                }
+            } catch (error) {
+                console.error("Failed to fetch teams:", error)
+            }
+        }
+        fetchTeams()
+    }, [])
 
     React.useEffect(() => {
         const fetchEvent = async () => {
@@ -210,16 +226,16 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                             <>
                                 <div className="flex flex-col gap-2">
                                     <Label className="text-gray-400">Home Team</Label>
-                                    <Select onValueChange={(value) => setHomeTeam(value)} value={homeTeam}>
-                                        <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50">
+                                    <Select disabled onValueChange={(value) => setHomeTeam(value)} value={homeTeam}>
+                                        <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50 opacity-70">
                                             <SelectValue placeholder='Home' />
                                         </SelectTrigger>
                                         <SelectContent className="bg-zinc-900 border-zinc-800">
-                                            {CLUBS.map(club => (
-                                                <SelectItem key={club.name} value={club.name}>
+                                            {teams.map(team => (
+                                                <SelectItem key={team._id} value={team._id}>
                                                     <div className="flex gap-2 items-center">
-                                                        <Image src={club.icon} alt="club icon" width={24} height={24} />
-                                                        <span>{club.name}</span>
+                                                        <Image src={team.logo || "/clubs/rangers-logo.png"} alt="team logo" width={24} height={24} className="rounded-full object-cover" />
+                                                        <span>{team.name}</span>
                                                     </div>
                                                 </SelectItem>
                                             ))}
@@ -234,11 +250,11 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                             <SelectValue placeholder='Away' />
                                         </SelectTrigger>
                                         <SelectContent className="bg-zinc-900 border-zinc-800">
-                                            {CLUBS.map(club => (
-                                                <SelectItem key={club.name} value={club.name}>
+                                            {teams.map(team => (
+                                                <SelectItem key={team._id} value={team._id}>
                                                     <div className="flex gap-2 items-center">
-                                                        <Image src={club.icon} alt="club icon" width={24} height={24} />
-                                                        <span>{club.name}</span>
+                                                        <Image src={team.logo || "/clubs/rangers-logo.png"} alt="team logo" width={24} height={24} className="rounded-full object-cover" />
+                                                        <span>{team.name}</span>
                                                     </div>
                                                 </SelectItem>
                                             ))}
