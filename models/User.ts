@@ -1,5 +1,5 @@
 import mongoose, { Schema, models } from "mongoose";
-
+import { ROLES } from "@/lib/roles";
 
 
 const userSchema = new Schema(
@@ -24,9 +24,9 @@ const userSchema = new Schema(
       minlength: [6, "Password must be at least 6 characters long"],
     },
     role: {
-      enum: ["user", "organizer", "bouncer", "admin", "dev"],
+      enum: Object.values(ROLES),
       type: String,
-      default: "user"
+      default: ROLES.USER
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date

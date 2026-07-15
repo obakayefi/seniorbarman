@@ -27,13 +27,15 @@ const EventSchema = new mongoose.Schema(
             default: 0
         },
         homeTeam: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Team",
             required: function () {
                 return this.type === "sports";
             },
         },
         awayTeam: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Team",
             required: function () {
                 return this.type === "sports";
             },

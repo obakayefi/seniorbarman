@@ -1,4 +1,5 @@
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import type { Role } from "@/lib/roles";
 
 export type StandType = "Popular Stand" | "Cover Stand Executive" | "Cover Stand Regular"
 
@@ -40,5 +41,5 @@ export interface IUser {
   name: string;
   email: string;
   id: string;
-  role: "admin" | "user" | "bouncer" | "dev" | "organizer";
+  role: Role;
 }
