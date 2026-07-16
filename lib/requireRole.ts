@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 import jwt from 'jsonwebtoken'
 import { NextResponse } from "next/server";
 import { verifyToken } from "./jwt";
+import type { Role } from "./roles";
 
-export async function requireRole(allowedRoles: string[]) {
+export async function requireRole(allowedRoles: Role[]) {
     const token = (await cookies()).get("token")?.value as string
 
     if (!token) {

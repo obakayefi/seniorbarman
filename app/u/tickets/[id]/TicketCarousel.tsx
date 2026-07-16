@@ -142,8 +142,8 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                 body: JSON.stringify({
                     recipientEmail: emailAddress,
                     ticketId: currentTicket._id || 'N/A',
-                    eventTitle: eventInfo?.homeTeam
-                        ? `${eventInfo.homeTeam} vs ${eventInfo.awayTeam}`
+                    eventTitle: (eventInfo?.homeTeam?.name || eventInfo?.homeTeam)
+                        ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}`
                         : eventInfo?.title,
                     eventDate: new Date(eventInfo?.date).toDateString(),
                     eventTime: formatEventTime(eventInfo?.date),
@@ -253,7 +253,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
             {/* Breadcrumb */}
             <div className="w-full text-center text-zinc-500 text-xs sm:text-sm mb-6 px-2">
-                <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam} vs ${eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-white">Pass {currentIndex + 1} of {totalTickets}</span>
+                <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-white">Pass {currentIndex + 1} of {totalTickets}</span>
             </div>
 
             {/* Ticket Type Filter */}
@@ -301,7 +301,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     </div>
 
                     <h1 className="text-lg sm:text-2xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
-                        {eventInfo?.homeTeam ? `${eventInfo.homeTeam} vs. ${eventInfo.awayTeam}` : eventInfo?.title}
+                    {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs. ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title}
                     </h1>
 
                     {/* Variant/Ticket Number */}

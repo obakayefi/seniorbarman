@@ -7,6 +7,7 @@ import HeroCountdown from "@/components/ui/hero-countdown";
 import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import Image from "next/image";
 
 export default function Hero({ nextMatch }: { nextMatch: any }) {
     return (
@@ -63,20 +64,49 @@ export default function Hero({ nextMatch }: { nextMatch: any }) {
                 </section>
             </div>
 
-            <section className={'flex w-full lg:w-auto lg:max-w-[50%] border border-zinc-900 rounded z-20 items-stretch mt-2 lg:mt-0 shrink-0'}>
-                <div className={'bg-black/80 flex-1 z-50 px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 2xl:px-8 2xl:py-6'}>
-                    <div className="border-b border-gray-800 pb-2 sm:pb-3">
-                        <h2 className={'text-[10px] sm:text-xs lg:text-sm 2xl:text-bapse text-gray-400 uppercase tracking-widest mb-1'}>Next Match</h2>
-                        <div className="flex font-semibold gap-2 text-sm sm:text-base lg:text-lg 2xl:text-xl items-center justify-between">
-                            <h2 className="flex-1 break-words leading-tight">Rangers FC</h2>
-                            <span className={'text-white h-5 w-5 sm:h-6 sm:w-6 text-[9px] sm:text-xs rounded-full bg-red-600 flex items-center justify-center font-normal shrink-0'}>
-                                vs
+            <section className={'flex w-full lg:w-[500px] border border-zinc-900 rounded z-20 items-stretch mt-2 lg:mt-0 shrink-0'}>
+                <div className={'bg-black/80 flex-1 z-50 px-4 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6 2xl:px-10 2xl:py-8'}>
+                    <div className="border-b border-gray-800 pb-3 sm:pb-4">
+                        <h2 className={'text-[10px] sm:text-xs lg:text-sm 2xl:text-base text-gray-400 uppercase tracking-widest mb-2'}>Next Match</h2>
+                        <div className="flex font-semibold gap-3 text-sm sm:text-base lg:text-lg 2xl:text-xl items-center justify-between w-full">
+                            {/* Home Team */}
+                            <div className="flex-1 flex items-center gap-2 justify-start min-w-0">
+                                <Image
+                                    src={(nextMatch?.homeTeam as any)?.logo || "/clubs/rangers-logo.png"}
+                                    alt="Home Logo"
+                                    width={28}
+                                    height={28}
+                                    className="object-contain shrink-0"
+                                />
+                                <h2 className="break-words leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {(nextMatch?.homeTeam as any)?.name ?? "Rangers FC"}
+                                </h2>
+                            </div>
+
+                            {/* Versus Badge */}
+                            <span className={'text-white h-6 w-6 sm:h-7 sm:w-7 text-[10px] sm:text-xs rounded-full bg-red-600 flex items-center justify-center font-bold shrink-0 mx-1'}>
+                                VS
                             </span>
-                            {nextMatch?.awayTeam ? (
-                                <h2 className="flex-1 text-right break-words leading-tight">{nextMatch.awayTeam}</h2>
-                            ) : (
-                                <div className="h-6 w-20 lg:w-24 bg-zinc-800 animate-pulse rounded mx-2" />
-                            )}
+
+                            {/* Away Team */}
+                            <div className="flex-1 flex items-center gap-2 justify-end min-w-0">
+                                {nextMatch?.awayTeam ? (
+                                    <>
+                                        <h2 className="break-words leading-tight whitespace-nowrap overflow-hidden text-ellipsis text-right">
+                                            {(nextMatch.awayTeam as any)?.name ?? nextMatch.awayTeam}
+                                        </h2>
+                                        <Image
+                                            src={(nextMatch.awayTeam as any)?.logo || "/clubs/rangers-logo.png"}
+                                            alt="Away Logo"
+                                            width={28}
+                                            height={28}
+                                            className="object-contain shrink-0"
+                                        />
+                                    </>
+                                ) : (
+                                    <div className="h-6 w-24 bg-zinc-800 animate-pulse rounded" />
+                                )}
+                            </div>
                         </div>
                     </div>
                     {nextMatch?.date ? (

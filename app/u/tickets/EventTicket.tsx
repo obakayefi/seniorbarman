@@ -101,14 +101,14 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
                             <div className="flex flex-col items-center gap-3 flex-1">
                                 <div className="p-2 bg-white/5 rounded-xl border border-white/5 shadow-inner">
                                     <Image
-                                        src={giveLogo(event.homeTeam)}
+                                        src={event.homeTeam?.logo || giveLogo(event.homeTeam)}
                                         className={'w-10 h-10 object-contain'}
                                         width={75}
                                         alt="logo"
                                         height={100}
                                     />
                                 </div>
-                                <h2 className='text-sm sm:text-base font-black text-white text-center leading-tight tracking-tight'>{event.homeTeam}</h2>
+                                <h2 className='text-sm sm:text-base font-black text-white text-center leading-tight tracking-tight'>{event.homeTeam?.name ?? event.homeTeam}</h2>
                             </div>
 
                             <div className="flex flex-col items-center gap-1">
@@ -117,10 +117,10 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
 
                             <div className="flex flex-col items-center gap-3 flex-1">
                                 <div className="p-2 bg-white/5 rounded-xl border border-white/5 shadow-inner">
-                                    <Image src={giveLogo(event.awayTeam)} className={'w-10 h-10 object-contain'} width={75} alt="logo"
+                                    <Image src={event.awayTeam?.logo || giveLogo(event.awayTeam)} className={'w-10 h-10 object-contain'} width={75} alt="logo"
                                         height={100} />
                                 </div>
-                                <h2 className='text-sm sm:text-base font-black text-white text-center leading-tight tracking-tight'>{event.awayTeam}</h2>
+                                <h2 className='text-sm sm:text-base font-black text-white text-center leading-tight tracking-tight'>{event.awayTeam?.name ?? event.awayTeam}</h2>
                             </div>
                         </section>
 

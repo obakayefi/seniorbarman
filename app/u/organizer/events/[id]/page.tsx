@@ -128,7 +128,7 @@ export default function EventDetailPage() {
                                 <span className="text-zinc-500 text-xs font-mono uppercase">ID: {event._id.slice(-8)}</span>
                             </div>
                             <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
-                                {event.type === 'sports' ? `${event.homeTeam} vs ${event.awayTeam}` : event.title}
+                                {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                             </h1>
                             <div className="flex flex-wrap items-center gap-4 mt-4 text-zinc-400 text-sm">
                                 <div className="flex items-center gap-1.5">

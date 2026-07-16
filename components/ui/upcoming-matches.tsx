@@ -33,9 +33,9 @@ function FootballMatch({ isNextMatch, match }: { isNextMatch?: boolean, match: a
                     {/* Teams */}
                     <div className="flex flex-col gap-4 items-center md:items-start">
                         <div className="flex items-center gap-4 w-full justify-center md:justify-start">
-                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight text-center md:text-left">{match.homeTeam}</h2>
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight text-center md:text-left">{(match.homeTeam as any)?.name ?? match.homeTeam}</h2>
                             <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest">VS</span>
-                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight text-center md:text-left">{match.awayTeam}</h2>
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight text-center md:text-left">{(match.awayTeam as any)?.name ?? match.awayTeam}</h2>
                         </div>
                     </div>
 

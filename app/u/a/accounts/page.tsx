@@ -5,19 +5,168 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Loader2, Search, Users, ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Loader2, Search, Users, ChevronLeft, ChevronRight, Trophy } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { hasSecureOchEnv } from "@/app/actions/getSecureEnv"
+
+// Inline component that handles the team_manager team-selection flow per row
+function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUpdated: (id: string, role: string) => void; canEscalateDev: boolean }) {
+  const [pendingRole, setPendingRole] = useState<string | null>(null)
+  const [selectedTeam, setSelectedTeam] = useState<string>("")
+  const [teams, setTeams] = useState<any[]>([])
+  const [loadingTeams, setLoadingTeams] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const handleRoleSelect = async (newRole: string) => {
+    if (newRole === "team_manager") {
+      setPendingRole("team_manager")
+      // Fetch teams to show the dropdown
+      setLoadingTeams(true)
+      try {
+        const res = await api.get('/teams')
+        setTeams(res.data.teams || [])
+      } catch {
+        toast.error("Failed to load teams")
+      } finally {
+        setLoadingTeams(false)
+      }
+    } else {
+      // All other roles: save immediately
+      setSaving(true)
+      try {
+        const res = await api.patch(`/admin/users/${user._id}/role`, { role: newRole })
+        if (res.data.success) {
+          toast.success("Role updated successfully")
+          onRoleUpdated(user._id, newRole)
+        }
+      } catch (err: any) {
+        toast.error(err.response?.data?.error || "Failed to update role")
+      } finally {
+        setSaving(false)
+      }
+    }
+  }
+
+  const handleSaveTeamManager = async () => {
+    if (!selectedTeam) {
+      toast.error("Please select a team before saving")
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await api.patch(`/admin/users/${user._id}/role`, { role: "team_manager", teamId: selectedTeam })
+      if (res.data.success) {
+        toast.success("Role updated — user assigned as Team Manager")
+        onRoleUpdated(user._id, "team_manager")
+        setPendingRole(null)
+        setSelectedTeam("")
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to update role")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setPendingRole(null)
+    setSelectedTeam("")
+  }
+
+  const getRoleBadgeStyle = (role: string) => {
+    switch (role) {
+      case 'dev': return 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+      case 'admin': return 'bg-red-500/10 text-red-500 border-red-500/20'
+      case 'bouncer': return 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+      case 'organizer': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+      case 'team_manager': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+      default: return 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex items-center gap-3">
+        <Badge variant="outline" className={`${getRoleBadgeStyle(user.role)} capitalize font-bold`}>
+          {user.role.replace('_', ' ')}
+        </Badge>
+        <Select
+          disabled={saving}
+          onValueChange={handleRoleSelect}
+          defaultValue={user.role}
+        >
+          <SelectTrigger className="w-36 bg-zinc-900 border-zinc-800 text-xs h-8 text-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="team_manager">Team Manager</SelectItem>
+            <SelectItem value="organizer">Organizer</SelectItem>
+            <SelectItem value="bouncer">Bouncer</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            {canEscalateDev && <SelectItem value="dev">Developer</SelectItem>}
+          </SelectContent>
+        </Select>
+        {saving && <Loader2 className="w-4 h-4 animate-spin text-orange-500" />}
+      </div>
+
+      {/* Team assignment panel — slides in when team_manager is selected */}
+      {pendingRole === "team_manager" && (
+        <div className="flex flex-col gap-2 w-full max-w-xs bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 animate-in slide-in-from-top-2 duration-200">
+          <p className="text-emerald-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <Trophy size={11} /> Assign to Team (required)
+          </p>
+          {loadingTeams ? (
+            <div className="flex items-center gap-2 text-zinc-500 text-xs">
+              <Loader2 className="w-3 h-3 animate-spin" /> Loading teams...
+            </div>
+          ) : (
+            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+              <SelectTrigger className="bg-zinc-900 border-zinc-800 text-xs h-8 text-white w-full">
+                <SelectValue placeholder="Select a team..." />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+                {teams.map(t => (
+                  <SelectItem key={t._id} value={t._id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <div className="flex gap-2 mt-1">
+            <Button
+              size="sm"
+              onClick={handleSaveTeamManager}
+              disabled={saving || !selectedTeam}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7"
+            >
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirm"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCancel}
+              className="text-zinc-500 hover:text-white text-xs h-7"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Accounts = () => {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
   const [canEscalateDev, setCanEscalateDev] = useState(false)
-  
+
   // Pagination state
   const [page, setPage] = useState(1)
   const [paginationData, setPaginationData] = useState<any>(null)
@@ -27,7 +176,7 @@ const Accounts = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
-      setPage(1) // Reset to page 1 on new search
+      setPage(1)
     }, 500)
     return () => clearTimeout(handler)
   }, [searchTerm])
@@ -38,44 +187,18 @@ const Accounts = () => {
       const res = await api.get(`/admin/users/all?page=${page}&limit=${limit}&search=${encodeURIComponent(debouncedSearch)}`)
       setUsers(res.data.users || [])
       setPaginationData(res.data.pagination)
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to fetch users")
     } finally {
       setLoading(false)
     }
   }, [page, debouncedSearch])
 
-  useEffect(() => {
-    hasSecureOchEnv().then(setCanEscalateDev)
-  }, [])
+  useEffect(() => { hasSecureOchEnv().then(setCanEscalateDev) }, [])
+  useEffect(() => { fetchUsers() }, [fetchUsers])
 
-  useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    setUpdatingUserId(userId)
-    try {
-      const res = await api.patch(`/admin/users/${userId}/role`, { role: newRole })
-      if (res.data.success) {
-        toast.success("Role updated successfully")
-        setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u))
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update role")
-    } finally {
-      setUpdatingUserId(null)
-    }
-  }
-
-  const getRoleBadgeStyle = (role: string) => {
-    switch (role) {
-      case 'dev': return 'bg-purple-500/10 text-purple-500 border-purple-500/20'
-      case 'admin': return 'bg-red-500/10 text-red-500 border-red-500/20'
-      case 'bouncer': return 'bg-orange-500/10 text-orange-500 border-orange-500/20'
-      case 'organizer': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-      default: return 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
-    }
+  const handleRoleUpdated = (userId: string, newRole: string) => {
+    setUsers(prev => prev.map(u => u._id === userId ? { ...u, role: newRole } : u))
   }
 
   return (
@@ -124,42 +247,26 @@ const Accounts = () => {
                       </TableCell>
                     </TableRow>
                   ) : users.map((user) => (
-                    <TableRow key={user._id} className="border-zinc-800 hover:bg-zinc-900/30 transition-colors">
-                      <TableCell className="font-bold text-white">
+                    <TableRow key={user._id} className="border-zinc-800 hover:bg-zinc-900/30 transition-colors align-top">
+                      <TableCell className="font-bold text-white pt-4">
                         {user.firstName} {user.lastName}
                       </TableCell>
-                      <TableCell className="text-zinc-400 font-mono text-xs">{user.email}</TableCell>
-                      <TableCell className="text-zinc-500 text-xs">
+                      <TableCell className="text-zinc-400 font-mono text-xs pt-4">{user.email}</TableCell>
+                      <TableCell className="text-zinc-500 text-xs pt-4">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <Badge variant="outline" className={`${getRoleBadgeStyle(user.role)} capitalize font-bold`}>
-                            {user.role}
-                          </Badge>
-                          <Select
-                            disabled={updatingUserId === user._id}
-                            onValueChange={(v) => handleRoleChange(user._id, v)}
-                            defaultValue={user.role}
-                          >
-                            <SelectTrigger className="w-32 bg-zinc-900 border-zinc-800 text-xs h-8 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="organizer">Organizer</SelectItem>
-                              <SelectItem value="bouncer">Bouncer</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              {canEscalateDev && <SelectItem value="dev">Developer</SelectItem>}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <TableCell className="text-right pt-3 pb-3">
+                        <RoleCell
+                          user={user}
+                          onRoleUpdated={handleRoleUpdated}
+                          canEscalateDev={canEscalateDev}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              
+
               {/* Pagination Controls */}
               {paginationData && paginationData.totalPages > 1 && (
                 <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-900 bg-zinc-950/50">

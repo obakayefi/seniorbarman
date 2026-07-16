@@ -38,7 +38,7 @@ export default async function Home() {
 
     const eventHeading = settings.root_event_card_heading || "Concerts &\nParties";
     const eventSubheading = settings.root_event_card_subheading || "From Afrobeats concerts to exclusive nightlife events across the city.";
-    
+
     const pageHeroHeading = settings.root_hero_heading || "Buy Tickets for the Moments You Show Up For";
     const pageHeroSubheading = settings.root_hero_subheading || "Home matches. Concerts. Parties. One trusted place to get in.";
     // const navItems = [
@@ -60,6 +60,16 @@ export default async function Home() {
     //         ),
     //     },
     // ];
+
+
+    //     Hmmm… can't reach this page
+    // It looks like tesorf.com closed the connection.
+    // Try:
+
+    // Checking the connection
+    // Checking the proxy and the firewall
+    // ERR_CONNECTION_CLOSED
+
 
     return (
         <section className={'h-full lg:h-screen flex flex-col items-center justify-center gap-10 py-10'}>
@@ -173,5 +183,5 @@ export default async function Home() {
             </div>
 
         </section>
-    );
+    )
 }

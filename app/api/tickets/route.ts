@@ -129,15 +129,9 @@ export async function GET(req: Request) {
         const userId = decoded.id;
 
         const cacheKey = `TICKETS_${userId}`
+        // Delete cache to force fresh fetch with populated team names/logos
+        await redis.del(cacheKey)
         const cachedResponse = await redis.get(cacheKey)
-
-        if (cachedResponse) {
-            // console.log(`[API] Using cached tickets for user: ${userId}`)
-            return NextResponse.json({
-                message: "Tickets fetched successfully",
-                tickets: cachedResponse,
-            });
-        }
 
         // Fetch events created by this user
         const tickets = await Ticket
@@ -155,7 +149,7 @@ export async function GET(req: Request) {
             });
         }
 
-        const events = await Event.find({})
+        const events = await Event.find({}).populate("homeTeam awayTeam", "name logo")
 
         // Debugging logs
         console.log(`[API] Fetching tickets. User: ${userId}`);

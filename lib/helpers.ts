@@ -1,8 +1,9 @@
 import api from "@/lib/axios";
+import { ROLES, ROLE_GROUPS } from "./roles";
 
 export const OnPayNow = async (payload: {}, ticketsToPrint: any[], eventId: string) => {
     // setLoading(true)
-    // try {
+    // try {\
     const result = await api.post("/payment", payload, { withCredentials: true })
     // console.log({ result: result.data })
     const paymentUrl = result.data.redirectTo
@@ -35,17 +36,20 @@ export const OnFreeOrder = async (ticketsToPrint: any[], eventId: string) => {
     }
 }
 
+/** Returns true if the user has elevated (admin/dev) privileges */
 export const HunchoRoleChecker = (role?: string) => {
     if (!role) return false
-    return role === 'dev' || role === 'admin'
+    return ROLE_GROUPS.ELEVATED.includes(role as any)
 }
 
+/** Returns true if the user is an organizer */
 export const OrganizerRoleChecker = (role?: string) => {
     if (!role) return false
-    return role === 'organizer'
+    return role === ROLES.ORGANIZER
 }
 
+/** Returns true if the user can create events (admin, dev, organizer, team_manager) */
 export const EventCreatorRoleChecker = (role?: string) => {
     if (!role) return false
-    return role === 'dev' || role === 'admin' || role === 'organizer'
+    return ROLE_GROUPS.CAN_CREATE_EVENT.includes(role as any)
 }

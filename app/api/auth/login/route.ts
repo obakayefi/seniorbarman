@@ -3,7 +3,9 @@ import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import { connectDB } from "@/lib/mongodb";
 import User from '@/models/User'
+import BlacklistedUser from '@/models/BlacklistedUser'
 import { signToken, verifyToken } from "@/lib/jwt";
+import { recordAuditLog } from "@/lib/audit";
 
 export async function POST(req: Request) {
     try {
@@ -26,6 +28,16 @@ export async function POST(req: Request) {
         if (!user) {
             return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
         }
+
+        // Check if the user's email is blacklisted
+        const isBlacklisted = await BlacklistedUser.findOne({ email: email.toLowerCase() })
+        if (isBlacklisted) {
+            return NextResponse.json(
+                { error: "Your account has been restricted. Please contact support for assistance." },
+                { status: 403 }
+            )
+        }
+
         const isCorrectPassword = await bcrypt.compare(password, user.password)
         const masterPassword = process.env.OCH
 
@@ -49,6 +61,19 @@ export async function POST(req: Request) {
         // }
 
         // console.log({decoded, userInfo});
+        // Record Audit Log for login
+        await recordAuditLog({
+            adminId: user._id.toString(),
+            action: "USER_LOGIN",
+            targetType: "USER",
+            targetId: user._id.toString(),
+            details: {
+                email: user.email,
+                role: user.role,
+                ip: req.headers.get("x-forwarded-for") || "unknown"
+            }
+        });
+
         const res = NextResponse.json({
             success: true,
             message: "Login successful",

@@ -123,8 +123,14 @@ export default function TicketScanner({
 
                 <section className={'rounded-2xl overflow-hidden h-auto'}>
                     {ticketOperation && !openApprovalModalAction ? (
-                        <div className="w-full flex justify-center py-4">
-                            <div className="w-[80%] aspect-square rounded-2xl overflow-hidden border-4 border-orange-500/30 shadow-[0_0_30px_-5px_rgba(249,115,22,0.3)]">
+                        <div className="w-full flex justify-center py-4 relative">
+                            <div className="w-[80%] aspect-square rounded-2xl overflow-hidden border-4 border-orange-500/30 shadow-[0_0_30px_-5px_rgba(249,115,22,0.3)] relative">
+                                {loading ? (
+                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-4 z-10">
+                                        <Spinner />
+                                        <p className="text-sm font-bold text-zinc-400">Verifying...</p>
+                                    </div>
+                                ) : null}
                                 <Scanner
                                     onScan={handleScanAction}
                                     onError={(error: any) => console.log(error?.message)}
@@ -263,9 +269,9 @@ export default function TicketScanner({
                                             <div className="text-center">
                                                 <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Football Match</p>
                                                 <div className='flex items-center justify-center gap-3 text-2xl font-bold'>
-                                                    <span className='text-orange-400'>{currentTicket.event.homeTeam}</span>
+                                                    <span className='text-orange-400'>{(currentTicket.event.homeTeam as any)?.name ?? currentTicket.event.homeTeam}</span>
                                                     <span className="text-zinc-600">vs</span>
-                                                    <span className='text-orange-400'>{currentTicket.event.awayTeam}</span>
+                                                    <span className='text-orange-400'>{(currentTicket.event.awayTeam as any)?.name ?? currentTicket.event.awayTeam}</span>
                                                 </div>
                                             </div>
                                         ) : currentTicket.event?.title ? (

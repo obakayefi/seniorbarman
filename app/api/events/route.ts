@@ -3,9 +3,12 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
 import { verifyAuth, getUserFromCookie } from "@/lib/auth";
 import { requireRole } from "@/lib/requireRole";
+import { canCreateEvent } from "@/lib/policies";
 import cloudinary from "@/lib/cloudinary";
 import upcomingEvents from "@/components/ui/upcoming-events";
 import { paginateArray } from "@/lib/pagination";
+
+import Team from "@/models/Team";
 
 export const dynamic = 'force-dynamic';
 
@@ -21,10 +24,13 @@ export async function GET(req: Request) {
         const user = await getUserFromCookie();
         const today = new Date()
         today.setHours(0, 0, 0, 0)
+        
+        // 2 hours ago date
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
         const query: any = {
             type: eventType,
-            date: { $gte: today },
+            date: { $gte: forScanner ? twoHoursAgo : today },
             isArchived: { $ne: true }
         };
 
@@ -32,11 +38,17 @@ export async function GET(req: Request) {
         if (forScanner && user) {
             if (user.role === 'organizer') {
                 query.createdBy = user.id;
+            } else if (user.role === 'team_manager') {
+                query.type = 'sports';
+                const managedTeams = await Team.find({ managers: user.id }).select("_id");
+                query.homeTeam = { $in: managedTeams.map((t: any) => t._id) };
             }
         }
 
         const upcomingActivities = await Event.find(query)
             .sort({ date: -1 })
+            .populate("homeTeam", "name logo")
+            .populate("awayTeam", "name logo")
             .lean()
 
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
@@ -56,10 +68,9 @@ export async function GET(req: Request) {
             // }
 
             // 2. It's today.
-            // If it's for the scanner, we show it as long as it's today (even if in progress)
+            // If it's for the scanner, we show it as long as it's within the 2-hour post-start window
             if (forScanner) {
-                // Return true if it's today or in the future
-                return eventDate >= today;
+                return eventDate >= twoHoursAgo;
             };
 
             // Otherwise, check against start time with 30-minute buffer for sales.
@@ -113,25 +124,25 @@ export async function POST(req: Request) {
         await connectDB();
 
         // Verify user has permission to create events
-        const authResult = await requireRole(["admin", "dev", "organizer"]);
+        const authResult = await requireRole(["admin", "dev", "organizer", "team_manager"]);
         if (authResult instanceof NextResponse) return authResult;
 
         const formData = await req.formData();
         const title = formData.get("eventTitle") as string;
         const type = formData.get("eventType") as string;
-
-        // Organizers can only create regular events, not sports
-        if (authResult.role === "organizer" && type === "sports") {
-            return NextResponse.json(
-                { error: "Organizers can only create regular events, not sports events" },
-                { status: 403 }
-            );
-        }
         const time = formData.get("eventTime") as string;
         const date = formData.get("eventDate") as string;
         const venue = formData.get("eventVenue") as string;
         const homeTeam = formData.get("homeTeam") as string;
         const awayTeam = formData.get("awayTeam") as string;
+
+        const isAllowed = await canCreateEvent(authResult as any, { type, homeTeam, awayTeam });
+        if (!isAllowed) {
+            return NextResponse.json(
+                { error: "Forbidden: You do not have permission to create this event." },
+                { status: 403 }
+            );
+        }
         const imageFile = formData.get("imageFile") as File;
         const ticketTypesStr = formData.get("ticketTypes") as string;
         const requiresApplication = formData.get("requiresApplication") === "true";

@@ -36,11 +36,11 @@ const Ticket = ({ ticket, toPrint, user }: { ticket: any, toPrint: boolean, user
                         <span className={'text-sm'}>{ticket.stand}</span>
                     </div>
                     <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
-                        <h2 className="text-sm">{ticket.event.homeTeam}</h2>
+                        <h2 className="text-sm">{ticket.event.homeTeam?.name ?? ticket.event.homeTeam}</h2>
                         <h2 className="text-sm bg-gray-200  rounded-full text-center h-6 w-6 flex items-center justify-center ">
                             vs
                         </h2>
-                        <h2 className="text-sm">{ticket.event.awayTeam}</h2>
+                        <h2 className="text-sm">{ticket.event.awayTeam?.name ?? ticket.event.awayTeam}</h2>
                     </div>
                     <div className='text-slate-700 gap-2 justify-center border-t-1 border-gray-200 pt-2 flex items-center text-center mb-1'>
                         <h2 className="text-sm">{formattedDate(ticket.event.date)}</h2>

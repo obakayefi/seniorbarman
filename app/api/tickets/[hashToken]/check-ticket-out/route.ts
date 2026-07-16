@@ -39,7 +39,7 @@ export async function POST(req: Request, { params }: Params) {
             )
         }
 
-        let ticket = await Ticket.findOne({ checkInToken: hashToken }).populate("event").populate("createdBy")
+        let ticket = await Ticket.findOne({ checkInToken: hashToken }).populate({ path: "event", populate: [{ path: "homeTeam" }, { path: "awayTeam" }] }).populate("createdBy")
 
         if (!ticket) {
             return NextResponse.json(

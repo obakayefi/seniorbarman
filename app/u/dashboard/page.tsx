@@ -33,6 +33,10 @@ const UserDashboard = () => {
       router.push(sitemap.bouncer.dashboard)
       return
     }
+    if (user.role === 'team_manager') {
+      router.push('/u/tm/dashboard')
+      return
+    }
 
     const fetchDashboardData = async () => {
       try {

@@ -39,8 +39,11 @@ export default function OrganizerManageEventsPage() {
     }, [])
 
     const filteredEvents = events.filter(event => {
+        const titleStr = event.type === 'sports' 
+            ? `${event.homeTeam?.name || ''} vs ${event.awayTeam?.name || ''}` 
+            : (event.title || '');
         const matchesSearch =
-            (event.title?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (titleStr.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (event.venue?.toLowerCase().includes(searchQuery.toLowerCase()));
 
         return matchesSearch;
@@ -99,7 +102,7 @@ export default function OrganizerManageEventsPage() {
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-white group-hover:text-orange-400 transition-colors">
-                                                    {event.title}
+                                                    {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                                                 </span>
                                                 <span className="text-[10px] text-zinc-500 font-mono uppercase">{event._id.slice(-8)}</span>
                                             </div>
