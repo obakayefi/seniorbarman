@@ -43,10 +43,10 @@ const DynamicRolesPage = () => {
     setPermissions(prev => {
       const currentRolePerms = prev[selectedRole] || []
       const hasPerm = currentRolePerms.includes(permId)
-      
+
       return {
         ...prev,
-        [selectedRole]: hasPerm 
+        [selectedRole]: hasPerm
           ? currentRolePerms.filter(p => p !== permId)
           : [...currentRolePerms, permId]
       }
@@ -86,11 +86,10 @@ const DynamicRolesPage = () => {
                 <button
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
-                  className={`p-4 text-left border-l-4 transition-all duration-200 ${
-                    selectedRole === role.id 
-                      ? "border-orange-500 bg-orange-500/10 text-white font-bold" 
+                  className={`p-4 text-left border-l-4 transition-all duration-200 ${selectedRole === role.id
+                      ? "border-orange-500 bg-orange-500/10 text-white font-bold"
                       : "border-transparent text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="capitalize">{role.name}</span>
@@ -109,8 +108,8 @@ const DynamicRolesPage = () => {
               <CardTitle className="text-white text-xl capitalize">{MOCK_ROLES.find(r => r.id === selectedRole)?.name} Permissions</CardTitle>
               <CardDescription className="text-zinc-500 mt-1">Enable or disable specific actions for this role.</CardDescription>
             </div>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={isSaving}
               className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
             >
@@ -126,18 +125,18 @@ const DynamicRolesPage = () => {
               {AVAILABLE_PERMISSIONS.map((perm) => {
                 const isChecked = currentPerms.includes(perm.id)
                 return (
-                  <div 
-                    key={perm.id} 
+                  <div
+                    key={perm.id}
                     className="flex items-start space-x-4 p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/50 hover:bg-zinc-900 transition-colors"
                   >
-                    <Checkbox 
-                      id={perm.id} 
+                    <Checkbox
+                      id={perm.id}
                       checked={isChecked}
                       onCheckedChange={() => handleTogglePermission(perm.id)}
                       className="mt-1 border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
                     />
                     <div className="flex-1 space-y-1">
-                      <label 
+                      <label
                         htmlFor={perm.id}
                         className="text-base font-medium text-white cursor-pointer"
                       >
@@ -151,7 +150,7 @@ const DynamicRolesPage = () => {
                 )
               })}
             </div>
-            
+
             <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <p className="text-sm text-blue-400">
                 <strong>Note:</strong> This is currently a dummy UI for conceptualizing dynamic roles. Changes made here are only stored in memory and do not affect the live system policies.
