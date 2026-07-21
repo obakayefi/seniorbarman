@@ -219,7 +219,7 @@ export default function TicketsForSalePage() {
 
             setZipStatus("Packaging ZIP file...")
             const dateAbbr = event?.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).replace(' ', '-') : 'TBA'
-            const eventName = (event?.title || `${event?.homeTeam}_vs_${event?.awayTeam}`).replace(/\s+/g, '_')
+            const eventName = (event?.title || `${event?.homeTeam?.name || event?.homeTeam}_vs_${event?.awayTeam?.name || event?.awayTeam}`).replace(/\s+/g, '_')
             const zipFileName = `Tickets_Sale_${eventName}_${dateAbbr}.zip`
             const content = await zip.generateAsync({ type: 'blob' })
             saveAs(content, zipFileName)
@@ -260,7 +260,7 @@ export default function TicketsForSalePage() {
                             Tickets For Sale
                         </h1>
                         <p className="text-zinc-400 mt-2">
-                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam}</strong>.
+                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam?.name || event?.homeTeam}</strong>.
                         </p>
                     </div>
                 </div>

@@ -103,7 +103,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             icon: "LayoutDashboard",
         },
         {
-            title: "My Events",
+            title: "Manage Activities",
             url: "/u/organizer/events/manage",
             icon: "FolderKanban",
         },
@@ -111,6 +111,11 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             title: "Create Event",
             url: sitemap.organizer.createEvent,
             icon: "CalendarPlus",
+        },
+        {
+            title: "Upcoming Matches",
+            url: sitemap.user.rangersTicketPurchase,
+            icon: "TbSoccerField",
         },
         {
             title: "Activity Log",
@@ -123,9 +128,9 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             icon: "ScanQrCode",
         },
         {
-            title: "Upcoming Matches",
-            url: sitemap.user.eventsTicketPurchase,
-            icon: "BiParty",
+            title: "Ticket Grant Wizard",
+            url: "/u/tm/ticket-grant-wizard",
+            icon: "Sparkles",
         },
         {
             title: "Tickets",

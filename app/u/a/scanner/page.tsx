@@ -634,6 +634,7 @@ const AdminTicketScanner = () => {
                                     scanError={scanError}
                                     onResetError={() => setScanError(null)}
                                     isAudition={selectedEventData?.isAudition}
+                                    isTeamManager={isTeamManager}
                                 />
 
                                 <div className="bg-zinc-950 p-6 text-center">

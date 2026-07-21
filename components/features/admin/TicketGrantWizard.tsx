@@ -391,34 +391,40 @@ export default function TicketGrantWizard() {
                                         value={ticketConfig.eventId}
                                         onValueChange={(v) => {
                                             const ev = events.find((e: any) => e._id === v)
+                                            const hName = ev?.homeTeam?.name || ev?.homeTeam || "";
+                                            const aName = ev?.awayTeam?.name || ev?.awayTeam || "";
                                             setTicketConfig({
                                                 ...ticketConfig,
                                                 eventId: v,
-                                                eventName: ev?.type === 'sports' ? `${ev.homeTeam} vs ${ev.awayTeam}` : ev?.title || 'Unknown',
+                                                eventName: ev?.type === 'sports' ? `${hName} vs ${aName}` : ev?.title || 'Unknown',
                                                 price: String(ev?.regularPrice || (eventType === 'sports' ? 500 : 5000))
                                             })
                                         }}
                                     >
-                                        <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white h-12">
+                                        <SelectTrigger className="bg-zinc-950 border-zinc-700 text-white h-12">
                                             <SelectValue placeholder={`Select a ${eventType === 'sports' ? 'match' : 'event'}`} />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
+                                        <SelectContent className="bg-zinc-950 border-zinc-700 text-white">
                                             {events.length === 0 ? (
                                                 <div className="p-4 text-center text-zinc-500 text-sm italic">
                                                     No upcoming {eventType === 'sports' ? 'matches' : 'events'} found
-                                                </div>
-                                            ) : events.map((ev: any) => (
-                                                <SelectItem key={ev._id} value={ev._id} className="cursor-pointer">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold">
-                                                            {ev.type === 'sports' ? `${ev.homeTeam} vs ${ev.awayTeam}` : ev.title}
-                                                        </span>
-                                                        <span className="text-[10px] text-zinc-500">
-                                                            {new Date(ev.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} @ {ev.venue}
-                                                        </span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
+                                                 </div>
+                                             ) : events.map((ev: any) => {
+                                                 const hName = ev?.homeTeam?.name || ev?.homeTeam || "";
+                                                 const aName = ev?.awayTeam?.name || ev?.awayTeam || "";
+                                                 return (
+                                                     <SelectItem key={ev._id} value={ev._id} className="cursor-pointer">
+                                                         <div className="flex flex-col">
+                                                             <span className="font-bold">
+                                                                 {ev.type === 'sports' ? `${hName} vs ${aName}` : ev.title}
+                                                             </span>
+                                                             <span className="text-[10px] text-zinc-500">
+                                                                 {new Date(ev.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} @ {ev.venue}
+                                                             </span>
+                                                         </div>
+                                                     </SelectItem>
+                                                 );
+                                             })}
                                         </SelectContent>
                                     </Select>
                                 )}

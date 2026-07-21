@@ -41,7 +41,11 @@ export async function GET(req: Request) {
             } else if (user.role === 'team_manager') {
                 query.type = 'sports';
                 const managedTeams = await Team.find({ managers: user.id }).select("_id");
-                query.homeTeam = { $in: managedTeams.map((t: any) => t._id) };
+                const managedTeamIds = managedTeams.map((t: any) => t._id);
+                query.$or = [
+                    { homeTeam: { $in: managedTeamIds } },
+                    { awayTeam: { $in: managedTeamIds } }
+                ];
             }
         }
 
