@@ -23,8 +23,10 @@ const TicketZipRenderer = forwardRef<HTMLDivElement, TicketZipRendererProps>(({ 
     if (!ticket) return null;
 
     const isSports = ticket.event?.type === 'sports';
+    const homeName = ticket.event?.homeTeam?.name || ticket.event?.homeTeam || "";
+    const awayName = ticket.event?.awayTeam?.name || ticket.event?.awayTeam || "";
     const eventTitle = isSports
-        ? `${ticket.event?.homeTeam} vs ${ticket.event?.awayTeam}`
+        ? `${homeName} vs ${awayName}`
         : (ticket.event?.title || "Special Event");
 
     if (compactView) {

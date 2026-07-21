@@ -58,8 +58,10 @@ const TicketPrintLayout = forwardRef<HTMLDivElement, TicketPrintLayoutProps>(({ 
             <div className="grid grid-cols-2 gap-x-[6mm] gap-y-[8mm]">
                 {tickets.map((ticket) => {
                     const isSports = ticket.event?.type === 'sports';
+                    const homeName = ticket.event?.homeTeam?.name || ticket.event?.homeTeam || "";
+                    const awayName = ticket.event?.awayTeam?.name || ticket.event?.awayTeam || "";
                     const eventTitle = isSports
-                        ? `${ticket.event?.homeTeam} vs ${ticket.event?.awayTeam}`
+                        ? `${homeName} vs ${awayName}`
                         : (ticket.event?.title || "Special Event");
 
                     return (

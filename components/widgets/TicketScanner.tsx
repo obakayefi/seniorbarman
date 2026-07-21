@@ -35,6 +35,7 @@ type Props = {
     ticketOperation: TicketOperationType;
     scanError?: ScanError;
     onResetError?: () => void;
+    isTeamManager?: boolean;
 }
 
 
@@ -58,7 +59,8 @@ export default function TicketScanner({
     resetTicketOperationAction,
     scanError,
     onResetError,
-    isAudition
+    isAudition,
+    isTeamManager
 }: Props) {
     const [showAnswers, setShowAnswers] = React.useState(false);
 
@@ -348,20 +350,22 @@ export default function TicketScanner({
 
                                         {/* Action Buttons */}
                                         <div className="pt-4">
-                                            {ticketOperation === 'check-in' ? (
-                                                <PreCheckInActions
-                                                    loading={loading}
-                                                    eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
-                                                    handleCheckingUserIn={handleCheckingUserInAction}
-                                                    handleBlockingTicket={handleBlockingTicketAction}
-                                                />
-                                            ) : (
-                                                <PostCheckInActions
-                                                    loading={loading}
-                                                    eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
-                                                    handleCheckingUserOut={handleCheckingUserOutAction}
-                                                    handleBlockingTicket={handleBlockingTicketAction}
-                                                />
+                                            {!isTeamManager && (
+                                                ticketOperation === 'check-in' ? (
+                                                    <PreCheckInActions
+                                                        loading={loading}
+                                                        eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
+                                                        handleCheckingUserIn={handleCheckingUserInAction}
+                                                        handleBlockingTicket={handleBlockingTicketAction}
+                                                    />
+                                                ) : (
+                                                    <PostCheckInActions
+                                                        loading={loading}
+                                                        eventMismatch={selectedEvent.toString() !== (currentTicket.event?._id || currentTicket.event)?.toString()}
+                                                        handleCheckingUserOut={handleCheckingUserOutAction}
+                                                        handleBlockingTicket={handleBlockingTicketAction}
+                                                    />
+                                                )
                                             )}
                                         </div>
                                     </div>

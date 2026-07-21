@@ -7,13 +7,16 @@ import mongoose from "mongoose";
 
 import { recordAuditLog } from "@/lib/audit";
 import { HunchoRoleChecker } from "@/lib/helpers";
+import { ROLES, ROLE_GROUPS } from "@/lib/roles";
+import Event from "@/models/Event";
+import { hasManagerAccessToTeams } from "@/services/teamService";
 
 export async function POST(req: Request) {
     try {
         await connectDB();
 
         const user = await getUserFromCookie();
-        const canAccessResource = HunchoRoleChecker(user?.role)
+        const canAccessResource = user && ROLE_GROUPS.CAN_CREATE_EVENT.includes(user.role as any);
 
         if (!canAccessResource) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,6 +29,18 @@ export async function POST(req: Request) {
                 { error: "Missing required fields: userId, eventId, quantity, price" },
                 { status: 400 }
             );
+        }
+
+        if (user.role === ROLES.TEAM_MANAGER) {
+            const event = await Event.findById(eventId).lean() as any;
+            if (!event) {
+                return NextResponse.json({ error: "Event not found" }, { status: 404 });
+            }
+            const isOwner = event.createdBy?.toString() === user.id;
+            const isManager = await hasManagerAccessToTeams(user.id, [event.homeTeam?.toString(), event.awayTeam?.toString()]);
+            if (!isOwner && !isManager) {
+                return NextResponse.json({ error: "Forbidden: You are not authorized for this event" }, { status: 403 });
+            }
         }
 
         const numQuantity = Number(quantity);
