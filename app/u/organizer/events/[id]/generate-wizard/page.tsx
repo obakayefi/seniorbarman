@@ -16,7 +16,7 @@ export default function TicketWizardPage() {
     const [event, setEvent] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
-    const [batches, setBatches] = useState<{stand: string, quantity: number}[]>([])
+    const [batches, setBatches] = useState<{ stand: string, quantity: number }[]>([])
 
     const [isGenerating, setIsGenerating] = useState(false)
     const [isGenerated, setIsGenerated] = useState(false)
@@ -37,12 +37,12 @@ export default function TicketWizardPage() {
                             price: t.price || 0
                         })))
                     }
-                    
+
                     const gateTickets = res.data.tickets.filter((t: any) =>
                         t.generatedBy === 'gate-sale' || t.generatedBy === 'wizard' || (!t.generatedBy && t.price === 0)
                     )
                     setExistingCount(gateTickets.length)
-   
+
                     const summary = gateTickets.reduce((acc: any, t: any) => {
                         acc[t.stand || "Regular"] = (acc[t.stand || "Regular"] || 0) + 1
                         return acc
@@ -133,7 +133,7 @@ export default function TicketWizardPage() {
                                 Generate Tickets Sale
                             </h1>
                             <p className="text-zinc-400 mt-2">
-                                Configure batches for <strong className="text-white">{event?.title || event?.homeTeam}</strong>.
+                                Configure batches for <strong className="text-white">{event?.title || event?.homeTeam?.name || event?.homeTeam}</strong>.
                             </p>
                         </div>
                         <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
@@ -257,7 +257,7 @@ export default function TicketWizardPage() {
                                 </p>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                                <Button asChild className="flex-1 bg-orange-500 hover:bg-orange-600 text-black font-black h-14">
+                                <Button asChild className="flex-1 bg-orange-500 hover:bg-orange-600 text-zinc-100 font-black h-14">
                                     <Link href={`/u/organizer/events/${id}/tickets-for-sale`}>
                                         <Download className="mr-2 h-5 w-5" /> Proceed to Printing
                                     </Link>
@@ -279,7 +279,7 @@ export default function TicketWizardPage() {
                                         setIsGenerated(false)
                                         setBatches(batches.map(b => ({ ...b, quantity: 0 })))
                                     }}
-                                    className="flex-1 border-zinc-800 text-white hover:bg-zinc-900 h-14 font-bold"
+                                    className="flex-1 border-zinc-800 text-zinc-900 hover:text-zinc-100 hover:bg-zinc-900 h-14 font-bold"
                                 >
                                     Generate More
                                 </Button>

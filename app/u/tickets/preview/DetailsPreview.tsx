@@ -9,7 +9,7 @@ import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
 import Ticket from "@/app/u/tickets/Ticket";
-import { formatTime, giveLogo } from "@/lib/utils";
+import { formatTime, formatEventTime, giveLogo } from "@/lib/utils";
 import NButton from "@/components/native/NButton";
 import Link from "next/link";
 import { ArrowBigLeft, MoveLeft } from "lucide-react";
@@ -57,18 +57,18 @@ export default function DetailsPreview() {
                     <div className='bg-zinc-950/90 border-zinc-800 border-1 rounded justify-center flex flex-col items-center mb-4 py-6'>
                         <section className='flex flex-col sm:flex-row items-center gap-6 md:gap-10 mr-0 md:mr-5'>
                             <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
-                                <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
-                                <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.homeTeam)} alt='logo'
+                                <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam?.name ?? eventInfo?.homeTeam}</h2>
+                                <Image className={'w-12 md:w-24'} src={eventInfo?.homeTeam?.logo || giveLogo(eventInfo?.homeTeam?.name || eventInfo?.homeTeam)} alt='logo'
                                     height={100}
                                     width={150} />
                             </div>
                             <span
                                 className='text-xl text-orange-400 bg-zinc-900 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
                             <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
-                                <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo'
+                                <Image className={'w-12 md:w-24'} src={eventInfo?.awayTeam?.logo || giveLogo(eventInfo?.awayTeam?.name || eventInfo?.awayTeam)} alt='logo'
                                     height={100}
                                     width={125} />
-                                <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam}</h2>
+                                <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam?.name ?? eventInfo?.awayTeam}</h2>
                             </div>
                         </section>
 
@@ -81,7 +81,7 @@ export default function DetailsPreview() {
                             <div className="flex-col flex gap items-center">
                                 <FaClock className='text-slate-400' />
                                 <p className='text-slate-500'>Time</p>
-                                <p className='text-orange-400'>{formatTime(eventInfo?.time)}</p>
+                                <p className='text-orange-400'>{formatEventTime(eventInfo?.date)}</p>
                             </div>
                             <div className="flex-col flex gap items-center">
                                 <BsFillCalendarDateFill className='text-slate-400' />

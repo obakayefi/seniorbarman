@@ -151,22 +151,28 @@ export default function TicketsForSalePage() {
             setZipStatus("Generating images at high speed...")
             
             if (downloadMode === 'individual') {
-                const folder = zip.folder(`Individual_Tickets`)
-                for (let i = 0; i < allTickets.length; i++) {
-                    const ticket = allTickets[i]
-                    const stand = ticket.stand || "Regular"
+                let processedCount = 0
+                for (const stand of uniqueStands) {
+                    const standFolder = zip.folder(stand)
+                    const standTickets = allTickets.filter(t => (t.stand || "Regular") === stand)
                     const template = templates[stand]
-                    if (template) {
+                    if (!template) continue
+
+                    for (let i = 0; i < standTickets.length; i++) {
+                        const ticket = standTickets[i]
                         ctx.clearRect(0, 0, canvas.width, canvas.height)
                         ctx.drawImage(template, 0, 0)
                         await drawTicketOverlays(ctx, ticket, canvas.width)
                         const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png', 0.95))
-                        if (blob) folder?.file(`${stand}_${ticket.ticketNumber}.png`, blob)
+                        if (blob) standFolder?.file(`${ticket.ticketNumber}.png`, blob)
+
+                        processedCount++
+                        if (processedCount % 10 === 0 || processedCount === allTickets.length) {
+                            setZipProgress(Math.floor((processedCount / allTickets.length) * 100))
+                        }
                     }
-                    if (i % 10 === 0) setZipProgress(Math.floor(((i + 1) / allTickets.length) * 100))
                 }
             } else {
-                const folder = zip.folder(`A4_Sheets`)
                 const a4Canvas = document.createElement('canvas')
                 const a4Ctx = a4Canvas.getContext('2d')
                 if (!a4Ctx) throw new Error("Could not get A4 canvas context")
@@ -185,41 +191,48 @@ export default function TicketsForSalePage() {
                 const marginX = (a4Canvas.width - (ticketWidthPx * cols)) / 2
                 const marginY = (a4Canvas.height - (ticketHeightPx * rows)) / 2
 
-                for (let i = 0; i < allTickets.length; i += ticketsPerPage) {
-                    const pageNum = Math.floor(i / ticketsPerPage) + 1
-                    a4Ctx.fillStyle = 'white'
-                    a4Ctx.fillRect(0, 0, a4Canvas.width, a4Canvas.height)
-                    for (let j = 0; j < ticketsPerPage; j++) {
-                        const ticketIdx = i + j
-                        if (ticketIdx >= allTickets.length) break
-                        const ticket = allTickets[ticketIdx]
-                        const stand = ticket.stand || "Regular"
-                        const template = templates[stand]
-                        if (template) {
+                let processedTickets = 0
+                for (const stand of uniqueStands) {
+                    const standFolder = zip.folder(stand)
+                    const standTickets = allTickets.filter(t => (t.stand || "Regular") === stand)
+                    const template = templates[stand]
+                    if (!template || !standTickets.length) continue
+
+                    for (let i = 0; i < standTickets.length; i += ticketsPerPage) {
+                        const pageNum = Math.floor(i / ticketsPerPage) + 1
+                        a4Ctx.fillStyle = 'white'
+                        a4Ctx.fillRect(0, 0, a4Canvas.width, a4Canvas.height)
+
+                        for (let j = 0; j < ticketsPerPage; j++) {
+                            const ticketIdx = i + j
+                            if (ticketIdx >= standTickets.length) break
+                            const ticket = standTickets[ticketIdx]
                             const col = j % cols
                             const row = Math.floor(j / cols)
                             const x = marginX + (col * ticketWidthPx)
                             const y = marginY + (row * ticketHeightPx)
-                            
+
                             ctx.clearRect(0, 0, canvas.width, canvas.height)
                             ctx.drawImage(template, 0, 0)
                             await drawTicketOverlays(ctx, ticket, canvas.width)
-                            
+
                             a4Ctx.drawImage(canvas, x, y, ticketWidthPx, ticketHeightPx)
                             a4Ctx.strokeStyle = '#E4E4E7'
                             a4Ctx.lineWidth = 1
                             a4Ctx.strokeRect(x, y, ticketWidthPx, ticketHeightPx)
                         }
+                        const blob = await new Promise<Blob | null>(resolve => a4Canvas.toBlob(resolve, 'image/png', 0.90))
+                        if (blob) standFolder?.file(`Page_${pageNum}.png`, blob)
+
+                        processedTickets += Math.min(ticketsPerPage, standTickets.length - i)
+                        setZipProgress(Math.floor((processedTickets / allTickets.length) * 100))
                     }
-                    const blob = await new Promise<Blob | null>(resolve => a4Canvas.toBlob(resolve, 'image/png', 0.90))
-                    if (blob) folder?.file(`Page_${pageNum}.png`, blob)
-                    setZipProgress(Math.floor(((i + ticketsPerPage) / allTickets.length) * 100))
                 }
             }
 
             setZipStatus("Packaging ZIP file...")
             const dateAbbr = event?.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).replace(' ', '-') : 'TBA'
-            const eventName = (event?.title || `${event?.homeTeam}_vs_${event?.awayTeam}`).replace(/\s+/g, '_')
+            const eventName = (event?.title || `${event?.homeTeam?.name || event?.homeTeam}_vs_${event?.awayTeam?.name || event?.awayTeam}`).replace(/\s+/g, '_')
             const zipFileName = `Tickets_Sale_${eventName}_${dateAbbr}.zip`
             const content = await zip.generateAsync({ type: 'blob' })
             saveAs(content, zipFileName)
@@ -260,7 +273,7 @@ export default function TicketsForSalePage() {
                             Tickets For Sale
                         </h1>
                         <p className="text-zinc-400 mt-2">
-                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam}</strong>.
+                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam?.name || event?.homeTeam}</strong>.
                         </p>
                     </div>
                 </div>

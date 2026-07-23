@@ -49,8 +49,11 @@ export async function GET(req: Request, { params }: Params) {
         }
 
         //Cache Miss - Retrieve from database
-        const event = await Event.findById(eventId);
-        const tickets = await Ticket.find({ createdBy: userId }).populate("event");
+        const event = await Event.findById(eventId).populate("homeTeam awayTeam", "name logo");
+        const tickets = await Ticket.find({ createdBy: userId }).populate({
+            path: "event",
+            populate: { path: "homeTeam awayTeam", select: "name logo" }
+        });
         const pendingOrders = await TicketOrder.find({ event: eventId, user: userId, isGenerated: false }).lean();
 
         const ticketCount: Record<string, Record<string, number>> = {};

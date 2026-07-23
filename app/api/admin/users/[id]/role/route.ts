@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import Team from "@/models/Team";
 import { getUserFromCookie } from "@/lib/auth";
 import { HunchoRoleChecker } from "@/lib/helpers";
 import { recordAuditLog } from "@/lib/audit";
@@ -11,10 +12,18 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const { role: newRole } = await req.json();
+        const { role: newRole, teamId } = await req.json();
 
         if (!newRole) {
             return NextResponse.json({ error: "Role is required" }, { status: 400 });
+        }
+
+        // team_manager requires a team assignment
+        if (newRole === "team_manager" && !teamId) {
+            return NextResponse.json(
+                { error: "A team must be selected when assigning the Team Manager role." },
+                { status: 400 }
+            );
         }
 
         const user = await getUserFromCookie();
@@ -30,8 +39,24 @@ export async function PATCH(
         }
 
         const oldRole = targetUser.role;
+
+        // If user was previously a team_manager, remove them from any team's managers array
+        if (oldRole === "team_manager") {
+            await Team.updateMany(
+                { managers: targetUser._id },
+                { $pull: { managers: targetUser._id } }
+            );
+        }
+
         targetUser.role = newRole;
         await targetUser.save();
+
+        // If new role is team_manager, add to the selected team's managers
+        if (newRole === "team_manager" && teamId) {
+            await Team.findByIdAndUpdate(teamId, {
+                $addToSet: { managers: targetUser._id }
+            });
+        }
 
         // Record Audit Log
         await recordAuditLog({
@@ -42,7 +67,8 @@ export async function PATCH(
             details: {
                 oldRole,
                 newRole,
-                userEmail: targetUser.email
+                userEmail: targetUser.email,
+                teamId: teamId || null,
             }
         });
 
@@ -55,3 +81,4 @@ export async function PATCH(
         );
     }
 }
+

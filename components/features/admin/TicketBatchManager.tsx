@@ -59,30 +59,43 @@ export default function TicketBatchManager({ eventId }: TicketBatchManagerProps)
 
             // Premium fits 8, Standard fits 20
             const ticketsPerPage = eventType === 'standard' ? 20 : 8;
-            const chunks = []
-            for (let i = 0; i < tickets.length; i += ticketsPerPage) {
-                chunks.push(tickets.slice(i, i + ticketsPerPage))
+            const uniqueStands = Array.from(new Set(tickets.map((t: any) => t.stand || "Regular")))
+            const zip = new JSZip()
+
+            let totalPages = 0
+            for (const stand of uniqueStands) {
+                const standTickets = tickets.filter((t: any) => (t.stand || "Regular") === stand)
+                totalPages += Math.ceil(standTickets.length / ticketsPerPage)
             }
 
-            const zip = new JSZip()
-            const folder = zip.folder(`batch-${batchId.slice(0, 8)}`)
+            let pageCounter = 0
+            for (const stand of uniqueStands) {
+                const standTickets = tickets.filter((t: any) => (t.stand || "Regular") === stand)
+                if (!standTickets.length) continue
+                const standFolder = zip.folder(stand)
 
-            for (let i = 0; i < chunks.length; i++) {
-                toast.loading(`Generating Page ${i + 1} of ${chunks.length}...`, { id: toastId })
-                setPrintData({ tickets: chunks[i], type: eventType })
+                const chunks = []
+                for (let i = 0; i < standTickets.length; i += ticketsPerPage) {
+                    chunks.push(standTickets.slice(i, i + ticketsPerPage))
+                }
 
-                // Wait for render and image processing
-                await new Promise(resolve => setTimeout(resolve, 500))
+                for (let i = 0; i < chunks.length; i++) {
+                    pageCounter++
+                    toast.loading(`Generating Page ${pageCounter} of ${totalPages} (${stand})...`, { id: toastId })
+                    setPrintData({ tickets: chunks[i], type: eventType })
 
-                if (printRef.current) {
-                    // Optimized for speed, file size, and printers, but keeping pixelRatio high for QR sharpness
-                    const dataUrl = await toJpeg(printRef.current, {
-                        quality: 0.85, 
-                        backgroundColor: 'white',
-                        pixelRatio: 2 
-                    })
-                    const base64Data = dataUrl.split(',')[1]
-                    folder?.file(`Page_${i + 1}.jpg`, base64Data, { base64: true })
+                    // Wait for render and image processing
+                    await new Promise(resolve => setTimeout(resolve, 500))
+
+                    if (printRef.current) {
+                        const dataUrl = await toJpeg(printRef.current, {
+                            quality: 0.85, 
+                            backgroundColor: 'white',
+                            pixelRatio: 2 
+                        })
+                        const base64Data = dataUrl.split(',')[1]
+                        standFolder?.file(`Page_${i + 1}.jpg`, base64Data, { base64: true })
+                    }
                 }
             }
 

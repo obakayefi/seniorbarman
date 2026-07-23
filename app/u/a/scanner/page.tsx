@@ -20,6 +20,8 @@ import { RiVerifiedBadgeFill } from "react-icons/ri";
 import { MdReport } from "react-icons/md";
 import { STATUS_TEXT } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useApp } from '@/context/AppContext';
+import { ROLES } from '@/lib/roles';
 
 // ... (PreCheckInActions, PostCheckInActions etc)
 
@@ -105,6 +107,9 @@ export type TicketOperationType = 'check-in' | 'check-out' | 'suspend' | 'scan' 
 
 const AdminTicketScanner = () => {
     const { SVG } = useQRCode()
+    const { user } = useApp()
+    const isTeamManager = user?.role === ROLES.TEAM_MANAGER
+
     const [monitorMode, setMonitorMode] = useState<boolean>(false)
     const [openApprovalModal, setOpenApprovalModal] = useState(false)
     const [currentTicket, setCurrentTicket] = useState<TicketSummary | null>(null)
@@ -116,7 +121,7 @@ const AdminTicketScanner = () => {
     const [isBlockingTicket, setIsBlockingTicket] = useState(false)
     const [canScan, setCanScan] = useState(false)
     const [selectedEvent, setSelectedEvent] = useState<string>('')
-    const [eventType, setEventType] = useState<'sports' | 'event'>('sports') // New state for event type
+    const [eventType, setEventType] = useState<'sports' | 'event'>('sports')
     const [computedStatus, setComputedStatus] = useState<string | null>(null)
     const [events, setEvents] = useState<any[]>([])
     const [eventStats, setEventStats] = useState<IEventStats>({
@@ -131,6 +136,13 @@ const AdminTicketScanner = () => {
     const [scanError, setScanError] = useState<any>(null)
     const selectTicketOperation = (operation: TicketOperationType) => setTicketOperation(operation)
     const resetTicketOperation = () => setTicketOperation(undefined)
+
+    // Force sports eventType for team managers
+    useEffect(() => {
+        if (isTeamManager && eventType !== 'sports') {
+            setEventType('sports')
+        }
+    }, [isTeamManager, eventType])
 
     // Load events when event type changes
     useEffect(() => {
@@ -183,8 +195,6 @@ const AdminTicketScanner = () => {
             return;
         }
 
-        // Show modal immediately with loading state
-        setOpenApprovalModal(true);
         setLoading(true);
         setCanScan(false);
         setScanError(null); // Clear previous errors
@@ -216,6 +226,8 @@ const AdminTicketScanner = () => {
                 status: ticketOperation === 'check-in' ? "IN" : "OUT",
                 success: true
             }, ...prev].slice(0, 10))
+            
+            setOpenApprovalModal(true);
         } catch (error: any) {
             console.error("Scan error:", error);
             const errorData = error.response?.data;
@@ -230,8 +242,7 @@ const AdminTicketScanner = () => {
                 ticket: errorData?.ticket || errorData?.details?.ticket // Check both locations
             });
 
-            // Keep modal open to show error
-            // setOpenApprovalModal(false); 
+            setOpenApprovalModal(true);
         } finally {
             setLoading(false);
         }
@@ -403,35 +414,37 @@ const AdminTicketScanner = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
                             <div className="space-y-4">
                                 {/* Event Type Toggle */}
-                                <div className="mb-4">
-                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-500 px-1 block mb-3">Event Type</label>
-                                    <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-2xl border border-white/5">
-                                        <button
-                                            onClick={() => setEventType('sports')}
-                                            className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'sports'
-                                                ? 'bg-orange-500 text-white shadow-lg'
-                                                : 'text-zinc-400 hover:text-white'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-center gap-2">
-                                                <TbSoccerField size={18} />
-                                                <span>Football</span>
-                                            </div>
-                                        </button>
-                                        <button
-                                            onClick={() => setEventType('event')}
-                                            className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'event'
-                                                ? 'bg-orange-500 text-white shadow-lg'
-                                                : 'text-zinc-400 hover:text-white'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Ticket size={18} />
-                                                <span>Regular Events</span>
-                                            </div>
-                                        </button>
+                                {!isTeamManager && (
+                                    <div className="mb-4">
+                                        <label className="text-xs font-black uppercase tracking-widest text-zinc-500 px-1 block mb-3">Event Type</label>
+                                        <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-2xl border border-white/5">
+                                            <button
+                                                onClick={() => setEventType('sports')}
+                                                className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'sports'
+                                                    ? 'bg-orange-500 text-white shadow-lg'
+                                                    : 'text-zinc-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <TbSoccerField size={18} />
+                                                    <span>Football</span>
+                                                </div>
+                                            </button>
+                                            <button
+                                                onClick={() => setEventType('event')}
+                                                className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${eventType === 'event'
+                                                    ? 'bg-orange-500 text-white shadow-lg'
+                                                    : 'text-zinc-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Ticket size={18} />
+                                                    <span>Regular Events</span>
+                                                </div>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 <label className="text-xs font-black uppercase tracking-widest text-zinc-500 px-1">Select Active Event</label>
                                 <div className="relative group">
@@ -446,7 +459,7 @@ const AdminTicketScanner = () => {
                                                         {event.type === 'sports' ? (
                                                             <div className="flex items-center gap-3">
                                                                 <TbSoccerField className="text-orange-500" />
-                                                                <span className="font-bold">{event.homeTeam} <span className="text-zinc-500 font-normal">v</span> {event.awayTeam}</span>
+                                                                <span className="font-bold">{(event.homeTeam as any)?.name ?? event.homeTeam} <span className="text-zinc-500 font-normal">v</span> {(event.awayTeam as any)?.name ?? event.awayTeam}</span>
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center gap-3">
@@ -621,6 +634,7 @@ const AdminTicketScanner = () => {
                                     scanError={scanError}
                                     onResetError={() => setScanError(null)}
                                     isAudition={selectedEventData?.isAudition}
+                                    isTeamManager={isTeamManager}
                                 />
 
                                 <div className="bg-zinc-950 p-6 text-center">

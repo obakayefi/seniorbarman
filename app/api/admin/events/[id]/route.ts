@@ -3,7 +3,10 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
 import EventApplication from "@/models/EventApplication";
+import User from "@/models/User";
 import { getUserFromCookie } from "@/lib/auth";
+import { ROLES, ROLE_GROUPS } from "@/lib/roles";
+import { hasManagerAccessToTeams } from "@/services/teamService";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,21 +18,37 @@ export async function GET(
         await connectDB();
         const user = await getUserFromCookie();
 
-        if (!user || !['admin', 'dev', 'organizer'].includes(user.role)) {
+        // Explicitly reference User to prevent tree-shaking
+        if (User) {
+            console.log("User model registered: ", User.modelName);
+        }
+
+        if (!user || !ROLE_GROUPS.CAN_CREATE_EVENT.includes(user.role as any)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { id } = await params;
 
         // Fetch event details
-        const event = await Event.findById(id).lean() as any;
+        const event = await Event.findById(id)
+            .populate('homeTeam', 'name logo')
+            .populate('awayTeam', 'name logo')
+            .lean() as any;
         if (!event) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
 
-        // Restrict organizers to their own events
-        if (user.role === 'organizer' && event.createdBy?.toString() !== user.id) {
+        // Restrict organizers and team managers to their own/managed events
+        if (user.role === ROLES.ORGANIZER && event.createdBy?.toString() !== user.id) {
             return NextResponse.json({ error: "Forbidden: You can only view events you created" }, { status: 403 });
+        }
+
+        if (user.role === ROLES.TEAM_MANAGER) {
+            const isCreator = event.createdBy?.toString() === user.id;
+            const isManagerOfTeams = await hasManagerAccessToTeams(user.id, [event.homeTeam?._id?.toString(), event.awayTeam?._id?.toString()]);
+            if (!isCreator && !isManagerOfTeams) {
+                return NextResponse.json({ error: "Forbidden: You can only view events for your managed teams" }, { status: 403 });
+            }
         }
 
         // Fetch all tickets for this event

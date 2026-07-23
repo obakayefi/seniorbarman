@@ -50,7 +50,7 @@ import React from "react";
 // ]
 
 
-import { Bug, CalendarPlus, History, LayoutDashboard, Settings2, ShieldUser, Sparkles, UsersRound } from "lucide-react"
+import { Bug, CalendarPlus, ClipboardList, FolderKanban, History, LayoutDashboard, Settings2, ShieldUser, Sparkles, UserPlus, UsersRound } from "lucide-react"
 import { BiParty } from 'react-icons/bi'
 import { TbSoccerField } from 'react-icons/tb'
 
@@ -73,7 +73,10 @@ const IconMap: Record<string, React.ComponentType> = {
   History,
   Bug,
   Settings2,
-  CalendarDays
+  CalendarDays,
+  FolderKanban,
+  ClipboardList,
+  UserPlus,
 }
 
 import { toast } from "sonner"

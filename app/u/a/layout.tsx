@@ -8,7 +8,7 @@ type Props = { children: React.ReactNode }
 const AdminLayout = async ({ children }: Props) => {
     const user = await getUserFromCookie()
 
-    if (user?.role !== "admin" && user?.role !== "bouncer" && user?.role !== "dev" && user?.role !== "organizer") 
+    if (user?.role !== "admin" && user?.role !== "bouncer" && user?.role !== "dev" && user?.role !== "organizer" && user?.role !== "team_manager") 
         redirect('/no-access')
 
     return (

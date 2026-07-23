@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 
 import { recordAuditLog } from "@/lib/audit";
 import { HunchoRoleChecker } from "@/lib/helpers";
+import { ROLE_GROUPS } from "@/lib/roles";
 
 // POST: Admin creates or looks up a user by email
 export async function POST(req: Request) {
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
         await connectDB();
 
         const user = await getUserFromCookie();
-        const canAccessResource = HunchoRoleChecker(user?.role)
+        const canAccessResource = user && ROLE_GROUPS.CAN_CREATE_EVENT.includes(user.role as any);
 
         if (!canAccessResource) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -101,7 +102,7 @@ export async function GET(req: Request) {
         await connectDB();
 
         const user = await getUserFromCookie();
-        const canAccessResource = HunchoRoleChecker(user?.role)
+        const canAccessResource = user && ROLE_GROUPS.CAN_CREATE_EVENT.includes(user.role as any);
 
         if (!canAccessResource) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

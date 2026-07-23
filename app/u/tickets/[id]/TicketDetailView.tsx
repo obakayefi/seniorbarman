@@ -189,18 +189,18 @@ export default function TicketDetailView() {
                             <div className='bg-zinc-950/90 border-zinc-900 border-2 rounded-xl justify-center flex flex-col items-center mb-4 py-6'>
                                 <section className='flex flex-col sm:flex-row items-center gap-6 md:gap-10 mr-0 md:mr-5'>
                                     <div className='flex md:flex-row flex-col-reverse text-center gap-2 items-center'>
-                                        <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam}</h2>
-                                        <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.homeTeam)} alt='logo'
+                                        <h2 className="text-sm lg:text-xl">{eventInfo?.homeTeam?.name ?? eventInfo?.homeTeam}</h2>
+                                        <Image className={'w-12 md:w-24'} src={eventInfo?.homeTeam?.logo || giveLogo(eventInfo?.homeTeam)} alt='logo'
                                             height={100}
                                             width={150} />
                                     </div>
                                     <span
                                         className='text-xl text-orange-400 bg-zinc-900 p-2 h-10 w-10 flex items-center justify-center rounded-full'>vs</span>
                                     <div className='flex md:flex-row flex-col text-center gap-2 items-center'>
-                                        <Image className={'w-12 md:w-24'} src={giveLogo(eventInfo?.awayTeam)} alt='logo'
+                                        <Image className={'w-12 md:w-24'} src={eventInfo?.awayTeam?.logo || giveLogo(eventInfo?.awayTeam)} alt='logo'
                                             height={100}
                                             width={125} />
-                                        <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam}</h2>
+                                        <h2 className="text-sm lg:text-xl">{eventInfo?.awayTeam?.name ?? eventInfo?.awayTeam}</h2>
                                     </div>
                                 </section>
 

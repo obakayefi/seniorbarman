@@ -2,7 +2,7 @@ import { TicketStandIcon } from '@/components/icons'
 import { TicketIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useQRCode } from "next-qrcode";
-import { extractTicketStatus, formatTime, getBaseUrl } from "@/lib/utils";
+import { extractTicketStatus, formatTime, formatEventTime, getBaseUrl } from "@/lib/utils";
 
 const Ticket = ({ ticket, toPrint, user }: { ticket: any, toPrint: boolean, user?: any }) => {
     const { Image } = useQRCode();
@@ -36,16 +36,16 @@ const Ticket = ({ ticket, toPrint, user }: { ticket: any, toPrint: boolean, user
                         <span className={'text-sm'}>{ticket.stand}</span>
                     </div>
                     <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
-                        <h2 className="text-sm">{ticket.event.homeTeam}</h2>
+                        <h2 className="text-sm">{ticket.event.homeTeam?.name ?? ticket.event.homeTeam}</h2>
                         <h2 className="text-sm bg-gray-200  rounded-full text-center h-6 w-6 flex items-center justify-center ">
                             vs
                         </h2>
-                        <h2 className="text-sm">{ticket.event.awayTeam}</h2>
+                        <h2 className="text-sm">{ticket.event.awayTeam?.name ?? ticket.event.awayTeam}</h2>
                     </div>
                     <div className='text-slate-700 gap-2 justify-center border-t-1 border-gray-200 pt-2 flex items-center text-center mb-1'>
                         <h2 className="text-sm">{formattedDate(ticket.event.date)}</h2>
                         <span className={'text-gray-300'}>|</span>
-                        <h2 className="text-sm">{formatTime(ticket.event.time) || "16:00"}</h2>
+                        <h2 className="text-sm">{formatEventTime(ticket.event?.date) || formatTime(ticket.event?.time) || "TBA"}</h2>
                     </div>
                     {(user || ticket.createdBy) && (
                         <div className='text-slate-500 text-[10px] uppercase font-bold text-center mb-2'>

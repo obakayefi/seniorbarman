@@ -30,7 +30,41 @@ const AuditPage = () => {
         if (action.includes('DELETE')) return 'bg-red-500/10 text-red-500'
         if (action.includes('CHANGE') || action.includes('UPDATE')) return 'bg-orange-500/10 text-orange-500'
         if (action.includes('GRANT')) return 'bg-purple-500/10 text-purple-500'
+        if (action.includes('LOGIN')) return 'bg-blue-500/10 text-blue-400'
+        if (action.includes('APPROVE')) return 'bg-emerald-500/10 text-emerald-400'
+        if (action.includes('REJECT')) return 'bg-red-500/10 text-red-400'
         return 'bg-zinc-500/10 text-zinc-500'
+    }
+
+    const formatDetails = (action: string, details: any): string => {
+        if (!details) return 'No details recorded'
+        try {
+            switch (action) {
+                case 'USER_LOGIN':
+                    return `Signed in successfully — IP: ${details.ip || 'unknown'} · Role: ${details.role || '?'}`
+                case 'UPDATE_USER_ROLE':
+                    return `Changed role of ${details.userEmail || 'user'} from "${details.oldRole || '?'}" → "${details.newRole || '?'}"${details.teamId ? ' · assigned to a team' : ''}`
+                case 'APPROVE_PROVIDER_REQUEST':
+                    return `Approved ${details.email || 'user'} as ${(details.role || '').replace(/_/g, ' ')}${details.teamId ? ' · assigned to a team' : ''}`
+                case 'REJECT_PROVIDER_REQUEST':
+                    return `Rejected ${details.email || 'user'} (${(details.role || '').replace(/_/g, ' ')})${details.reason ? ` — Reason: ${details.reason}` : ''}`
+                case 'CREATE_EVENT':
+                    return `Created event "${details.title || 'Untitled'}" at ${details.venue || 'unknown venue'}`
+                case 'UPDATE_EVENT':
+                    return `Updated event "${details.title || 'Untitled'}"`
+                case 'DELETE_EVENT':
+                    return `Deleted event "${details.title || 'Untitled'}"`
+                default:
+                    if (typeof details === 'object') {
+                        return Object.entries(details)
+                            .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+                            .join(' · ')
+                    }
+                    return String(details)
+            }
+        } catch {
+            return JSON.stringify(details)
+        }
     }
 
     return (
@@ -95,11 +129,11 @@ const AuditPage = () => {
                                             </div>
                                         </TableCell>
                                         <TableCell className="max-w-xs">
-                                            <div className="bg-zinc-900/50 p-2 rounded border border-zinc-800/50 flex items-start gap-2">
+                                            <div className="bg-zinc-900/50 p-2.5 rounded-md border border-zinc-800/50 flex items-start gap-2">
                                                 <Info size={12} className="text-zinc-600 mt-0.5 flex-shrink-0" />
-                                                <div className="text-[10px] text-zinc-400 font-mono overflow-auto max-h-16">
-                                                    {JSON.stringify(log.details, null, 2)}
-                                                </div>
+                                                <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                                    {formatDetails(log.action, log.details)}
+                                                </p>
                                             </div>
                                         </TableCell>
                                     </TableRow>

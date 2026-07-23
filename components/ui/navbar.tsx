@@ -17,6 +17,7 @@ import NButton from "@/components/native/NButton";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import NotificationHub from "./NotificationHub";
+import { ROLES, ROLE_GROUPS } from "@/lib/roles";
 
 export default function NativeNavbar
     () {
@@ -57,7 +58,7 @@ export default function NativeNavbar
         },
         {
             name: "Dashboard",
-            link: ((user?.role === "admin") || (user?.role === "bouncer") || (user?.role === "dev")) ? "/u/a/dashboard" : (user?.role === "organizer") ? "/u/organizer/dashboard" : "/u/dashboard",
+            link: ROLE_GROUPS.STAFF.includes(user?.role as any) ? "/u/a/dashboard" : (user?.role === ROLES.ORGANIZER) ? "/u/organizer/dashboard" : "/u/dashboard",
         },
         {
             name: "How It Works",

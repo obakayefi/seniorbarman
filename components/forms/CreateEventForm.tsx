@@ -15,13 +15,21 @@ import useInput from "@/hooks/useInput"
 import { Label } from "../ui/label"
 import { ApplyDatePicker } from "./ApplyDatePicker"
 import { Spinner } from "../ui/spinner"
-import { CLUBS, STADIUMS } from "@/lib/utils"
+import { STADIUMS } from "@/lib/utils"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { FileUpload } from "../ui/file-upload"
 import { useApp } from "@/context/AppContext"
 import EventFormBuilder, { FormField } from "./EventFormBuilder"
 import { ChevronDown, ChevronUp, ClipboardList } from "lucide-react"
+import { ROLES } from "@/lib/roles"
+
+type DBTeam = {
+    _id: string
+    name: string
+    logo?: string
+    stadium?: string
+}
 
 function formatDate(date: Date | undefined) {
     if (!date) return ""
@@ -38,12 +46,43 @@ function isValidDate(date: Date | undefined) {
 const CreateEventForm = () => {
     const router = useRouter()
     const { user } = useApp()
-    const isOrganizer = user?.role === "organizer"
+    const isOrganizer = user?.role === ROLES.ORGANIZER
+    const isTeamManager = user?.role === ROLES.TEAM_MANAGER
 
     const [currentEventType, setCurrentEventType] = useState(isOrganizer ? "event" : "sports")
     const [eventDate, setEventDate] = useState<Date | undefined>(undefined)
     const [month, setMonth] = useState<Date | undefined>(undefined)
     const [dateValue, setDateValue] = useState<Date | undefined>(undefined)
+
+    // --- DB Clubs (fetched from /api/teams) ---
+    const [dbTeams, setDbTeams] = useState<DBTeam[]>([])
+    // The team manager's own managed team (locked as home team)
+    const [myTeam, setMyTeam] = useState<DBTeam | null>(null)
+
+    useEffect(() => {
+        // Fetch all clubs from DB for the dropdowns
+        fetch("/api/teams")
+            .then(r => r.json())
+            .then(data => { if (data.teams) setDbTeams(data.teams) })
+            .catch(() => { })
+    }, [])
+
+    useEffect(() => {
+        // Fetch the team manager's own team to lock as home team
+        if (isTeamManager) {
+            fetch("/api/teams/mine")
+                .then(r => r.json())
+                .then(data => {
+                    if (data.teams && data.teams.length > 0) {
+                        const team = data.teams[0]
+                        setMyTeam(team)
+                        setHomeTeam(team._id)
+                        if (team.stadium) setEventVenue(team.stadium)
+                    }
+                })
+                .catch(() => { })
+        }
+    }, [isTeamManager])
 
     useEffect(() => {
         const now = new Date()
@@ -52,9 +91,9 @@ const CreateEventForm = () => {
 
     // --- Ticket Types ---
     const initialSportsTickets = [
-        { name: "Popular Stand", price: 0 },
-        { name: "Regular Stand", price: 0 },
-        { name: "Executive Stand", price: 0 },
+        { name: "Popular", price: 500 },
+        { name: "Regular", price: 2000 },
+        { name: "Executive", price: 10000 },
     ]
     const initialEventTickets = [{ name: "Regular", price: 0 }]
     const [ticketTypes, setTicketTypes] = useState<{ name: string; price: number }[]>(
@@ -62,9 +101,12 @@ const CreateEventForm = () => {
     )
 
     useEffect(() => {
-        if (user?.role === "organizer") {
+        if (user?.role === ROLES.ORGANIZER) {
             setCurrentEventType("event")
             setTicketTypes(initialEventTickets)
+        } else if (user?.role === ROLES.TEAM_MANAGER) {
+            setCurrentEventType("sports")
+            setTicketTypes(initialSportsTickets)
         }
     }, [user?.role])
 
@@ -89,7 +131,8 @@ const CreateEventForm = () => {
 
     // --- Other form state ---
     const [isLoading, setIsLoading] = useState(false)
-    const [homeTeam, setHomeTeam] = useState("Rangers International FC")
+    // homeTeam and awayTeam store MongoDB _id strings
+    const [homeTeam, setHomeTeam] = useState("")
     const [awayTeam, setAwayTeam] = useState("")
     const [eventVenue, setEventVenue] = useState("")
     const [files, setFiles] = useState<File[]>([])
@@ -116,8 +159,9 @@ const CreateEventForm = () => {
         setIsAudition(false); setRequestPicture(false); setAllowNoTickets(false)
 
         if (type === "sports") {
-            setHomeTeam("Rangers International FC")
-            setEventVenue("Nnamdi Azikiwe Stadium")
+            // Restore the team manager's locked home team or clear for admin
+            setHomeTeam(myTeam?._id ?? "")
+            setEventVenue(myTeam?.stadium ?? "")
             setTicketTypes(initialSportsTickets)
         } else {
             setHomeTeam(""); setEventVenue("")
@@ -236,9 +280,13 @@ const CreateEventForm = () => {
                             <SelectValue placeholder="Select Event Type" />
                         </SelectTrigger>
                         <SelectContent className="text-white border-zinc-800">
-                            {!isOrganizer && <SelectItem value="sports">Sports</SelectItem>}
-                            <SelectItem value="event">Regular Event</SelectItem>
-                            <SelectItem value="audition">Audition</SelectItem>
+                            {user?.role !== ROLES.ORGANIZER && <SelectItem value="sports">Sports</SelectItem>}
+                            {user?.role !== ROLES.TEAM_MANAGER && (
+                                <>
+                                    <SelectItem value="event">Regular Event</SelectItem>
+                                    <SelectItem value="audition">Audition</SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
 
@@ -248,17 +296,35 @@ const CreateEventForm = () => {
                                 {/* Home Team */}
                                 <div className="flex flex-col gap-2">
                                     <Label className="text-gray-400">Home Team</Label>
-                                    <Select onValueChange={setHomeTeam} value={homeTeam}>
-                                        <SelectTrigger className="w-full text-white border-zinc-800"><SelectValue placeholder="Home" /></SelectTrigger>
-                                        <SelectContent className="border-red-800">
-                                            {CLUBS.map((club, idx) => (
-                                                <SelectItem key={club.name + idx} value={club.name}>
-                                                    <Image src={club.icon} alt="club icon" width={32} height={100} />
-                                                    <span>{club.name}</span>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    {isTeamManager ? (
+                                        // Team managers are locked to their managed team as home team
+                                        <div className="flex items-center gap-3 px-3 py-2 rounded-md border border-zinc-700 bg-zinc-900/60 opacity-80 cursor-not-allowed">
+                                            {myTeam?.logo && (
+                                                <Image
+                                                    src={myTeam.logo}
+                                                    alt={myTeam.name}
+                                                    width={28}
+                                                    height={28}
+                                                />
+                                            )}
+                                            <span className="text-sm text-white">
+                                                {myTeam ? myTeam.name : "Loading..."}
+                                            </span>
+                                            <span className="ml-auto text-[10px] text-zinc-500 uppercase tracking-wider">Locked</span>
+                                        </div>
+                                    ) : (
+                                        <Select onValueChange={setHomeTeam} value={homeTeam}>
+                                            <SelectTrigger className="w-full text-white border-zinc-800"><SelectValue placeholder="Home" /></SelectTrigger>
+                                            <SelectContent className="border-red-800">
+                                                {dbTeams.map((team) => (
+                                                    <SelectItem key={team._id} value={team._id}>
+                                                        {team.logo && <Image src={team.logo} alt="club icon" width={32} height={32} />}
+                                                        <span>{team.name}</span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 </div>
 
                                 {/* Away Team */}
@@ -267,14 +333,17 @@ const CreateEventForm = () => {
                                     <Select onValueChange={setAwayTeam} value={awayTeam}>
                                         <SelectTrigger className="w-full text-white border-zinc-800"><SelectValue placeholder="Away" /></SelectTrigger>
                                         <SelectContent className="w-full">
-                                            {CLUBS.map((club, idx) => (
-                                                <SelectItem key={club.name + idx} value={club.name}>
-                                                    <div className="flex gap-4 items-center w-full">
-                                                        <Image src={club.icon} alt="club icon" width={32} height={100} />
-                                                        <span>{club.name}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
+                                            {dbTeams
+                                                // Team managers cannot pick their own team as the away team
+                                                .filter(team => isTeamManager ? team._id !== myTeam?._id : true)
+                                                .map((team) => (
+                                                    <SelectItem key={team._id} value={team._id}>
+                                                        <div className="flex gap-4 items-center w-full">
+                                                            {team.logo && <Image src={team.logo} alt="club icon" width={32} height={32} />}
+                                                            <span>{team.name}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -332,7 +401,7 @@ const CreateEventForm = () => {
                                 {isAudition && (
                                     <div className="flex flex-col gap-4 p-4 border border-blue-500/20 bg-blue-500/5 rounded-2xl">
                                         <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">Audition Settings</p>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <div className="flex flex-col">
                                                 <Label className="text-white text-sm">Request Applicant Picture</Label>
@@ -411,14 +480,12 @@ const CreateEventForm = () => {
                                     <button
                                         type="button"
                                         onClick={() => setRequiresApplication(v => !v)}
-                                        className={`w-full flex items-center justify-between p-4 transition-colors ${
-                                            requiresApplication ? "bg-orange-500/10" : "bg-zinc-900/40 hover:bg-zinc-900/60"
-                                        }`}
+                                        className={`w-full flex items-center justify-between p-4 transition-colors ${requiresApplication ? "bg-orange-500/10" : "bg-zinc-900/40 hover:bg-zinc-900/60"
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                                                requiresApplication ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-500"
-                                            }`}>
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${requiresApplication ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-500"
+                                                }`}>
                                                 <ClipboardList size={20} />
                                             </div>
                                             <div className="text-left">
@@ -428,12 +495,10 @@ const CreateEventForm = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-                                            requiresApplication ? "bg-orange-500" : "bg-zinc-700"
-                                        }`}>
-                                            <span className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${
-                                                requiresApplication ? "translate-x-5" : "translate-x-0"
-                                            }`} />
+                                        <div className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${requiresApplication ? "bg-orange-500" : "bg-zinc-700"
+                                            }`}>
+                                            <span className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${requiresApplication ? "translate-x-5" : "translate-x-0"
+                                                }`} />
                                         </div>
                                     </button>
 

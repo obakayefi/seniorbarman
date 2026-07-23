@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { CalendarDays, CalendarPlus, History as HistoryIcon, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Sparkles, Tickets, UserPlus, UsersRound, Bug, Settings2, FolderKanban, ClipboardList } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
+import { ROLES } from '@/lib/roles'
 import { GiSoccerField } from "react-icons/gi";
 import { TbSoccerField } from 'react-icons/tb'
 import { BiParty } from 'react-icons/bi'
@@ -95,6 +96,49 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
         },
     ]
 
+    const teamManagerLinks = [
+        {
+            title: "Dashboard",
+            url: "/u/tm/dashboard",
+            icon: "LayoutDashboard",
+        },
+        {
+            title: "Manage Activities",
+            url: "/u/organizer/events/manage",
+            icon: "FolderKanban",
+        },
+        {
+            title: "Create Event",
+            url: sitemap.organizer.createEvent,
+            icon: "CalendarPlus",
+        },
+        {
+            title: "Upcoming Matches",
+            url: sitemap.user.rangersTicketPurchase,
+            icon: "TbSoccerField",
+        },
+        {
+            title: "Activity Log",
+            url: "/u/tm/audit",
+            icon: "History",
+        },
+        {
+            title: "Scanner",
+            url: sitemap.bouncer.scanner,
+            icon: "ScanQrCode",
+        },
+        {
+            title: "Ticket Grant Wizard",
+            url: "/u/tm/ticket-grant-wizard",
+            icon: "Sparkles",
+        },
+        {
+            title: "Tickets",
+            url: sitemap.user.tickets,
+            icon: "Tickets",
+        },
+    ]
+
     const adminLinks = [
         {
             title: "Dashboard",
@@ -139,10 +183,22 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             icon: "Settings2",
         },
         {
+            title: "Role Permissions",
+            url: "/u/a/roles",
+            roles: ["admin", "dev"],
+            icon: "ShieldUser",
+        },
+        {
             title: "Manage Applications",
             url: "/u/a/applications",
             roles: ["admin", "dev"],
             icon: "ClipboardList",
+        },
+        {
+            title: "Provider Requests",
+            url: "/u/a/provider-requests",
+            roles: ["admin", "dev"],
+            icon: "UserPlus",
         },
     ]
 
@@ -174,7 +230,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
         },
     ]
 
-    const navlinks = user?.role === "dev" ? devLinks : user?.role === "admin" ? adminLinks : user?.role === "bouncer" ? bouncerLinks : user?.role === "organizer" ? organizerLinks : userLinks
+    const navlinks = user?.role === ROLES.DEV ? devLinks : user?.role === ROLES.ADMIN ? adminLinks : user?.role === ROLES.BOUNCER ? bouncerLinks : user?.role === ROLES.ORGANIZER ? organizerLinks : user?.role === ROLES.TEAM_MANAGER ? teamManagerLinks : userLinks
 
     return (
         <SidebarProvider>

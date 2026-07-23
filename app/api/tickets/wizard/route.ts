@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import mongoose from "mongoose";
 
 import Event from "@/models/Event";
+import { hasManagerAccessToTeams } from "@/services/teamService";
 
 const MAX_TICKETS_PER_REQUEST = 400;
 
@@ -25,16 +26,21 @@ export async function POST(req: Request) {
         const isAdminOrDev = user.role === 'admin' || user.role === 'dev';
         
         if (!isAdminOrDev) {
-            // Check if user is the organizer of the event
             const event = await Event.findById(eventId).lean() as any;
             if (!event) {
                 return NextResponse.json({ error: "Event not found" }, { status: 404 });
             }
 
             const isOwner = event.createdBy?.toString() === user.id;
-            if (!isOwner) {
+            let isTeamManagerAllowed = false;
+
+            if (user.role === 'team_manager') {
+                isTeamManagerAllowed = await hasManagerAccessToTeams(user.id, [event.homeTeam?.toString(), event.awayTeam?.toString()]);
+            }
+
+            if (!isOwner && !isTeamManagerAllowed) {
                 return NextResponse.json(
-                    { error: "Forbidden: You are not the organizer of this event" },
+                    { error: "Forbidden: You are not authorized for this event" },
                     { status: 403 }
                 );
             }

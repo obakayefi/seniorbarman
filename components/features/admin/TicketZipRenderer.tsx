@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Calendar, Clock, MapPin } from "lucide-react"
-import { getBaseUrl } from '@/lib/utils'
+import { getBaseUrl, formatEventTime } from '@/lib/utils'
 
 interface TicketZipRendererProps {
     ticket: {
@@ -23,8 +23,10 @@ const TicketZipRenderer = forwardRef<HTMLDivElement, TicketZipRendererProps>(({ 
     if (!ticket) return null;
 
     const isSports = ticket.event?.type === 'sports';
+    const homeName = ticket.event?.homeTeam?.name || ticket.event?.homeTeam || "";
+    const awayName = ticket.event?.awayTeam?.name || ticket.event?.awayTeam || "";
     const eventTitle = isSports
-        ? `${ticket.event?.homeTeam} vs ${ticket.event?.awayTeam}`
+        ? `${homeName} vs ${awayName}`
         : (ticket.event?.title || "Special Event");
 
     if (compactView) {
@@ -91,7 +93,7 @@ const TicketZipRenderer = forwardRef<HTMLDivElement, TicketZipRendererProps>(({ 
                         <div className="flex items-center gap-1.5">
                             <Clock size={10} className="text-orange-600" />
                             <span className="text-[9px] font-bold text-zinc-800">
-                                {ticket.event?.date ? new Date(ticket.event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBA'}
+                                {formatEventTime(ticket.event?.date)}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
