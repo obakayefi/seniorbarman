@@ -42,20 +42,30 @@ export default function PrintTicketsPage({ params }: { params: any }) {
 
     // Prepare batches when tickets load
     useEffect(() => {
-        // console.log('Preparing Batches', tickets.length);
         if (tickets.length > 0) {
-            // console.log('Tickets Gotten', tickets.length)
-            const grouped = chunkArray(tickets, 14);
-            // console.log({ grouped })
+            const uniqueStands = Array.from(new Set(tickets.map((t: any) => t.stand || "Regular")));
+            const grouped: { stand: string; tickets: any[] }[] = [];
+
+            for (const stand of uniqueStands) {
+                const standTickets = tickets.filter((t: any) => (t.stand || "Regular") === stand);
+                const chunks = chunkArray(standTickets, 14);
+                chunks.forEach(chunk => {
+                    grouped.push({ stand, tickets: chunk });
+                });
+            }
             setBatches(grouped);
         }
     }, [tickets]);
 
     const downloadAllBatches = async () => {
         const zip = new JSZip();
+        const standPageCounters: Record<string, number> = {};
 
         for (let i = 0; i < batches.length; i++) {
             setCurrentBatch(i);
+            const batchObj = batches[i];
+            const stand = batchObj?.stand || "Regular";
+            standPageCounters[stand] = (standPageCounters[stand] || 0) + 1;
 
             // Wait for the DOM to finish rendering
             await new Promise(res => setTimeout(res, 300));
@@ -63,24 +73,23 @@ export default function PrintTicketsPage({ params }: { params: any }) {
             if (!ref.current) continue;
 
             const dataUrl = await toPng(ref.current, { cacheBust: true })
-
             const blob = await (await fetch(dataUrl)).blob()
 
-            zip.file(`tickets_batch_${i + 1}.png`, blob);
+            const standFolder = zip.folder(stand);
+            standFolder?.file(`tickets_batch_${standPageCounters[stand]}.png`, blob);
         }
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
         link.download = "all_ticket_batches.zip";
         link.click();
-        // const dataUrl = await toPng(ref.current, {cacheBust: true});
-        // const link = document.createElement("a");
-        // link.download = `tickets_batch_${i + 1}.png`;
-        // link.href = dataUrl;
-        // link.click();
     };
 
     let isAdmin = false;
+
+    const currentTicketsToRender = Array.isArray(batches[currentBatch])
+        ? batches[currentBatch]
+        : batches[currentBatch]?.tickets || [];
 
     return (
         <div className='md:p-10 p-2 w-full'>
@@ -98,7 +107,7 @@ export default function PrintTicketsPage({ params }: { params: any }) {
             <div className={'py-4'}>
                 <section className={'flex items-center gap-5'}>
                     <h3>Current Batch</h3>
-                    <span>{currentBatch}</span>
+                    <span>{currentBatch + 1}</span>
                 </section>
 
                 <section className={'flex items-center gap-5'}>
@@ -121,7 +130,7 @@ export default function PrintTicketsPage({ params }: { params: any }) {
                 </button>
 
                 <div ref={ref} className="grid grid-cols-7 grid-rows-2 gap-1 mb-4 mt-10 py-5 place-items-start">
-                    {batches[currentBatch]?.map((ticket: any) => (
+                    {currentTicketsToRender.map((ticket: any) => (
                         <Ticket toPrint key={ticket._id} ticket={ticket} />
                     ))}
                 </div>

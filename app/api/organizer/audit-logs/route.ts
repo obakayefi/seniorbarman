@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
     try {
         await connectDB();
-        
-        const authResult = await requireRole([ROLES.TEAM_MANAGER, ROLES.ADMIN, ROLES.DEV]);
+
+        const authResult = await requireRole([ROLES.ORGANIZER, ROLES.ADMIN, ROLES.DEV]);
         if (authResult instanceof NextResponse) return authResult;
 
         const { searchParams } = new URL(req.url);
@@ -22,15 +22,11 @@ export async function GET(req: Request) {
         const actionFilter = searchParams.get("action");
         const targetTypeFilter = searchParams.get("targetType");
 
-        // Fetch all users with role 'team_manager'
-        const teamManagers = await User.find({ role: ROLES.TEAM_MANAGER }).select("_id").lean();
-        const managerIds = teamManagers.map(tm => tm._id);
-
         let query: any = {
             $or: [
-                { actorId: { $in: managerIds } },
-                { adminId: { $in: managerIds } },
-                { actorRole: ROLES.TEAM_MANAGER }
+                { actorId: authResult.id },
+                { adminId: authResult.id },
+                { actorRole: ROLES.ORGANIZER }
             ]
         };
 
@@ -64,7 +60,7 @@ export async function GET(req: Request) {
         }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json(
-            { error: "Failed to fetch team manager logs: " + error.message },
+            { error: "Failed to fetch organizer audit logs: " + error.message },
             { status: 500 }
         );
     }
@@ -83,4 +79,3 @@ export async function PATCH() {
 export async function DELETE() {
     return NextResponse.json({ error: "Method Not Allowed. Audit logs are read-only." }, { status: 405 });
 }
-

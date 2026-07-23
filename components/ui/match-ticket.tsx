@@ -60,7 +60,7 @@ export default function MatchTicket({ ticket, user }: { ticket: any, user?: any 
                     <h4 className={'text-zinc-600 font-black text-[9px] uppercase tracking-widest'}>TIME</h4>
                     <div className={'flex items-center gap-2'}>
                         <AlarmClock size={14} className="text-orange-500" />
-                        <span className="text-zinc-200 text-xs font-bold"> {formatEventTime(ticket.event.date) || "16:00"}</span>
+                        <span className="text-zinc-200 text-xs font-bold"> {formatEventTime(ticket.event?.date) || formatTime(ticket.event?.time) || "TBA"}</span>
                     </div>
                 </section>
 

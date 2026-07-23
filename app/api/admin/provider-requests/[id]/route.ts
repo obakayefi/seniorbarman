@@ -50,7 +50,8 @@ export async function PATCH(
             }
 
             await recordAuditLog({
-                adminId: authResult.id,
+                actorId: authResult.id,
+                actorRole: authResult.role,
                 action: "APPROVE_PROVIDER_REQUEST",
                 targetType: "USER",
                 targetId: String(request.userId._id || request.userId),
@@ -58,7 +59,8 @@ export async function PATCH(
                     email: request.email,
                     role: request.role,
                     teamId: request.teamId,
-                }
+                },
+                req,
             });
 
             return NextResponse.json({ success: true, message: `Account approved as ${request.role}` });
@@ -80,7 +82,8 @@ export async function PATCH(
             await User.findByIdAndDelete(request.userId);
 
             await recordAuditLog({
-                adminId: authResult.id,
+                actorId: authResult.id,
+                actorRole: authResult.role,
                 action: "REJECT_PROVIDER_REQUEST",
                 targetType: "USER",
                 targetId: String(request.userId._id || request.userId),
@@ -88,7 +91,8 @@ export async function PATCH(
                     email: request.email,
                     role: request.role,
                     reason: reviewNote,
-                }
+                },
+                req,
             });
 
             return NextResponse.json({ success: true, message: "Account rejected and email blacklisted" });
