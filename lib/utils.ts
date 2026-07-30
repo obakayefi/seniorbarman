@@ -438,7 +438,7 @@ export const sitemap = {
     },
     bouncer: {
         dashboard: "/u/bouncer/dashboard",
-        scanner: "/u/a/scanner",
+        scanner: "/u/a/scannner",
     },
     organizer: {
         dashboard: "/u/organizer/dashboard",
