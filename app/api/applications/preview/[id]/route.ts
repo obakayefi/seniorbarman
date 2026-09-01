@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event"
 import EventApplication from "@/models/EventApplication";
 import User from "@/models/User";
+import Team from "@/models/Team";
+import { populateTeamsForApplications } from "@/lib/populateEventTeams";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -14,11 +16,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     try {
         await connectDB();
         User.init();
+        Team.init();
+        Event.init();
 
-        const application = await EventApplication.findById(id).populate('event user');
-        if (!application) {
+        const rawApplication = await EventApplication.findById(id)
+            .populate('event')
+            .populate('user')
+            .lean();
+        if (!rawApplication) {
             return NextResponse.json({ error: "Application not found" }, { status: 404 });
         }
+
+        const application = await populateTeamsForApplications(rawApplication);
 
         return NextResponse.json({ application }, { status: 200 });
     } catch (error: any) {

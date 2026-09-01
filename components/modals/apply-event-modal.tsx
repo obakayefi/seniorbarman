@@ -197,7 +197,7 @@ export function ApplyEventModal({ event, isOpen, onOpenChange, applicationStatus
                         {step === 3 && "Application Status"}
                     </DialogTitle>
                     <DialogDescription className="text-zinc-400">
-                        {event.title}
+                        {event?.type === 'sports' ? `${event?.homeTeam?.name || event?.homeTeam} vs ${event?.awayTeam?.name || event?.awayTeam}` : event?.title}
                     </DialogDescription>
                 </DialogHeader>
 

@@ -1,8 +1,8 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
-import { CalendarDays, CalendarPlus, History as HistoryIcon, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Sparkles, Tickets, UserPlus, UsersRound, Bug, Settings2, FolderKanban, ClipboardList } from 'lucide-react'
+import { AppSidebar, SidebarGroupItem } from "@/components/app-sidebar"
+import { CalendarDays, CalendarPlus, History as HistoryIcon, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Sparkles, Tickets, UserPlus, UsersRound, Bug, Settings2, FolderKanban, ClipboardList, FolderClock } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
 import { sitemap } from '@/lib/utils'
 import { ROLES } from '@/lib/roles'
@@ -15,228 +15,156 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
 
     if (!user) redirect('/auth/logout')
 
-    const userLinks = [
-        {
-            title: "Dashboard",
-            url: sitemap.user.dashboard,
-            icon: "LayoutDashboard",
-        },
-        {
-            title: "Upcoming Events",
-            url: sitemap.user.eventsTicketPurchase,
-            icon: "BiParty",
-        },
-        {
-            title: "Rangers Matches",
-            url: sitemap.user.rangersTicketPurchase,
-            icon: "TbSoccerField",
-        },
-        {
-            title: "Tickets",
-            url: sitemap.user.tickets,
-            icon: "Tickets",
-        },
-        {
-            title: "My Applications",
-            url: "/u/applications",
-            icon: "ClipboardList",
-        },
-    ]
+    const role = user.role;
 
-    const organizerLinks = [
-        {
-            title: "Dashboard",
-            url: sitemap.organizer.dashboard,
-            icon: "LayoutDashboard",
-        },
-        {
-            title: "My Events",
-            url: "/u/organizer/events/manage",
-            icon: "FolderKanban",
-        },
-        {
-            title: "Create Event",
-            url: sitemap.organizer.createEvent,
-            icon: "CalendarPlus",
-        },
-        {
-            title: "Scanner",
-            url: sitemap.bouncer.scanner,
-            icon: "ScanQrCode",
-        },
-        {
-            title: "Upcoming Events",
-            url: sitemap.user.eventsTicketPurchase,
-            icon: "BiParty",
-        },
-        {
-            title: "Tickets",
-            url: sitemap.user.tickets,
-            icon: "Tickets",
-        },
-        {
-            title: "My Applications",
-            url: "/u/applications",
-            icon: "ClipboardList",
-        },
-        {
-            title: "Event Applicants",
-            url: "/u/a/applications",
-            icon: "ClipboardList",
-        },
-    ]
+    let groups: SidebarGroupItem[] = [];
 
-    const bouncerLinks = [
-        ...userLinks,
-        {
-            title: "Scanner",
-            url: sitemap.bouncer.scanner,
-            roles: ["bouncer", "admin"],
-            icon: "ScanQrCode",
-        },
-    ]
-
-    const teamManagerLinks = [
-        {
-            title: "Dashboard",
-            url: "/u/tm/dashboard",
-            icon: "LayoutDashboard",
-        },
-        {
-            title: "Manage Activities",
-            url: "/u/organizer/events/manage",
-            icon: "FolderKanban",
-        },
-        {
-            title: "Create Event",
-            url: sitemap.organizer.createEvent,
-            icon: "CalendarPlus",
-        },
-        {
-            title: "Upcoming Matches",
-            url: sitemap.user.rangersTicketPurchase,
-            icon: "TbSoccerField",
-        },
-        {
-            title: "Activity Log",
-            url: "/u/tm/audit",
-            icon: "History",
-        },
-        {
-            title: "Scanner",
-            url: sitemap.bouncer.scanner,
-            icon: "ScanQrCode",
-        },
-        {
-            title: "Ticket Grant Wizard",
-            url: "/u/tm/ticket-grant-wizard",
-            icon: "Sparkles",
-        },
-        {
-            title: "Tickets",
-            url: sitemap.user.tickets,
-            icon: "Tickets",
-        },
-    ]
-
-    const adminLinks = [
-        {
-            title: "Dashboard",
-            url: sitemap.admin.dashboard,
-            icon: "LayoutDashboard",
-        },
-        ...bouncerLinks.filter(link => link.title !== "Dashboard"),
-        {
-            title: "Ticket Grant Wizard",
-            url: sitemap.admin.ticketGrantWizard,
-            roles: ["admin"],
-            icon: "Sparkles",
-        },
-        {
-            title: "Create Admin",
-            url: sitemap.admin.createAdmin,
-            roles: ["admin"],
-            icon: "ShieldUser",
-        },
-        {
-            title: "Create Events",
-            url: sitemap.admin.createEvent,
-            roles: ["admin"],
-            icon: "CalendarPlus",
-        },
-        {
-            title: "User Management",
-            url: sitemap.admin.users,
-            roles: ["admin"],
-            icon: "UsersRound",
-        },
-        {
-            title: "Manage Activities",
-            url: sitemap.admin.manageActivities,
-            roles: ["admin"],
-            icon: "CalendarDays",
-        },
-        {
-            title: "Configurations",
-            url: "/u/a/configurations",
-            roles: ["admin", "dev"],
-            icon: "Settings2",
-        },
-        {
-            title: "Role Permissions",
-            url: "/u/a/roles",
-            roles: ["admin", "dev"],
-            icon: "ShieldUser",
-        },
-        {
-            title: "Manage Applications",
-            url: "/u/a/applications",
-            roles: ["admin", "dev"],
-            icon: "ClipboardList",
-        },
-        {
-            title: "Provider Requests",
-            url: "/u/a/provider-requests",
-            roles: ["admin", "dev"],
-            icon: "UserPlus",
-        },
-    ]
-
-    const devLinks = [
-        ...adminLinks,
-        {
-            title: "Audit Logs",
-            url: sitemap.admin.auditLogs,
-            roles: ["dev"],
-            icon: "History",
-        },
-        {
-            title: "Ticket Orders",
-            url: sitemap.admin.ticketOrders,
-            roles: ["dev"],
-            icon: "FolderClock",
-        },
-        {
-            title: "System Errors",
-            url: sitemap.admin.errorLogs,
-            roles: ["dev"],
-            icon: "Bug",
-        },
-        {
-            title: "Dev Config",
-            url: "/u/a/dev-settings",
-            roles: ["dev"],
-            icon: "Settings2",
-        },
-    ]
-
-    const navlinks = user?.role === ROLES.DEV ? devLinks : user?.role === ROLES.ADMIN ? adminLinks : user?.role === ROLES.BOUNCER ? bouncerLinks : user?.role === ROLES.ORGANIZER ? organizerLinks : user?.role === ROLES.TEAM_MANAGER ? teamManagerLinks : userLinks
+    if (role === ROLES.DEV || role === ROLES.ADMIN) {
+        groups = [
+            {
+                groupLabel: "Overview",
+                items: [
+                    { title: "Dashboard", url: sitemap.admin.dashboard, icon: "LayoutDashboard" },
+                ]
+            },
+            {
+                groupLabel: "Discovery & Tickets",
+                items: [
+                    { title: "Upcoming Events", url: sitemap.user.eventsTicketPurchase, icon: "BiParty" },
+                    { title: "Upcoming Matches", url: "/teams", icon: "TbSoccerField" },
+                    { title: "Tickets", url: sitemap.user.tickets, icon: "Tickets" },
+                    { title: "My Applications", url: "/u/applications", icon: "ClipboardList" },
+                ]
+            },
+            {
+                groupLabel: "Management & Operations",
+                items: [
+                    { title: "Manage Activities", url: sitemap.admin.manageActivities, icon: "CalendarDays" },
+                    { title: "Create Events", url: sitemap.admin.createEvent, icon: "CalendarPlus" },
+                    { title: "Event Applicants", url: "/u/a/applications", icon: "ClipboardList" },
+                    { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
+                    { title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles" },
+                ]
+            },
+            {
+                groupLabel: "System & Administration",
+                items: [
+                    { title: "User Management", url: sitemap.admin.users, icon: "UsersRound" },
+                    { title: "Create Admin", url: sitemap.admin.createAdmin, icon: "ShieldUser" },
+                    { title: "Provider Requests", url: "/u/a/provider-requests", icon: "UserPlus" },
+                    { title: "Configurations", url: "/u/a/configurations", icon: "Settings2" },
+                    { title: "Role Permissions", url: "/u/a/roles", icon: "ShieldUser" },
+                    ...(role === ROLES.DEV ? [
+                        { title: "Audit Logs", url: sitemap.admin.auditLogs, icon: "History" },
+                        { title: "Ticket Orders", url: sitemap.admin.ticketOrders, icon: "FolderClock" },
+                        { title: "System Errors", url: sitemap.admin.errorLogs, icon: "Bug" },
+                        { title: "Dev Config", url: "/u/a/dev-settings", icon: "Settings2" },
+                    ] : [])
+                ]
+            }
+        ];
+    } else if (role === ROLES.ORGANIZER) {
+        groups = [
+            {
+                groupLabel: "Overview",
+                items: [
+                    { title: "Dashboard", url: sitemap.organizer.dashboard, icon: "LayoutDashboard" },
+                ]
+            },
+            {
+                groupLabel: "Event Management",
+                items: [
+                    { title: "My Events", url: "/u/organizer/events/manage", icon: "FolderKanban" },
+                    { title: "Create Event", url: sitemap.organizer.createEvent, icon: "CalendarPlus" },
+                    { title: "Event Applicants", url: "/u/a/applications", icon: "ClipboardList" },
+                    { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
+                ]
+            },
+            {
+                groupLabel: "Discovery & Personal",
+                items: [
+                    { title: "Upcoming Events", url: sitemap.user.eventsTicketPurchase, icon: "BiParty" },
+                    { title: "Tickets", url: sitemap.user.tickets, icon: "Tickets" },
+                    { title: "My Applications", url: "/u/applications", icon: "ClipboardList" },
+                ]
+            }
+        ];
+    } else if (role === ROLES.TEAM_MANAGER) {
+        groups = [
+            {
+                groupLabel: "Overview",
+                items: [
+                    { title: "Dashboard", url: "/u/tm/dashboard", icon: "LayoutDashboard" },
+                ]
+            },
+            {
+                groupLabel: "Activities & Management",
+                items: [
+                    { title: "Manage Activities", url: "/u/organizer/events/manage", icon: "FolderKanban" },
+                    { title: "Create Event", url: sitemap.organizer.createEvent, icon: "CalendarPlus" },
+                    { title: "Activity Log", url: "/u/tm/audit", icon: "History" },
+                    { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
+                    { title: "Ticket Grant Wizard", url: "/u/tm/ticket-grant-wizard", icon: "Sparkles" },
+                ]
+            },
+            {
+                groupLabel: "Matches & Tickets",
+                items: [
+                    { title: "Upcoming Matches", url: sitemap.user.rangersTicketPurchase, icon: "TbSoccerField" },
+                    { title: "Tickets", url: sitemap.user.tickets, icon: "Tickets" },
+                ]
+            }
+        ];
+    } else if (role === ROLES.BOUNCER) {
+        groups = [
+            {
+                groupLabel: "Overview",
+                items: [
+                    { title: "Dashboard", url: sitemap.user.dashboard, icon: "LayoutDashboard" },
+                    { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
+                ]
+            },
+            {
+                groupLabel: "Personal",
+                items: [
+                    { title: "Upcoming Events", url: sitemap.user.eventsTicketPurchase, icon: "BiParty" },
+                    { title: "Upcoming Matches", url: "/teams", icon: "TbSoccerField" },
+                    { title: "Tickets", url: sitemap.user.tickets, icon: "Tickets" },
+                    { title: "My Applications", url: "/u/applications", icon: "ClipboardList" },
+                ]
+            }
+        ];
+    } else {
+        // General User
+        groups = [
+            {
+                groupLabel: "Overview",
+                items: [
+                    { title: "Dashboard", url: sitemap.user.dashboard, icon: "LayoutDashboard" },
+                ]
+            },
+            {
+                groupLabel: "Events & Matches",
+                items: [
+                    { title: "Upcoming Events", url: sitemap.user.eventsTicketPurchase, icon: "BiParty" },
+                    { title: "Upcoming Matches", url: "/teams", icon: "TbSoccerField" },
+                ]
+            },
+            {
+                groupLabel: "My Account",
+                items: [
+                    { title: "Tickets", url: sitemap.user.tickets, icon: "Tickets" },
+                    { title: "My Applications", url: "/u/applications", icon: "ClipboardList" },
+                ]
+            }
+        ];
+    }
 
     return (
-        <SidebarProvider>
-            <AppSidebar links={navlinks} />
-            <main className='w-full bg-[#020202] text-white'>
-                <SidebarTrigger />
+        <SidebarProvider defaultOpen={true}>
+            <AppSidebar groups={groups} />
+            <main className='w-full bg-background text-foreground min-h-screen transition-colors'>
+                <SidebarTrigger className="m-2 text-foreground" />
                 {children}
             </main>
         </SidebarProvider>

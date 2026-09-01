@@ -55,34 +55,32 @@ const TicketsPageView = () => {
 
             {/* Toggle Switch Row */}
             <div className="flex flex-col sm:flex-row items-center gap-4 mt-8 mb-4 w-full">
-                <div className="flex items-center p-1 bg-zinc-900/50 border border-zinc-800 rounded-full backdrop-blur-sm w-full sm:w-fit">
+                <div className="flex items-center p-1 bg-muted border border-border rounded-sm w-full sm:w-fit">
                     <button
                         onClick={() => setViewMode('sports')}
-                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${viewMode === 'sports' ? 'bg-white text-black shadow-xl shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-sm text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${viewMode === 'sports' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Football Matches
                     </button>
                     <button
                         onClick={() => setViewMode('event')}
-                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${viewMode === 'event' ? 'bg-white text-black shadow-xl shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
+                        className={`flex-1 sm:flex-none px-6 sm:px-10 py-2.5 rounded-sm text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${viewMode === 'event' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Events
                     </button>
                 </div>
             </div>
 
-
-
             <section>
                 {loading ? (
-                    <div className='flex items-center gap-1'>
+                    <div className='flex items-center gap-2'>
                         <Spinner />
-                        <h2 className='text-slate-400'>Loading Tickets</h2>
+                        <h2 className='text-muted-foreground text-sm font-semibold'>Loading Tickets</h2>
                     </div>
                 ) : filteredTickets.length === 0 ? (
-                    <div className='flex flex-col gap-2'>
-                        <h2 className="text-4xl text-zinc-600">No {viewMode === 'sports' ? 'Football' : 'Event'} Tickets</h2>
-                        <p className="text-zinc-500">You haven't purchased any tickets for this category yet.</p>
+                    <div className='flex flex-col gap-2 py-10'>
+                        <h2 className="text-3xl font-black text-foreground uppercase">No {viewMode === 'sports' ? 'Football' : 'Event'} Tickets</h2>
+                        <p className="text-muted-foreground text-sm">You haven't purchased any tickets for this category yet.</p>
                     </div>
                 ) : (
                     <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-10'>

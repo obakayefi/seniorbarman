@@ -153,32 +153,28 @@ export function BookRegularEventModal({ event }: { event: any }) {
     }
 
     return (
-        <div className={''}>
-            <form className={'bg-orange-400'}>
-                <DialogContent className="sm:max-w-[750px] border-white/10 bg-black/60 backdrop-blur-xl w-5/6  max-h-4/5 md:h-auto overflow-auto">
-                    {modalState === 0 ? (
-                        <BuyTicket
-                            ticketsToPurchase={ticketsToPurchase}
-                            loading={payNowLoading}
-                            totalTickets={totalTickets}
-                            updateTicketQty={updateTicketQty}
-                            handleOnBuyTicket={handleOnBuyTicket}
-                            onQtyInputChange={onQtyInputChange}
-                            resetForm={resetForm}
-                            totalPrice={totalPrice}
-                            ticketTypes={ticketTypes}
-                        />
-                    ) : modalState === 1 ? (
-                        <ConfirmTicketPurchase
-                            goBack={goBack}
-                            eventId={event._id}
-                            redirectToPayNow={redirectToPayNowModal}
-                            ticketsToPurchase={ticketsToPurchase}
-                            totalPrice={totalPrice}
-                        />
-                    ) : null}
-                </DialogContent>
-            </form>
-        </div>
+        <DialogContent className="sm:max-w-[650px] w-[95vw] bg-card text-card-foreground border-border rounded-sm shadow-2xl p-6 sm:p-8 overflow-hidden">
+            {modalState === 0 ? (
+                <BuyTicket
+                    ticketsToPurchase={ticketsToPurchase}
+                    loading={payNowLoading}
+                    totalTickets={totalTickets}
+                    updateTicketQty={updateTicketQty}
+                    handleOnBuyTicket={handleOnBuyTicket}
+                    onQtyInputChange={onQtyInputChange}
+                    resetForm={resetForm}
+                    totalPrice={totalPrice}
+                    ticketTypes={ticketTypes}
+                />
+            ) : modalState === 1 ? (
+                <ConfirmTicketPurchase
+                    goBack={goBack}
+                    eventId={event._id}
+                    redirectToPayNow={redirectToPayNowModal}
+                    ticketsToPurchase={ticketsToPurchase}
+                    totalPrice={totalPrice}
+                />
+            ) : null}
+        </DialogContent>
     )
 }

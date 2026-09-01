@@ -3,10 +3,8 @@ import React from 'react'
 
 const CreateEvent = () => {
   return (
-    <div className='min-h-screen flex-col flex items-center justify-center  p-4 lg:p-20'>
-      <section className="mt-8 w-full items-center flex justify-center sm:w-2/3 ">
-        <CreateEventForm />
-      </section>
+    <div className='min-h-screen flex-col flex p-6 lg:p-12'>
+      <CreateEventForm />
     </div>
   )
 }

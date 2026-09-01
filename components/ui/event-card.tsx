@@ -47,14 +47,14 @@ export const EventCard = ({ event }: { event: EventType }) => {
 
     return (
         <section
-            className='flex flex-col w-full items-center duration-200 hover:bg-zinc-900/50 border border-zinc-900 gap-3 justify-center rounded-lg p-4 group'>
-            <Link href={`/events/${event._id}`} className='flex items-center justify-center gap-1 hover:text-orange-500 transition-colors'>
-                <span className=''>{matchInformation.day}</span>
-                <span className=' uppercase'>{matchInformation.month}</span>
-                <span className='text-gray-400'>{matchInformation.year}</span>
+            className='flex flex-col w-full items-center duration-200 bg-card hover:bg-muted/40 border border-border gap-3 justify-center rounded-sm p-4 group shadow-sm'>
+            <Link href={`/events/${event._id}`} className='flex items-center justify-center gap-1 text-foreground hover:text-orange-500 transition-colors font-semibold text-sm'>
+                <span>{matchInformation.day}</span>
+                <span className='uppercase'>{matchInformation.month}</span>
+                <span className='text-muted-foreground'>{matchInformation.year}</span>
             </Link>
             {event.requiresApplication && (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 rounded-md text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest mt-[-8px]">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 rounded-sm text-blue-600 dark:text-blue-400 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest mt-[-8px]">
                     <ClipboardList size={12} />
                     Application Required
                 </div>
@@ -64,26 +64,26 @@ export const EventCard = ({ event }: { event: EventType }) => {
                 <div className='flex items-center flex-col gap-2'>
                     <Link href={`/events/${event._id}`} className="flex lg:flex-row flex-col items-center gap-2 group/match">
                         <section className='flex flex-col lg:flex-row h-20 lg:h-40 justify-between items-center gap-1'>
-                            <span className='text-center group-hover/match:text-orange-400 transition-colors'>{matchInformation.homeTeam}</span>
+                            <span className='text-center text-foreground group-hover/match:text-orange-500 transition-colors font-bold'>{matchInformation.homeTeam}</span>
                             <Image
                                 src={matchInformation.homeLogo ?? "https://placehold.co/400"}
                                 alt='home logo'
-                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110'
+                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110 object-contain'
                                 height={100}
                                 width={100}
                             />
                         </section>
-                        <p className={'text-zinc-500'}>VS</p>
+                        <p className={'text-muted-foreground font-black text-xs'}>VS</p>
                         <section className='flex flex-col h-20 lg:flex-row lg:h-40 justify-center items-center gap-1'>
                             <Image
                                 src={matchInformation.awayLogo ?? "https://placehold.co/400"}
                                 alt='away logo'
                                 height={100}
                                 objectFit='cover'
-                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110'
+                                className='h-14 lg:h-24 lg:w-24 h w-14 transition-transform group-hover/match:scale-110 object-contain'
                                 width={100}
                             />
-                            <span className='text-center group-hover/match:text-orange-400 transition-colors'>{matchInformation.awayTeam}</span>
+                            <span className='text-center text-foreground group-hover/match:text-orange-500 transition-colors font-bold'>{matchInformation.awayTeam}</span>
                         </section>
                     </Link>
 
@@ -94,7 +94,7 @@ export const EventCard = ({ event }: { event: EventType }) => {
                                     <div className='flex flex-col w-full mt-1'>
                                         <DialogTrigger asChild>
                                             <Button
-                                                className='bg-red-500 hover:bg-orange-400 active:translate-y-1 duration-200 text-lg rounded w-full'>
+                                                className='bg-orange-500 hover:bg-orange-600 text-white font-bold active:translate-y-0.5 duration-200 text-base rounded-sm w-full shadow-sm'>
                                                 Book Ticket
                                             </Button>
                                         </DialogTrigger>
@@ -109,14 +109,14 @@ export const EventCard = ({ event }: { event: EventType }) => {
                                     <Button
                                         variant="outline"
                                         onClick={() => router.push(`/u/a/events/${event._id}/edit`)}
-                                        className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-xs h-8 px-2"
+                                        className="border-border bg-muted hover:bg-muted/80 text-foreground text-xs h-8 px-2 rounded-sm"
                                     >
                                         Edit
                                     </Button>
                                     <Button
                                         variant="destructive"
                                         onClick={onDelete}
-                                        className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border-none text-xs h-8 px-2"
+                                        className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border-none text-xs h-8 px-2 rounded-sm"
                                     >
                                         Delete
                                     </Button>
@@ -124,9 +124,9 @@ export const EventCard = ({ event }: { event: EventType }) => {
                             )}
                         </div>
                         <section className='mt-2 text-center'>
-                            <span className='text-gray-400 flex items-center gap-1'>
-                                <span className='text-red-400 font-bold'>{matchInformation.time}</span> @ <span
-                                    className='text-sm'>{matchInformation.venue}</span>
+                            <span className='text-muted-foreground flex items-center gap-1 text-xs'>
+                                <span className='text-orange-500 font-bold'>{matchInformation.time}</span> @ <span
+                                    className='text-xs font-medium'>{matchInformation.venue}</span>
                             </span>
 
                         </section>

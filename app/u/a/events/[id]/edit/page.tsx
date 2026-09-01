@@ -9,13 +9,13 @@ const EditEventPage = () => {
     const id = params.id as string
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-10 min-h-screen bg-zinc-950">
+        <div className="md:p-10 p-6 w-full space-y-10 min-h-screen bg-card">
             <div className="max-w-4xl mx-auto space-y-8">
                 <PageHeader
                     title="Edit Event"
                     description="Update event information, pricing and media"
                 >
-                    {/* <a href={`/u/a/events/${id}/print-tickets`} className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    {/* <a href={`/u/a/events/${id}/print-tickets`} className="bg-muted hover:bg-zinc-700 text-foreground px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         Print Tickets
                     </a> */}
                 </PageHeader>

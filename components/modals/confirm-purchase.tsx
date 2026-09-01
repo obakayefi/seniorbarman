@@ -66,43 +66,45 @@ const ConfirmTicketPurchase = ({ ticketsToPurchase, totalPrice, goBack, eventId 
     }
 
     return (
-        <div className={''}>
-            <DialogHeader>
+        <div className="w-full flex flex-col">
+            <DialogHeader className="mb-4 text-left">
                 <div>
-                    <DialogTitle className="text-2xl text-orange-400">Confirm Ticket Purchase</DialogTitle>
-                    <DialogDescription>
-                        Verify the quantities you want.
+                    <DialogTitle className="text-2xl font-extrabold uppercase text-foreground">Confirm Ticket Purchase</DialogTitle>
+                    <DialogDescription className="text-muted-foreground text-xs sm:text-sm">
+                        Verify the quantities and total before proceeding.
                     </DialogDescription>
                 </div>
-                <div className="flex flex-col mt-5 gap-10 md:gap-3 justify-between">
+                <div className="flex flex-col mt-4 gap-3">
                     {ticketsToPurchase.map(ticket => {
                         if (ticket.quantity === 0) return null
                         return (
-                            <section className="border-b-2 border-zinc-950">
-                                <div className="flex flex-col sm:flex-row justify-between">
-                                    <h5>{ticket.name}
-                                    </h5>
-                                    <p className="text-lg text-orange-500">
-                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-slate-400 text-sm italic">({ticket.quantity} ticket{ticket.quantity > 1 ? 's' : ''})</span>
+                            <section key={ticket.id} className="border-b border-border pb-2.5">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
+                                    <h5 className="font-bold text-foreground text-sm uppercase">{ticket.name}</h5>
+                                    <p className="text-base font-extrabold text-orange-500">
+                                        ₦{(ticket.price * ticket.quantity).toLocaleString()} <span className="text-muted-foreground text-xs font-normal">({ticket.quantity} ticket{ticket.quantity > 1 ? 's' : ''})</span>
                                     </p>
                                 </div>
                             </section>
                         )
                     })}
-                    <p>Total: <span className="text-2xl text-green-600">₦{totalPrice.toLocaleString()}</span></p>
+                    <div className="flex justify-between items-center pt-2">
+                        <span className="text-sm font-bold text-muted-foreground uppercase">Total Amount</span>
+                        <span className="text-2xl font-black text-foreground">₦{totalPrice.toLocaleString()}</span>
+                    </div>
                 </div>
-
-
             </DialogHeader>
-            <DialogFooter className='items-center flex justify-center'>
-                {/* <DialogClose asChild > */}
-                <Button variant="outline" className={'text-zinc-800'} onClick={goBack}>Go back</Button>
-                {/* </DialogClose> */}
+
+            <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border mt-4">
+                <Button variant="ghost" className="h-10 px-5 rounded-sm text-muted-foreground hover:text-foreground font-bold uppercase tracking-wider text-xs w-full sm:w-auto" onClick={goBack}>
+                    Go back
+                </Button>
                 <NButton
                     onClick={payNow}
                     disabled={loading}
-                    icon={<CheckCircle />}
-                    loading={loading}>
+                    loading={loading}
+                    className="h-10 px-7 rounded-sm bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase tracking-wider text-xs w-full sm:w-auto shadow-md shadow-orange-500/20"
+                >
                     {totalPrice === 0 ? 'Get Tickets' : 'Pay Now'}
                 </NButton>
             </DialogFooter>

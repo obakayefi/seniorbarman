@@ -61,6 +61,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
     const eventTitle = useInput('')
     const eventTime = useInput('16:00')
+    const ctaTextInput = useInput('Book Ticket')
 
     // Application Settings
     const [requiresApplication, setRequiresApplication] = React.useState(false)
@@ -98,6 +99,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                 setAwayTeam(data.awayTeam || '')
                 eventTitle.setValue(data.title || '')
                 eventTime.setValue(data.time || '16:00')
+                ctaTextInput.setValue(data.ctaText || 'Book Ticket')
                 setTicketTypes(data.ticketTypes || [])
                 setEventVenue(data.venue || '')
 
@@ -140,6 +142,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
         formData.append("eventType", currentEventType);
         formData.append("eventTime", eventTime.value);
         formData.append("eventVenue", eventVenue);
+        formData.append("ctaText", ctaTextInput.value.trim() || 'Book Ticket');
         formData.append("ticketTypes", JSON.stringify(ticketTypes));
         if (eventDate) {
             formData.append("eventDate", eventDate.toISOString());
@@ -201,20 +204,20 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     }
 
     return (
-        <Card className="w-full border-zinc-800 sm:max-w-xl bg-zinc-950/50 backdrop-blur-xl">
+        <Card className="w-full sm:max-w-xl">
             <form onSubmit={onFormSubmit}>
-                <CardContent className="flex flex-col gap-4 pt-6">
+                <CardContent className="flex flex-col gap-4 pt-2">
                     <div className="flex flex-col gap-2">
-                        <Label className="text-gray-400">Event Type</Label>
+                        <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Event Type</Label>
                         <Select
                             disabled
                             value={currentEventType}
                             onValueChange={(value) => setCurrentEventType(value)}
                         >
-                            <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50">
+                            <SelectTrigger className="w-full text-foreground border-border bg-card rounded-sm">
                                 <SelectValue placeholder="Select Event Type" />
                             </SelectTrigger>
-                            <SelectContent className={'text-white border-zinc-800 bg-zinc-900'}>
+                            <SelectContent className={'border-border'}>
                                 <SelectItem value="sports">Sports</SelectItem>
                                 <SelectItem value="event">Event</SelectItem>
                             </SelectContent>
@@ -225,12 +228,12 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                         {currentEventType === 'sports' ? (
                             <>
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Home Team</Label>
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Home Team</Label>
                                     <Select disabled onValueChange={(value) => setHomeTeam(value)} value={homeTeam}>
-                                        <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50 opacity-70">
+                                        <SelectTrigger className="w-full text-foreground border-border bg-card rounded-sm opacity-70">
                                             <SelectValue placeholder='Home' />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                                        <SelectContent className="border-border">
                                             {teams.map(team => (
                                                 <SelectItem key={team._id} value={team._id}>
                                                     <div className="flex gap-2 items-center">
@@ -244,12 +247,12 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Away Team</Label>
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Away Team</Label>
                                     <Select onValueChange={value => setAwayTeam(value)} value={awayTeam}>
-                                        <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50">
+                                        <SelectTrigger className="w-full text-foreground border-border bg-card rounded-sm">
                                             <SelectValue placeholder='Away' />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                                        <SelectContent className="border-border">
                                             {teams.map(team => (
                                                 <SelectItem key={team._id} value={team._id}>
                                                     <div className="flex gap-2 items-center">
@@ -263,17 +266,17 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Stadium</Label>
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Stadium</Label>
                                     <Select onValueChange={value => setEventVenue(value)} value={eventVenue}>
-                                        <SelectTrigger className="w-full text-white border-zinc-800 bg-zinc-900/50">
+                                        <SelectTrigger className="w-full text-foreground border-border bg-card rounded-sm">
                                             <SelectValue placeholder='Pick the stadium' />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                                        <SelectContent className="border-border">
                                             {STADIUMS.map(stadium => (
                                                 <SelectItem key={stadium.name} value={stadium.name}>
                                                     <div className="flex justify-between w-full gap-4">
                                                         <span>{stadium.name}</span>
-                                                        <span className="text-xs text-zinc-500">{stadium.state}</span>
+                                                        <span className="text-xs text-muted-foreground">{stadium.state}</span>
                                                     </div>
                                                 </SelectItem>
                                             ))}
@@ -281,12 +284,12 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                     </Select>
                                 </div>
 
-                                <div className="flex flex-col gap-4 border-t border-zinc-800 pt-4">
-                                    <Label className="text-gray-400">Ticket Stands</Label>
+                                <div className="flex flex-col gap-4 border-t border-border pt-4">
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Ticket Stands</Label>
                                     {ticketTypes.map((ticket, index) => (
                                         <div key={index} className="flex gap-4 items-center">
                                             <Input 
-                                                className="text-white flex-1 border-zinc-800 bg-zinc-900/50" 
+                                                className="text-foreground flex-1 border-border bg-card rounded-sm" 
                                                 value={ticket.name} 
                                                 onChange={(e) => {
                                                     const newTickets = [...ticketTypes];
@@ -298,7 +301,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                             <Input 
                                                 type="number" 
                                                 min={0}
-                                                className="text-white w-32 border-zinc-800 bg-zinc-900/50" 
+                                                className="text-foreground w-32 border-border bg-card rounded-sm" 
                                                 value={ticket.price === 0 ? '' : ticket.price} 
                                                 onChange={(e) => {
                                                     const newTickets = [...ticketTypes];
@@ -314,25 +317,42 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                         ) : (
                             <>
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Title</Label>
-                                    <Input type="text" className={'text-white bg-zinc-900/50 border-zinc-800'} value={eventTitle.value} onChange={eventTitle.onChange} />
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Title</Label>
+                                    <Input type="text" className={'text-foreground bg-card border-border rounded-sm'} value={eventTitle.value} onChange={eventTitle.onChange} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Venue</Label>
-                                    <Input type="text" className={'text-white bg-zinc-900/50 border-zinc-800'} value={eventVenue} onChange={(e) => setEventVenue(e.target.value)} />
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Venue</Label>
+                                    <Input type="text" className={'text-foreground bg-card border-border rounded-sm'} value={eventVenue} onChange={(e) => setEventVenue(e.target.value)} />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Button Action Text (CTA)</Label>
+                                        <span className="text-[10px] text-muted-foreground">Default: &quot;Book Ticket&quot;</span>
+                                    </div>
+                                    <Input 
+                                        type="text" 
+                                        className={'text-foreground bg-card border-border rounded-sm'} 
+                                        value={ctaTextInput.value} 
+                                        onChange={ctaTextInput.onChange} 
+                                        placeholder='e.g. Book Ticket, Book Headset, Reserve Spot'
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">
+                                        Custom label displayed on the event card button (e.g., &quot;Book Headset&quot; for silent parties).
+                                    </p>
                                 </div>
                             </>
                         )}
 
                         {currentEventType !== 'sports' && (
                             <>
-                                <div className="flex flex-col gap-4 border-t border-zinc-800 pt-4">
-                                    <Label className="text-gray-400">Ticket Types (Minimum 4)</Label>
+                                <div className="flex flex-col gap-4 border-t border-border pt-4">
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Ticket Types</Label>
                                     {ticketTypes.map((ticket, index) => (
                                         <div key={index} className="flex gap-4 items-center">
                                             <Input 
-                                                className="text-white flex-1 border-zinc-800 bg-zinc-900/50" 
+                                                className="text-foreground flex-1 border-border bg-card rounded-sm" 
                                                 value={ticket.name} 
                                                 onChange={(e) => {
                                                     const newTickets = [...ticketTypes];
@@ -344,7 +364,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                             <Input 
                                                 type="number" 
                                                 min={0}
-                                                className="text-white w-32 border-zinc-800 bg-zinc-900/50" 
+                                                className="text-foreground w-32 border-border bg-card rounded-sm" 
                                                 value={ticket.price === 0 ? '' : ticket.price} 
                                                 onChange={(e) => {
                                                     const newTickets = [...ticketTypes];
@@ -356,13 +376,13 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                             <Button 
                                                 type="button" 
                                                 variant="ghost" 
-                                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-sm"
                                                 onClick={() => {
                                                     const newTickets = [...ticketTypes];
                                                     newTickets.splice(index, 1);
                                                     setTicketTypes(newTickets);
                                                 }}
-                                                disabled={ticketTypes.length <= 4}
+                                                disabled={ticketTypes.length <= 1}
                                             >
                                                 Remove
                                             </Button>
@@ -371,7 +391,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                     <Button 
                                         type="button" 
                                         variant="outline" 
-                                        className="w-fit border-zinc-700 bg-zinc-100 text-black hover:bg-white font-bold transition-all"
+                                        className="w-fit border-border bg-muted hover:bg-muted/80 text-foreground font-bold transition-all rounded-sm text-xs"
                                         onClick={() => setTicketTypes([...ticketTypes, { name: '', price: 0 }])}
                                     >
                                         Add Ticket Type
@@ -379,45 +399,45 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 </div>
 
                                 {/* Application Settings */}
-                                <div className="border border-zinc-800 rounded-2xl overflow-hidden mt-6">
+                                <div className="border border-border rounded-sm overflow-hidden mt-6">
                                     <button
                                         type="button"
                                         onClick={() => setRequiresApplication(v => !v)}
                                         className={`w-full flex items-center justify-between p-4 transition-colors ${
-                                            requiresApplication ? "bg-orange-500/10" : "bg-zinc-900/40 hover:bg-zinc-900/60"
+                                            requiresApplication ? "bg-orange-500/10" : "bg-card hover:bg-muted/30"
                                         }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                                                requiresApplication ? "bg-orange-500 text-white" : "bg-zinc-800 text-zinc-500"
+                                            <div className={`h-9 w-9 rounded-sm flex items-center justify-center ${
+                                                requiresApplication ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
                                             }`}>
-                                                <ClipboardList size={20} />
+                                                <ClipboardList size={18} />
                                             </div>
                                             <div className="text-left">
-                                                <p className="font-black text-white text-sm">Requires Application</p>
-                                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                <p className="font-black text-foreground text-sm">Requires Application</p>
+                                                <p className="text-[10px] text-muted-foreground">
                                                     People must apply before attending
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-                                            requiresApplication ? "bg-orange-500" : "bg-zinc-700"
+                                        <div className={`relative w-11 h-6 rounded-sm transition-colors shrink-0 ${
+                                            requiresApplication ? "bg-orange-500" : "bg-muted-foreground/25"
                                         }`}>
-                                            <span className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${
+                                            <span className={`absolute top-1 left-1 h-4 w-4 rounded-sm bg-white transition-transform ${
                                                 requiresApplication ? "translate-x-5" : "translate-x-0"
                                             }`} />
                                         </div>
                                     </button>
 
                                     {requiresApplication && (
-                                        <div className="p-5 space-y-5 border-t border-zinc-800 bg-zinc-950/40">
+                                        <div className="p-5 space-y-5 border-t border-border bg-muted/10">
                                             <div className="space-y-2">
-                                                <Label className="text-zinc-400">Application Fee</Label>
+                                                <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Application Fee</Label>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-bold">₦</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₦</span>
                                                     <Input
                                                         type="text"
-                                                        className="text-white border-zinc-800 bg-zinc-900/50 pl-8 pr-16"
+                                                        className="text-foreground border-border bg-card pl-8 pr-16 rounded-sm"
                                                         value={applicationFeeDisplay}
                                                         onChange={(e) => {
                                                             const raw = e.target.value.replace(/,/g, "")
@@ -440,12 +460,12 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowFormBuilder(v => !v)}
-                                                    className="flex items-center gap-2 text-sm font-bold text-orange-400 hover:text-orange-300 transition-colors"
+                                                    className="flex items-center gap-2 text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors"
                                                 >
                                                     {showFormBuilder ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     {showFormBuilder ? "Hide" : "Build"} Application Form
                                                     {formFields.length > 0 && (
-                                                        <span className="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded-full font-black">
+                                                        <span className="bg-orange-500/20 text-orange-500 text-[10px] px-2 py-0.5 rounded-full font-black">
                                                             {formFields.length} {formFields.length === 1 ? "field" : "fields"}
                                                         </span>
                                                     )}
@@ -462,7 +482,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-gray-400">Update Banner (Optional)</Label>
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Update Banner (Optional)</Label>
                                     <FileUpload key={resetKey} onChange={setFiles} />
                                 </div>
                             </>
@@ -470,7 +490,6 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                {/* <Label className="text-gray-400">Date</Label> */}
                                 <ApplyDatePicker
                                     dateValue={dateValue}
                                     eventDate={eventDate}
@@ -481,23 +500,23 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="text-gray-400">Time</Label>
-                                <Input className={'text-white bg-zinc-900/50 border-zinc-800'} onChange={eventTime.onChange} value={eventTime.value} type="time" />
+                                <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Time</Label>
+                                <Input className={'text-foreground bg-card border-border rounded-sm'} onChange={eventTime.onChange} value={eventTime.value} type="time" />
                             </div>
                         </div>
                     </section>
                 </CardContent>
 
-                <CardFooter className="mt-6 border-t border-zinc-800 pt-6 flex justify-between items-center">
+                <CardFooter className="mt-6 border-t border-border pt-6 flex justify-between items-center px-0">
                     <DeleteConfirmModal
                         onConfirm={onDeleteEvent}
                         isDeleting={isSubmitting}
                     />
                     <div className="flex gap-3">
-                        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={isSubmitting}>
+                        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={isSubmitting} className="rounded-sm">
                             Cancel
                         </Button>
-                        <Button className="bg-orange-500 hover:bg-orange-600 text-white" disabled={isSubmitting} type="submit">
+                        <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-sm" disabled={isSubmitting} type="submit">
                             {isSubmitting && <Spinner className="mr-2" />}
                             Update Event
                         </Button>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,7 @@ import { BookEventModal } from '@/components/modals/book-event'
 import { ApplyEventModal } from '@/components/modals/apply-event-modal'
 import { HunchoRoleChecker } from '@/lib/helpers'
 
-export default function PublicEventDetailPage() {
+function PublicEventDetailContent() {
     const params = useParams()
     const id = params.id as string
     const searchParams = useSearchParams()
@@ -95,7 +95,7 @@ export default function PublicEventDetailPage() {
             // Store intent and redirect to login/register
             localStorage.setItem('pendingApplication', JSON.stringify({ 
                 eventId: id, 
-                eventTitle: event.type === 'sports' ? `${event.homeTeam} vs ${event.awayTeam}` : event.title 
+                eventTitle: event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title 
             }))
             router.push(`/auth/register?redirect=/events/${id}`)
             return;
@@ -105,7 +105,7 @@ export default function PublicEventDetailPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
                 <p className="text-lg font-medium">Loading activity...</p>
             </div>
@@ -114,9 +114,9 @@ export default function PublicEventDetailPage() {
 
     if (!event) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
-                <p className="text-xl">This activity is no longer available.</p>
-                <Button asChild variant="outline">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
+                <p className="text-xl text-foreground font-bold">This activity is no longer available.</p>
+                <Button asChild variant="outline" className="rounded-sm">
                     <Link href="/events">Explore Other Events</Link>
                 </Button>
             </div>
@@ -127,10 +127,10 @@ export default function PublicEventDetailPage() {
     const isSports = event.type === 'sports'
 
     return (
-        <div className="min-h-screen bg-black text-white pb-32">
+        <div className="min-h-screen bg-background text-foreground pb-32 transition-colors">
             {/* Hero Section */}
-            <div className="relative h-[40vh] md:h-[60vh] w-full overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+            <div className="relative h-[40vh] md:h-[60vh] w-full overflow-hidden text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/30 z-10" />
                 <img
                     src={event.image || (isSports ? "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop" : "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop")}
                     alt={event.title}
@@ -142,7 +142,7 @@ export default function PublicEventDetailPage() {
                     <Button
                         onClick={() => router.back()}
                         variant="ghost"
-                        className="bg-black/20 backdrop-blur-md hover:bg-black/40 text-white border border-white/10 rounded-full h-10 w-10 p-0"
+                        className="bg-black/40 backdrop-blur-md hover:bg-black/60 text-white border border-white/20 rounded-full h-10 w-10 p-0 shadow-md"
                     >
                         <ArrowLeft size={20} />
                     </Button>
@@ -152,22 +152,22 @@ export default function PublicEventDetailPage() {
                 <div className="absolute bottom-0 left-0 w-full z-20 p-6 md:p-12">
                     <div className="max-w-7xl mx-auto space-y-4">
                         <div className="flex flex-wrap items-center gap-2">
-                            <Badge className="bg-orange-600 hover:bg-orange-600 text-white border-none px-3 py-1 font-black uppercase tracking-widest text-[10px]">
+                            <Badge className="bg-orange-500 hover:bg-orange-600 text-white border-none px-3 py-1 font-bold uppercase tracking-wider text-[10px] rounded-xs shadow-sm">
                                 {event.category || (isSports ? 'Sports Match' : 'Featured Event')}
                             </Badge>
                             {event.requiresApplication && (
-                                <Badge className="bg-blue-600 hover:bg-blue-600 text-white border-none px-3 py-1 font-black uppercase tracking-widest text-[10px]">
+                                <Badge className="bg-blue-600 hover:bg-blue-700 text-white border-none px-3 py-1 font-bold uppercase tracking-wider text-[10px] rounded-xs shadow-sm">
                                     <ClipboardList size={12} className="mr-1 inline" /> Application Required
                                 </Badge>
                             )}
                             {isAdmin && (
-                                <Badge variant="outline" className="border-green-500 text-green-500 bg-green-500/5 backdrop-blur-md">
+                                <Badge variant="outline" className="border-emerald-500 text-emerald-400 bg-emerald-500/10 backdrop-blur-md rounded-xs">
                                     <ShieldCheck size={12} className="mr-1" /> Verified by Admin
                                 </Badge>
                             )}
                         </div>
-                        <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-none">
-                            {isSports ? `${event.homeTeam} vs ${event.awayTeam}` : event.title}
+                        <h1 className="text-3xl md:text-6xl font-black tracking-tight leading-none uppercase text-white drop-shadow-md">
+                            {isSports ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                         </h1>
                     </div>
                 </div>
@@ -176,44 +176,44 @@ export default function PublicEventDetailPage() {
             {/* Content Section */}
             <div className="max-w-7xl mx-auto px-6 md:px-12 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
                 {/* Left Side: Details */}
-                <div className="lg:col-span-8 space-y-12">
+                <div className="lg:col-span-8 space-y-10">
                     {/* Primary Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex items-start gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center shrink-0">
-                                <Calendar className="text-orange-500" size={24} />
+                        <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-6 flex items-start gap-4 shadow-sm dark:shadow-black/40">
+                            <div className="h-12 w-12 rounded-sm bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20 text-orange-500">
+                                <Calendar size={22} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest mb-1">Date & Time</p>
-                                <p className="text-lg font-bold text-white">{format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}</p>
-                                <p className="text-sm text-zinc-400">{format(new Date(event.date), 'hh:mm a')}</p>
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mb-1">Date & Time</p>
+                                <p className="text-base font-bold text-foreground">{format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(event.date), 'hh:mm a')}</p>
                             </div>
                         </div>
 
-                        <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex items-start gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center shrink-0">
-                                <MapPin className="text-orange-500" size={24} />
+                        <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-6 flex items-start gap-4 shadow-sm dark:shadow-black/40">
+                            <div className="h-12 w-12 rounded-sm bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20 text-orange-500">
+                                <MapPin size={22} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest mb-1">Venue</p>
-                                <p className="text-lg font-bold text-white">{event.venue}</p>
-                                <p className="text-sm text-zinc-400">Enugu, Nigeria</p>
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mb-1">Venue</p>
+                                <p className="text-base font-bold text-foreground">{event.venue}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">Enugu, Nigeria</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-black flex items-center gap-3">
-                            <Info size={24} className="text-orange-500" />
-                            ABOUT THIS ACTIVITY
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-black flex items-center gap-2.5 text-foreground uppercase tracking-tight">
+                            <Info size={20} className="text-orange-500" />
+                            About This Activity
                         </h2>
-                        <div className="text-zinc-400 leading-relaxed text-lg space-y-4">
+                        <div className="text-muted-foreground leading-relaxed text-base space-y-4">
                             <p>
                                 {event.description || "Join us for an unforgettable experience at our upcoming activity. This event promises to deliver excitement, premium entertainment, and a great atmosphere for all attendees. Secure your spot now to be part of the most talked-about gathering in the city."}
                             </p>
                             {isSports && (
-                                <p className="p-4 bg-zinc-900/30 border border-white/5 rounded-2xl italic text-sm">
+                                <p className="p-4 bg-muted/30 border border-border dark:border-zinc-800 rounded-sm italic text-xs text-foreground">
                                     High-stakes football encounter featuring top-tier competitive play. Gates open 2 hours before kickoff.
                                 </p>
                             )}
@@ -224,16 +224,16 @@ export default function PublicEventDetailPage() {
                 {/* Right Side: Booking/Application Card */}
                 <div className="lg:col-span-4">
                     <div className="sticky top-12 space-y-6">
-                        <div className="bg-zinc-900 border-2 border-orange-500/20 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                            <div className="p-8 space-y-8">
+                        <div className="bg-card border border-border dark:border-zinc-800 rounded-sm overflow-hidden shadow-md dark:shadow-black/40">
+                            <div className="p-6 sm:p-8 space-y-6">
                                 
                                 {event.requiresApplication ? (
                                     <>
                                         <div className="space-y-2">
-                                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Application Required</h3>
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Application Required</h3>
                                             <div className="flex items-center justify-between">
-                                                <p className="text-sm text-zinc-400">You must apply to attend.</p>
-                                                <p className="text-xl font-black text-white">
+                                                <p className="text-xs text-muted-foreground">You must apply to attend.</p>
+                                                <p className="text-xl font-black text-foreground">
                                                     {event.applicationFee > 0 ? `₦${event.applicationFee.toLocaleString()}` : "FREE"}
                                                 </p>
                                             </div>
@@ -242,19 +242,19 @@ export default function PublicEventDetailPage() {
                                         {!applicationStatus || (applicationStatus.status !== 'approved' && applicationStatus.status !== 'rejected') ? (
                                             <Button 
                                                 onClick={handleApplyClick}
-                                                className="w-full h-16 rounded-2xl bg-blue-600 hover:bg-blue-700 text-lg font-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-blue-600/20"
+                                                className="w-full h-12 rounded-sm bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
                                             >
                                                 {applicationStatus ? "VIEW APPLICATION STATUS" : "START APPLICATION"}
                                             </Button>
                                         ) : applicationStatus.status === 'approved' ? (
                                             <div className="space-y-4">
-                                                <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                                                    <p className="text-sm text-green-500 font-bold text-center">Your application was approved! You can now book tickets.</p>
+                                                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-sm">
+                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold text-center">Your application was approved! You can now book tickets.</p>
                                                 </div>
                                                 <Dialog>
                                                     <DialogTrigger asChild>
-                                                        <Button className="w-full h-16 rounded-2xl bg-orange-600 hover:bg-orange-700 text-lg font-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-orange-600/20">
-                                                            BOOK TICKETS NOW
+                                                        <Button className="w-full h-12 rounded-sm bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm">
+                                                            {event.ctaText || "BOOK TICKETS NOW"}
                                                         </Button>
                                                     </DialogTrigger>
                                                     {isSports ? (
@@ -265,8 +265,8 @@ export default function PublicEventDetailPage() {
                                                 </Dialog>
                                             </div>
                                         ) : (
-                                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
-                                                <p className="text-sm text-red-500 font-bold">Your application was not approved.</p>
+                                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-center">
+                                                <p className="text-xs text-red-600 dark:text-red-400 font-bold">Your application was not approved.</p>
                                             </div>
                                         )}
                                     </>
@@ -274,24 +274,24 @@ export default function PublicEventDetailPage() {
                                     <>
                                         {/* Standard Ticket Booking (No App Required) */}
                                         <div className="space-y-2">
-                                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Ticket Availability</h3>
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ticket Availability</h3>
                                             <div className="flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                                <span className="text-sm font-bold text-green-500 uppercase">Tickets Selling Fast</span>
+                                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Tickets Selling Fast</span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             {event.ticketTypes?.map((ticket: any, index: number) => (
-                                                <div key={index} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <div key={index} className="flex justify-between items-center p-3.5 bg-muted/40 dark:bg-zinc-800/40 rounded-sm border border-border dark:border-zinc-700">
                                                     <div>
-                                                        <p className="text-[10px] font-black text-zinc-500 uppercase">{ticket.name}</p>
-                                                        <p className="text-2xl font-black">
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{ticket.name}</p>
+                                                        <p className="text-xl font-black text-foreground mt-0.5">
                                                             {ticket.price > 0 ? `₦${Number(ticket.price).toLocaleString()}` : 'FREE'}
                                                         </p>
                                                     </div>
-                                                    <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                                                        <Ticket size={20} className="text-orange-500" />
+                                                    <div className="h-9 w-9 rounded-sm bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                                                        <Ticket size={18} className="text-orange-500" />
                                                     </div>
                                                 </div>
                                             ))}
@@ -299,8 +299,8 @@ export default function PublicEventDetailPage() {
 
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button className="w-full h-16 rounded-2xl bg-orange-600 hover:bg-orange-700 text-lg font-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-orange-600/20">
-                                                    BOOK TICKETS NOW
+                                                <Button className="w-full h-12 rounded-sm bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm">
+                                                    {event.ctaText || "BOOK TICKETS NOW"}
                                                 </Button>
                                             </DialogTrigger>
                                             {isSports ? (
@@ -312,7 +312,7 @@ export default function PublicEventDetailPage() {
                                     </>
                                 )}
 
-                                <p className="text-[10px] text-zinc-500 text-center uppercase tracking-widest leading-relaxed">
+                                <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider leading-relaxed pt-2 border-t border-border dark:border-zinc-800">
                                     Instant mobile delivery • Secure 256-bit encryption • Official SeniorBarman ticketing
                                 </p>
                             </div>
@@ -321,14 +321,14 @@ export default function PublicEventDetailPage() {
                             {isAdmin && (
                                 <Link
                                     href={`/u/a/events/${event._id}`}
-                                    className="block p-4 bg-zinc-950/80 border-t border-white/5 hover:bg-zinc-950 transition-colors group"
+                                    className="block p-3.5 bg-muted/20 border-t border-border dark:border-zinc-800 hover:bg-muted/40 transition-colors group"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <Trophy size={16} className="text-orange-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Admin Performance Stats</span>
+                                        <div className="flex items-center gap-2.5">
+                                            <Trophy size={15} className="text-orange-500" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">Admin Performance Stats</span>
                                         </div>
-                                        <ArrowLeft size={16} className="text-zinc-600 rotate-180 group-hover:translate-x-1 transition-transform" />
+                                        <ArrowLeft size={14} className="text-muted-foreground rotate-180 group-hover:translate-x-1 group-hover:text-foreground transition-transform" />
                                     </div>
                                 </Link>
                             )}
@@ -337,6 +337,19 @@ export default function PublicEventDetailPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function PublicEventDetailPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
+                <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
+                <p className="text-lg font-medium">Loading activity...</p>
+            </div>
+        }>
+            <PublicEventDetailContent />
+        </Suspense>
     )
 }
 

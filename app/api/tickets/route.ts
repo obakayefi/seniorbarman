@@ -16,6 +16,7 @@ import { StandType } from "@/types/components";
 import { getBaseUrl } from "@/lib/utils";
 import { summary } from "framer-motion/m";
 import { redis } from "@/lib/redis";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -149,7 +150,8 @@ export async function GET(req: Request) {
             });
         }
 
-        const events = await Event.find({}).populate("homeTeam awayTeam", "name logo")
+        const rawEvents = await Event.find({}).lean();
+        const events = await populateTeamsForEvents(rawEvents);
 
         // Debugging logs
         console.log(`[API] Fetching tickets. User: ${userId}`);

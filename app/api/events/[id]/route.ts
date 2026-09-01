@@ -2,16 +2,19 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getUserFromCookie } from "@/lib/auth";
 import Event from "@/models/Event";
+import Team from "@/models/Team";
 import cloudinary from "@/lib/cloudinary";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         await connectDB();
-        const event = await Event.findById(id);
-        if (!event) {
+        const rawEvent = await Event.findById(id).lean();
+        if (!rawEvent) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
+        const event = await populateTeamsForEvents(rawEvent);
         return NextResponse.json(event, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -32,6 +35,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const homeTeam = formData.get("homeTeam") as string;
         const awayTeam = formData.get("awayTeam") as string;
         const imageFile = formData.get("imageFile") as File;
+        const ctaText = formData.get("ctaText") as string;
         const ticketTypesStr = formData.get("ticketTypes") as string;
         const requiresApplication = formData.get("requiresApplication");
         const applicationFee = formData.get("applicationFee");
@@ -103,6 +107,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             ticketTypes: ticketTypes.length > 0 ? ticketTypes : existingEvent.ticketTypes,
             image: imageUrl
         };
+
+        if (ctaText !== null && ctaText !== undefined) {
+            updatedData.ctaText = ctaText.trim() || "Book Ticket";
+        }
 
         // Only update application fields if they were explicitly provided
         if (requiresApplication !== null && requiresApplication !== undefined) {

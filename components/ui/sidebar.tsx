@@ -236,7 +236,7 @@ function Sidebar({
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=left]:border-zinc-900 group-data-[side=right]:border-l",
           className
         )}
         {...props}
@@ -266,14 +266,17 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon-lg"
-      className={cn("size-10 border-1 border-slate-200", className)}
+      className={cn(
+        "size-9 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 rounded-lg transition-all m-2 shadow-sm cursor-pointer",
+        className
+      )}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeftIcon className={'border-zinc-800'} />
+      <PanelLeftIcon className="w-4 h-4 text-orange-400" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
