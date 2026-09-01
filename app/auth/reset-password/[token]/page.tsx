@@ -1,18 +1,12 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
 import { PasswordStrength } from "@/components/ui/password-strength"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import useInput from "@/hooks/useInput"
 import { useRouter, useParams } from "next/navigation"
+import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 import axios from "axios"
@@ -39,7 +33,6 @@ export default function ResetPasswordFulfillment() {
 
         setIsLoading(true)
         try {
-            // console.log('Fulfilling password reset for token:', token)
             const { data } = await axios.post('/api/auth/reset-password', {
                 token: String(token),
                 password: password.value
@@ -56,52 +49,75 @@ export default function ResetPasswordFulfillment() {
     }
 
     return (
-        <Card className="w-full mx-4 md:mx-0 border-neutral-800 max-w-lg">
-            <CardHeader className="mb-10">
-                <h1 className="lg:text-3xl md:text-3xl text-white text-2xl">Confirm New Password</h1>
-                <p className="text-gray-400 md:text-normal text-sm">
-                    Enter your new secure password below
-                </p>
-            </CardHeader>
-            <CardContent>
-                <form id="fulfillment-form" onSubmit={handleSubmit}>
-                    <div className="flex flex-col gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">New Password</Label>
+        <div className="w-full max-w-md mx-auto">
+            <div className="bg-card/95 dark:bg-zinc-950/90 backdrop-blur-md border border-border dark:border-zinc-800 rounded-sm p-6 sm:p-8 shadow-xl dark:shadow-black/40 transition-all">
+                <div className="mb-6 space-y-1.5">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                        Set New Password
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                        Enter and confirm your new secure password
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                                New Password
+                            </Label>
                             <PasswordInput
                                 id="password"
-                                placeholder="* * * * * * * *"
+                                placeholder="Create new password"
                                 value={password.value ?? ""}
                                 onChange={password.onChange}
-                                className="text-white bg-zinc-950"
                                 required
+                                autoComplete="new-password"
                             />
                             <PasswordStrength password={password.value} />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                                Confirm Password
+                            </Label>
                             <PasswordInput
                                 id="confirmPassword"
-                                placeholder="* * * * * * * *"
+                                placeholder="Re-enter your password"
                                 value={confirmPassword.value ?? ""}
                                 onChange={confirmPassword.onChange}
-                                className="text-white bg-zinc-950"
                                 required
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>
+
+                    <div className="pt-2 space-y-4">
+                        <Button
+                            type="submit"
+                            className="w-full h-10 rounded-sm bg-orange-500 hover:bg-orange-600 active:scale-[0.99] text-white font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading || !password.value || !confirmPassword.value}
+                        >
+                            {isLoading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Spinner /> Resetting password...
+                                </span>
+                            ) : (
+                                "Update Password"
+                            )}
+                        </Button>
+
+                        <div className="text-center pt-1">
+                            <Link
+                                href="/auth/login"
+                                className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
+                            >
+                                &larr; Back to Login
+                            </Link>
+                        </div>
+                    </div>
                 </form>
-            </CardContent>
-            <CardFooter className="flex-col mt-6 gap-2">
-                <Button
-                    form="fulfillment-form"
-                    type="submit"
-                    className="w-full disabled:bg-zinc-800"
-                    disabled={isLoading || !password.value || !confirmPassword.value}
-                >
-                    Reset Password {isLoading && <Spinner />}
-                </Button>
-            </CardFooter>
-        </Card>
+            </div>
+        </div>
     )
 }

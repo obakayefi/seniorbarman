@@ -23,24 +23,24 @@ export function NavUser() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-zinc-950 p-2 text-zinc-200 hover:bg-zinc-800 py-4 data-[state=open]:text-zinc-950">
+            <SidebarMenuButton size="lg" className="p-2 text-foreground hover:bg-muted py-4 data-[state=open]:bg-muted transition-colors">
               <section className="flex flex-col">
                 <Avatar className="h-12 w-12 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg text-zinc-900">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-orange-500 text-white font-bold">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
               </section>
-              <div className="grid flex-1 text-zinc-200 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-foreground text-left text-sm leading-tight">
                 <div className="flex items-center gap-1">
                   <span className="truncate font-medium">{user.name}</span>
-                  {((user?.role === 'bouncer') || (user?.role === 'admin') || (user?.role === 'dev') || (user?.role === 'organizer')) ? <span className="truncate text-[10px] p-1 px-2 rounded text-zinc-400 uppercase">{user.role}</span> : null}
+                  {((user?.role === 'bouncer') || (user?.role === 'admin') || (user?.role === 'dev') || (user?.role === 'organizer')) ? <span className="truncate text-[10px] p-1 px-2 rounded text-muted-foreground uppercase bg-muted">{user.role}</span> : null}
                 </div>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) z-110 bg-zinc-900 border-zinc-800 text-zinc-200 min-w-56 rounded-lg" side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
+          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) z-110 bg-card border-border text-card-foreground min-w-56 rounded-lg shadow-lg" side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
               <Sparkles />

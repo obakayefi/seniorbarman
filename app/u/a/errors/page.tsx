@@ -41,7 +41,7 @@ export default function ErrorDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 sm:p-12 font-sans selection:bg-red-500/30">
+        <div className="min-h-screen bg-background text-foreground p-6 sm:p-12 font-sans selection:bg-red-500/30">
             {/* Minimalist Dashboard Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 max-w-7xl mx-auto">
                 <div>
@@ -49,7 +49,7 @@ export default function ErrorDashboard() {
                         SYSTEM <span className="text-red-500">AUDIT</span> 
                         <Bug size={40} className="text-red-500 animate-pulse" />
                     </h1>
-                    <p className="text-zinc-500 font-medium tracking-wide mt-2 uppercase text-sm">
+                    <p className="text-muted-foreground font-medium tracking-wide mt-2 uppercase text-sm">
                         Silent Runtime Exceptions & Service Monitoring
                     </p>
                 </div>
@@ -58,14 +58,14 @@ export default function ErrorDashboard() {
                     <button 
                         onClick={loadLogs}
                         disabled={loading}
-                        className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex-1 lg:flex-none text-zinc-300 font-bold px-6 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                        className="bg-mutedhover:bg-muted border border-border flex-1 lg:flex-none text-foreground font-bold px-6 py-4 rounded-sm flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                     >
-                        <RefreshCw size={18} className={loading ? "animate-spin text-white" : ""} />
+                        <RefreshCw size={18} className={loading ? "animate-spin text-foreground" : ""} />
                         <span className="tracking-wide">Refresh Logs</span>
                     </button>
                     <button
                         onClick={handleClear}
-                        className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 flex-1 lg:flex-none text-red-500 font-bold px-6 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all"
+                        className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 flex-1 lg:flex-none text-red-500 font-bold px-6 py-4 rounded-sm flex items-center justify-center gap-3 transition-all"
                     >
                         <Trash2 size={18} />
                         <span className="tracking-wide">Wipe Logfile</span>
@@ -76,18 +76,18 @@ export default function ErrorDashboard() {
             {/* Dynamic Content Area */}
             <div className="max-w-7xl mx-auto space-y-6">
                 {loading ? (
-                    <div className="bg-zinc-950 border border-white/5 rounded-3xl p-16 text-center text-zinc-600 flex flex-col items-center gap-5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
+                    <div className="bg-card border border-border rounded-sm p-16 text-center text-muted-foreground/70 flex flex-col items-center gap-5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
                         <RefreshCw size={36} className="animate-spin text-red-500/30" />
                         <p className="font-extrabold tracking-[0.2em] uppercase text-xs">Analyzing Filesystem Vectors...</p>
                     </div>
                 ) : logs.length === 0 ? (
-                    <div className="bg-zinc-950 border border-white/5 rounded-3xl p-20 text-center text-zinc-600 flex flex-col items-center gap-6 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
+                    <div className="bg-card border border-border rounded-sm p-20 text-center text-muted-foreground/70 flex flex-col items-center gap-6 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
                         <div className="p-8 bg-green-500/5 rounded-full border border-green-500/10">
                             <AlertCircle size={56} className="text-green-500" />
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Zero Exceptions Detected</h3>
-                            <p className="text-zinc-500 font-medium">The local markdown stream is completely clean. System is healthy.</p>
+                            <h3 className="text-2xl font-black text-foreground mb-2 uppercase tracking-tight">Zero Exceptions Detected</h3>
+                            <p className="text-muted-foreground font-medium">The local markdown stream is completely clean. System is healthy.</p>
                         </div>
                     </div>
                 ) : (
@@ -97,31 +97,31 @@ export default function ErrorDashboard() {
                             const date = new Date(log.timestamp)
                             
                             return (
-                                <div key={log.id} className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-xl hover:border-red-500/20 transition-all duration-300">
+                                <div key={log.id} className="bg-muted/40 backdrop-blur-xl border border-border rounded-sm overflow-hidden shadow-xl hover:border-red-500/20 transition-all duration-300">
                                     <div 
                                         className="p-6 sm:p-8 cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
                                         onClick={() => toggleExpand(log.id)}
                                     >
                                         <div className="flex items-start gap-5 w-full">
-                                            <div className="mt-1 p-3 bg-red-500/10 rounded-2xl shrink-0 border border-red-500/10">
+                                            <div className="mt-1 p-3 bg-red-500/10 rounded-sm shrink-0 border border-red-500/10">
                                                 <TerminalSquare size={22} className="text-red-500" />
                                             </div>
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-3">
+                                                <h3 className="text-xl font-black text-foreground tracking-tight flex items-center gap-3">
                                                     {log.title}
                                                 </h3>
-                                                <p className="text-zinc-400 mt-2 font-medium leading-relaxed">
+                                                <p className="text-muted-foreground mt-2 font-medium leading-relaxed">
                                                     {log.message}
                                                 </p>
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 w-full md:w-auto border-t md:border-t-0 border-zinc-800 pt-6 md:pt-0">
-                                            <div className="flex flex-col gap-2 items-start md:items-end text-xs font-bold text-zinc-500 tracking-widest uppercase">
-                                                <span className="flex items-center gap-2"><HardDrive size={14} className="text-zinc-600"/>{log.component}</span>
+                                        <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 w-full md:w-auto border-t md:border-t-0 border-border pt-6 md:pt-0">
+                                            <div className="flex flex-col gap-2 items-start md:items-end text-xs font-bold text-muted-foreground tracking-widest uppercase">
+                                                <span className="flex items-center gap-2"><HardDrive size={14} className="text-muted-foreground/70"/>{log.component}</span>
                                                 <span className="flex items-center gap-2"><Clock size={14} className="text-red-500/50"/>{date.toLocaleString()}</span>
                                             </div>
-                                            <button className="text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all bg-zinc-800/40 p-3 rounded-xl">
+                                            <button className="text-muted-foreground hover:text-foreground hover:bg-muted transition-all bg-muted/40 p-3 rounded-sm">
                                                 {isExpanded ? <ChevronDown size={20}/> : <ChevronRight size={20}/>}
                                             </button>
                                         </div>
@@ -131,20 +131,20 @@ export default function ErrorDashboard() {
                                     <div className={`grid transition-all duration-500 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                                         <div className="overflow-hidden">
                                             {log.stackTrace ? (
-                                                <div className="bg-black/60 m-6 sm:m-8 mt-0 p-6 rounded-2xl border border-red-500/20 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                                                <div className="bg-background/60 m-6 sm:m-8 mt-0 p-6 rounded-sm border border-red-500/20 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <h4 className="text-xs font-black uppercase text-red-500 tracking-widest flex items-center gap-2">
                                                             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse border border-red-400"></div>
                                                             Execution Reference
                                                         </h4>
                                                     </div>
-                                                    <pre className="text-[13px] text-zinc-400 font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto max-h-[400px] scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                                                    <pre className="text-[13px] text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto overflow-y-auto max-h-[400px] scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                                                         {log.stackTrace}
                                                     </pre>
                                                 </div>
                                             ) : (
-                                                <div className="m-6 sm:m-8 mt-0 p-6 border border-zinc-800/50 border-dashed rounded-2xl bg-zinc-950/50 text-center">
-                                                    <span className="text-sm font-bold tracking-wide uppercase text-zinc-600 italic">No stack trace captured by logger</span>
+                                                <div className="m-6 sm:m-8 mt-0 p-6 border border-border/50 border-dashed rounded-sm bg-card/50 text-center">
+                                                    <span className="text-sm font-bold tracking-wide uppercase text-muted-foreground/70 italic">No stack trace captured by logger</span>
                                                 </div>
                                             )}
                                         </div>

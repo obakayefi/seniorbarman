@@ -215,7 +215,9 @@ const OrganizerDashboard = () => {
                                             </span>
                                         </div>
                                         <div>
-                                            <h4 className="text-white font-bold text-sm">{event.title}</h4>
+                                            <h4 className="text-white font-bold text-sm">
+                                                {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
+                                            </h4>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <MapPin size={12} className="text-zinc-600" />
                                                 <span className="text-zinc-500 text-xs">{event.venue || "No venue"}</span>

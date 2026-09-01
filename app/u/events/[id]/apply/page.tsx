@@ -168,7 +168,7 @@ export default function ApplyPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
                 <p className="text-lg font-medium">Preparing application environment...</p>
             </div>
@@ -177,9 +177,9 @@ export default function ApplyPage() {
 
     if (!event) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
-                <p className="text-xl">Event not found</p>
-                <Button asChild variant="outline">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
+                <p className="text-xl text-foreground font-bold">Event not found</p>
+                <Button asChild variant="outline" className="border-border rounded-xl">
                     <Link href="/events">Explore Events</Link>
                 </Button>
             </div>
@@ -187,26 +187,26 @@ export default function ApplyPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white pb-24">
+        <div className="min-h-screen bg-background text-foreground pb-24">
             {/* Header background pattern */}
-            <div className="relative h-64 w-full overflow-hidden border-b border-zinc-900">
+            <div className="relative h-64 w-full overflow-hidden border-b border-border bg-muted/20">
                 <div className="absolute inset-0 bg-cover bg-center filter blur-lg opacity-25 scale-110" style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop'})` }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
                 
                 <div className="relative z-10 max-w-4xl mx-auto px-6 h-full flex flex-col justify-end pb-8 space-y-4">
-                    <Link href={`/events/${id}`} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm font-medium w-fit">
+                    <Link href={`/events/${id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium w-fit">
                         <ChevronLeft size={16} /> Back to Event Details
                     </Link>
                     
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <Badge className="bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold uppercase tracking-widest text-[10px] rounded-lg">
+                            <Badge className="bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold uppercase tracking-widest text-[10px] rounded-lg">
                                 Application Portal
                             </Badge>
-                            <span className="text-zinc-500 text-xs">Event Fee: {event.applicationFee > 0 ? `₦${event.applicationFee.toLocaleString()}` : 'FREE'}</span>
+                            <span className="text-muted-foreground text-xs">Event Fee: {event.applicationFee > 0 ? `₦${event.applicationFee.toLocaleString()}` : 'FREE'}</span>
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-none uppercase italic">
-                            {event.type === 'sports' ? `${event.homeTeam} vs ${event.awayTeam}` : event.title}
+                        <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight leading-none uppercase italic">
+                            {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                         </h1>
                     </div>
                 </div>
@@ -215,7 +215,7 @@ export default function ApplyPage() {
             {/* Application Flow Container */}
             <div className="max-w-3xl mx-auto px-6 -mt-8 relative z-20">
                 {/* Steps Header bar */}
-                <Card className="bg-zinc-900/90 border-zinc-800 backdrop-blur-2xl rounded-3xl p-6 mb-8">
+                <Card className="bg-card/90 border-border backdrop-blur-2xl rounded-3xl p-6 mb-8 shadow-xl">
                     <div className="flex items-center justify-between px-4">
                         {[
                             { s: 1, label: "Access & Fee", icon: <CreditCard size={14} /> },
@@ -227,19 +227,19 @@ export default function ApplyPage() {
                                     <div className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                                         step >= item.s 
                                             ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]" 
-                                            : "bg-zinc-800 text-zinc-600"
+                                            : "bg-muted text-muted-foreground"
                                     }`}>
                                         {item.icon}
                                     </div>
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                        step >= item.s ? "text-orange-500" : "text-zinc-700"
+                                        step >= item.s ? "text-orange-500" : "text-muted-foreground"
                                     }`}>
                                         {item.label}
                                     </span>
                                 </div>
                                 {idx < 2 && (
                                     <div className={`flex-1 h-[2px] mb-6 transition-all duration-500 ${
-                                        step > item.s ? "bg-orange-500" : "bg-zinc-800"
+                                        step > item.s ? "bg-orange-500" : "bg-border"
                                     }`} />
                                 )}
                             </React.Fragment>
@@ -249,29 +249,29 @@ export default function ApplyPage() {
 
                 {/* STEP 1: Access Info and Payments */}
                 {step === 1 && (
-                    <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl rounded-3xl p-8 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
+                    <Card className="bg-card border-border backdrop-blur-xl rounded-3xl p-8 space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500 shadow-xl">
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-black tracking-tight text-white uppercase italic">Access Authentication</h2>
-                            <p className="text-zinc-400 text-sm leading-relaxed">
+                            <h2 className="text-2xl font-black tracking-tight text-foreground uppercase italic">Access Authentication</h2>
+                            <p className="text-muted-foreground text-sm leading-relaxed">
                                 Thank you for your interest in joining this event. Because of the exclusive nature of this activity, all attendees must complete an application. 
                                 {event.applicationFee > 0 && ` An application fee of ₦${event.applicationFee.toLocaleString()} is required before you can access the form.`}
                             </p>
                         </div>
 
                         {applicationStatus?.status === "pending_payment" && (
-                            <div className="flex items-center gap-3 text-amber-400 bg-amber-500/10 p-5 rounded-2xl border border-amber-500/20 text-sm font-semibold">
+                            <div className="flex items-center gap-3 text-amber-500 bg-amber-500/10 p-5 rounded-2xl border border-amber-500/20 text-sm font-semibold">
                                 <AlertCircle size={20} className="shrink-0 animate-pulse text-amber-500" />
                                 <span>We found a pending payment for your account. Please complete it using the checkout link to unlock the questionnaire.</span>
                             </div>
                         )}
 
-                        <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 flex items-center justify-between">
+                        <div className="bg-muted/40 p-6 rounded-2xl border border-border flex items-center justify-between">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Access Type</p>
-                                <p className="text-white font-black uppercase tracking-tight">{event.applicationFee > 0 ? "Paid Application" : "Free Invitation Form"}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Type</p>
+                                <p className="text-foreground font-black uppercase tracking-tight">{event.applicationFee > 0 ? "Paid Application" : "Free Invitation Form"}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Fee</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Fee</p>
                                 <p className="text-2xl font-black text-orange-500">{event.applicationFee > 0 ? `₦${event.applicationFee.toLocaleString()}` : "FREE"}</p>
                             </div>
                         </div>
@@ -279,7 +279,7 @@ export default function ApplyPage() {
                         <Button 
                             onClick={handleApplyOrPay} 
                             disabled={submitting}
-                            className="w-full h-16 bg-orange-500 hover:bg-white text-white hover:text-black font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99]"
+                            className="w-full h-16 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99] rounded-2xl"
                         >
                             {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChevronRight className="mr-2 h-5 w-5" />}
                             {event.applicationFee > 0 ? `Pay ₦${event.applicationFee.toLocaleString()} & Fill Form` : "Proceed to Invitation Form"}
@@ -292,20 +292,20 @@ export default function ApplyPage() {
                     <form onSubmit={submitForm} className="space-y-8 animate-in fade-in slide-in-from-right-6 duration-500">
                         {/* Photo Headshot Card */}
                         {event.requestPicture && (
-                            <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl rounded-3xl p-6 space-y-4">
-                                <div className="border-b border-zinc-800 pb-3">
-                                    <Label className="text-white font-black uppercase tracking-widest text-[11px] flex items-center gap-1.5">
+                            <Card className="bg-card border-border backdrop-blur-xl rounded-3xl p-6 space-y-4 shadow-xl">
+                                <div className="border-b border-border pb-3">
+                                    <Label className="text-foreground font-black uppercase tracking-widest text-[11px] flex items-center gap-1.5">
                                         Headshot Upload <span className="text-red-500 font-bold">*</span>
                                     </Label>
-                                    <CardDescription className="text-zinc-500 text-xs mt-1">Please provide a clear front-facing portrait photo of yourself.</CardDescription>
+                                    <CardDescription className="text-muted-foreground text-xs mt-1">Please provide a clear front-facing portrait photo of yourself.</CardDescription>
                                 </div>
                                 
                                 <div className="flex flex-col md:flex-row items-center gap-6 py-2">
-                                    <div className="relative h-36 w-36 rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
+                                    <div className="relative h-36 w-36 rounded-3xl bg-muted border border-border overflow-hidden flex items-center justify-center shadow-inner shrink-0">
                                         {photoPreview ? (
                                             <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
                                         ) : (
-                                            <div className="flex flex-col items-center gap-1.5 text-zinc-700">
+                                            <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
                                                 <Upload size={28} />
                                                 <span className="text-[10px] font-black uppercase tracking-tighter">No Preview</span>
                                             </div>
@@ -326,13 +326,13 @@ export default function ApplyPage() {
                                             className="hidden" 
                                             id="portrait-upload" 
                                         />
-                                        <p className="text-zinc-500 text-[11px] leading-normal">
+                                        <p className="text-muted-foreground text-[11px] leading-normal">
                                             Supported formats: JPG, PNG, WEBP. Max file size: 5MB. Ensure good lighting and a simple background.
                                         </p>
                                         <Button 
                                             asChild 
                                             variant="outline" 
-                                            className="w-full md:w-auto border-zinc-800 hover:bg-zinc-800 font-black uppercase tracking-widest text-[10px] h-11 rounded-2xl cursor-pointer"
+                                            className="w-full md:w-auto border-border hover:bg-muted font-black uppercase tracking-widest text-[10px] h-11 rounded-2xl cursor-pointer"
                                         >
                                             <label htmlFor="portrait-upload">
                                                 {photo ? "Replace Headshot" : "Upload Headshot Image"}
@@ -344,10 +344,10 @@ export default function ApplyPage() {
                         )}
 
                         {/* Questions Card */}
-                        <Card className="bg-zinc-900/60 border-zinc-800 backdrop-blur-xl rounded-3xl p-6 md:p-8 space-y-6">
-                            <div className="border-b border-zinc-800 pb-4 mb-2">
-                                <h3 className="text-xl font-black text-white uppercase italic tracking-tight">Application Questions</h3>
-                                <p className="text-zinc-500 text-xs mt-1">Please provide thorough and accurate responses to the questions below.</p>
+                        <Card className="bg-card border-border backdrop-blur-xl rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+                            <div className="border-b border-border pb-4 mb-2">
+                                <h3 className="text-xl font-black text-foreground uppercase italic tracking-tight">Application Questions</h3>
+                                <p className="text-muted-foreground text-xs mt-1">Please provide thorough and accurate responses to the questions below.</p>
                             </div>
 
                             {event.formFields?.length > 0 ? (
@@ -356,7 +356,7 @@ export default function ApplyPage() {
                                         const value = answers[field.label] || "";
                                         return (
                                             <div key={field.label} className="space-y-2">
-                                                <Label className="text-zinc-300 font-black uppercase text-[10px] tracking-widest flex items-center gap-1">
+                                                <Label className="text-foreground font-black uppercase text-[10px] tracking-widest flex items-center gap-1">
                                                     {field.label} {field.required && <span className="text-red-500 font-bold">*</span>}
                                                 </Label>
                                                 
@@ -364,7 +364,7 @@ export default function ApplyPage() {
                                                     <Input 
                                                         value={value} 
                                                         onChange={(e) => handleAnswerChange(field.label, e.target.value)} 
-                                                        className="bg-zinc-950 border-zinc-800 text-white rounded-2xl h-12 focus:border-orange-500/50 transition-all font-medium"
+                                                        className="bg-background border-input text-foreground rounded-2xl h-12 focus:border-orange-500 transition-all font-medium"
                                                         placeholder="Enter your response..."
                                                         required={field.required}
                                                     />
@@ -377,8 +377,8 @@ export default function ApplyPage() {
                                                                 key={opt} 
                                                                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${
                                                                     value === opt 
-                                                                        ? "bg-orange-500/10 border-orange-500 text-orange-400" 
-                                                                        : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                                                                        ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400" 
+                                                                        : "bg-muted/30 border-border text-foreground hover:border-border/80"
                                                                 }`}
                                                             >
                                                                 <input 
@@ -405,8 +405,8 @@ export default function ApplyPage() {
                                                                     key={opt} 
                                                                     className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${
                                                                         isChecked 
-                                                                            ? "bg-orange-500/10 border-orange-500 text-orange-400" 
-                                                                            : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                                                                            ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400" 
+                                                                            : "bg-muted/30 border-border text-foreground hover:border-border/80"
                                                                     }`}
                                                                 >
                                                                     <input 
@@ -427,9 +427,9 @@ export default function ApplyPage() {
                                     })}
                                 </div>
                             ) : (
-                                <div className="text-center py-12 bg-zinc-950 rounded-2xl border border-dashed border-zinc-800">
-                                    <p className="text-zinc-500 text-sm font-medium">No custom questions are required for this event.</p>
-                                    <p className="text-[10px] text-zinc-700 uppercase mt-1">Just finalize your headshot and submit.</p>
+                                <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
+                                    <p className="text-muted-foreground text-sm font-medium">No custom questions are required for this event.</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase mt-1">Just finalize your headshot and submit.</p>
                                 </div>
                             )}
                         </Card>
@@ -438,7 +438,7 @@ export default function ApplyPage() {
                         <Button 
                             type="submit"
                             disabled={submitting || (event.requestPicture && !photo)}
-                            className="w-full h-16 bg-orange-500 hover:bg-white text-white hover:text-black font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99]"
+                            className="w-full h-16 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99] rounded-2xl"
                         >
                             {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
                             Submit Form & Finalize Application

@@ -7,6 +7,7 @@ import User from "@/models/User";
 import { getUserFromCookie } from "@/lib/auth";
 import { ROLES, ROLE_GROUPS } from "@/lib/roles";
 import { hasManagerAccessToTeams } from "@/services/teamService";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 export const dynamic = 'force-dynamic';
 
@@ -30,13 +31,11 @@ export async function GET(
         const { id } = await params;
 
         // Fetch event details
-        const event = await Event.findById(id)
-            .populate('homeTeam', 'name logo')
-            .populate('awayTeam', 'name logo')
-            .lean() as any;
-        if (!event) {
+        const rawEvent = await Event.findById(id).lean() as any;
+        if (!rawEvent) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
+        const event = await populateTeamsForEvents(rawEvent);
 
         // Restrict organizers and team managers to their own/managed events
         if (user.role === ROLES.ORGANIZER && event.createdBy?.toString() !== user.id) {

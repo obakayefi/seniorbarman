@@ -126,24 +126,29 @@ export default function RegularEventCard({ event }: { event: any }) {
         event.allowNoTickets || !event.ticketTypes || event.ticketTypes.length === 0;
 
     return (
-        <section className="min-w-76 w-full rounded-xl border-[1.5px] border-zinc-900 overflow-hidden group transition-shadow duration-500 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:border-zinc-800 flex flex-col h-full">
+        <section className="min-w-76 w-full rounded-sm border border-border overflow-hidden group transition-shadow duration-300 hover:shadow-md bg-card flex flex-col h-full">
             {/* Event Image */}
-            <Link href={`/events/${event._id}`} className="block bg-zinc-800 overflow-hidden shrink-0 relative">
+            <Link href={`/events/${event._id}`} className="block bg-muted overflow-hidden shrink-0 relative">
                 <img
                     src={event.image || "https://www.vibe.com/wp-content/uploads/2023/10/GettyImages-1502049780.jpg?w=1024"}
                     alt={event.title}
-                    className="w-full h-62 object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+                    className="w-full h-62 object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                 />
                 {event.requiresApplication && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full text-blue-700 border border-white/20 text-[10px] font-black uppercase tracking-widest shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
-                        <ClipboardList size={12} className="text-blue-600" />
-                        Application Required
-                    </div>
+                    <button
+                        onClick={handleApplyClick}
+                        type="button"
+                        className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white rounded-sm text-[10px] font-black uppercase tracking-widest shadow-md border border-orange-400/30 transition-all cursor-pointer"
+                        title="Apply directly for this event"
+                    >
+                        <ClipboardList size={12} className="text-white" />
+                        Apply Direct
+                    </button>
                 )}
             </Link>
 
             {/* Carousel body */}
-            <div className="flex flex-col flex-1 bg-zinc-950 overflow-hidden">
+            <div className="flex flex-col flex-1 bg-card overflow-hidden">
                 {/* Sliding track — touch events enable swipe on mobile */}
                 <div
                     className="relative flex-1 overflow-hidden"
@@ -157,29 +162,29 @@ export default function RegularEventCard({ event }: { event: any }) {
                     >
                         {/* ── SLIDE 1: Event Info ── */}
                         <div
-                            className="p-2 py-6 flex flex-col gap-8 text-zinc-100 px-6 flex-1 justify-between"
+                            className="p-2 py-6 flex flex-col gap-8 text-foreground px-6 flex-1 justify-between"
                             style={{ width: `${100 / totalSlides}%`, flexShrink: 0 }}
                         >
                             <section className="flex gap-2 flex-col">
                                 <section className="flex flex-col gap-2">
                                     <div className="flex items-center gap-2">
-                                        <Link href={`/events/${event._id}`} className="hover:text-amber-500 transition-colors">
-                                            <h2 className="text-xl">{event.title}</h2>
+                                        <Link href={`/events/${event._id}`} className="hover:text-orange-500 transition-colors">
+                                            <h2 className="text-xl font-bold text-foreground">{event.title}</h2>
                                         </Link>
                                         {event.isArchived && (
-                                            <span className="px-2 py-0.5 text-[9px] font-black tracking-widest uppercase bg-amber-500/20 text-amber-500 rounded border border-amber-500/30">Archived</span>
+                                            <span className="px-2 py-0.5 text-[9px] font-black tracking-widest uppercase bg-amber-500/20 text-amber-600 dark:text-amber-500 rounded-sm border border-amber-500/30">Archived</span>
                                         )}
                                     </div>
-                                    <p className="text-sm flex gap-2 text-zinc-600">
+                                    <p className="text-sm flex gap-2 text-muted-foreground">
                                         <span><Calendar1 size={16} /></span>{formattedDate}
                                     </p>
-                                    <p className="flex items-center gap-2 text-sm text-zinc-600">
+                                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <span><SlLocationPin /></span> {event.venue}
                                     </p>
                                     {event.requiresApplication && (
                                         <button
                                             onClick={handleApplyClick}
-                                            className="group flex w-fit items-center gap-2 mt-2 px-4 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-500 rounded-full text-xs font-black uppercase tracking-widest transition-colors"
+                                            className="group flex w-fit items-center gap-2 mt-2 px-4 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-500 rounded-sm text-xs font-black uppercase tracking-widest transition-colors"
                                         >
                                             Apply Here
                                             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform duration-300 inline-block" />
@@ -192,10 +197,10 @@ export default function RegularEventCard({ event }: { event: any }) {
                                 <div className="flex flex-col gap-1">
                                     {event.ticketTypes?.slice(0, 2).map((ticket: any, index: number) => (
                                         <div key={index}>
-                                            <span className="text-xs text-zinc-600 uppercase">{ticket.name}</span>
-                                            <p className={`text-xl font-semibold ${index === 0 ? "text-green-400" : "text-yellow-500"}`}>
+                                            <span className="text-xs text-muted-foreground uppercase">{ticket.name}</span>
+                                            <p className={`text-xl font-semibold ${index === 0 ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-500"}`}>
                                                 {Number(ticket.price || 0) <= 0 ? "FREE" : (
-                                                    <>₦ <span className="text-white">{Number(ticket.price).toLocaleString()}</span></>
+                                                    <>₦ <span className="text-foreground">{Number(ticket.price).toLocaleString()}</span></>
                                                 )}
                                             </p>
                                         </div>
@@ -207,14 +212,18 @@ export default function RegularEventCard({ event }: { event: any }) {
                                     {!noTickets ? (
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <NButton className="bg-green-800 hover:bg-green-700 w-full">BUY TICKETS</NButton>
+                                                <NButton className="bg-green-700 hover:bg-green-600 text-white w-full rounded-sm uppercase">
+                                                    {event.ctaText || "BUY TICKETS"}
+                                                </NButton>
                                             </DialogTrigger>
                                             <BookRegularEventModal event={event} />
                                         </Dialog>
                                     ) : (
                                         <Link
                                             href={`/u/events/${event._id}/apply`}>
-                                            <NButton className="bg-orange-500 hover:bg-orange-600 w-full">APPLY HERE</NButton>
+                                            <NButton className="bg-orange-500 hover:bg-orange-600 text-white w-full rounded-sm uppercase">
+                                                {event.ctaText || "APPLY HERE"}
+                                            </NButton>
                                         </Link>
                                     )}
                                 </div>
@@ -224,31 +233,31 @@ export default function RegularEventCard({ event }: { event: any }) {
                         {/* ── SLIDE 2: Admin Controls (admin only) ── */}
                         {isAdmin && (
                             <div
-                                className="py-6 px-6 flex flex-col justify-between text-zinc-100"
+                                className="py-6 px-6 flex flex-col justify-between text-foreground"
                                 style={{ width: `${100 / totalSlides}%`, flexShrink: 0 }}
                             >
                                 {/* Admin header */}
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                                        <Shield size={14} className="text-amber-400" />
+                                    <div className="flex items-center justify-center w-7 h-7 rounded-sm bg-amber-500/10 border border-amber-500/20">
+                                        <Shield size={14} className="text-amber-500" />
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
                                         Admin Controls
                                     </span>
                                 </div>
 
                                 {/* Quick info recap */}
-                                <div className="flex flex-col gap-1 mb-6 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800">
-                                    <p className="text-sm font-semibold text-zinc-200 truncate">{event.title}</p>
-                                    <p className="text-xs text-zinc-500">{formattedDate}</p>
-                                    <p className="text-xs text-zinc-500 truncate">{event.venue}</p>
+                                <div className="flex flex-col gap-1 mb-6 p-3 rounded-sm bg-muted/40 border border-border">
+                                    <p className="text-sm font-semibold text-foreground truncate">{event.title}</p>
+                                    <p className="text-xs text-muted-foreground">{formattedDate}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{event.venue}</p>
                                 </div>
 
                                 {/* Admin action buttons */}
                                 <div className="flex flex-col gap-2 w-full mt-auto">
                                     <NButton
                                         onClick={() => router.push(`/u/a/events/${event._id}/edit`)}
-                                        className="flex items-center justify-center gap-2 bg-zinc-800 border border-zinc-700 hover:border-zinc-500 w-full text-xs py-2"
+                                        className="flex items-center justify-center gap-2 bg-muted text-foreground border border-border hover:bg-muted/80 w-full text-xs py-2 rounded-sm"
                                     >
                                         <Pencil size={13} />
                                         EDIT EVENT
@@ -256,7 +265,7 @@ export default function RegularEventCard({ event }: { event: any }) {
                                     <NButton
                                         onClick={onArchiveToggle}
                                         disabled={isArchiving}
-                                        className="flex items-center justify-center gap-2 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white border border-amber-500/20 w-full text-xs py-2"
+                                        className="flex items-center justify-center gap-2 bg-amber-500/10 text-amber-600 dark:text-amber-500 hover:bg-amber-500 hover:text-white border border-amber-500/20 w-full text-xs py-2 rounded-sm"
                                     >
                                         {event.isArchived ? <ArchiveRestore size={13} /> : <Archive size={13} />}
                                         {event.isArchived ? "UNARCHIVE" : "ARCHIVE"} EVENT
@@ -265,7 +274,7 @@ export default function RegularEventCard({ event }: { event: any }) {
                                         onConfirm={onDelete}
                                         isDeleting={isDeleting}
                                         trigger={
-                                            <NButton className="flex items-center justify-center gap-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 w-full text-xs py-2">
+                                            <NButton className="flex items-center justify-center gap-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 w-full text-xs py-2 rounded-sm">
                                                 <Trash2 size={13} />
                                                 DELETE EVENT
                                             </NButton>
@@ -279,13 +288,13 @@ export default function RegularEventCard({ event }: { event: any }) {
 
                 {/* ── Futuristic Carousel Indicator (admin only) ── */}
                 {isAdmin && (
-                    <div className="flex items-center justify-center gap-1 py-2 px-4 border-t border-zinc-900/60">
+                    <div className="flex items-center justify-center gap-1 py-2 px-4 border-t border-border">
                         {/* Prev arrow — large tap target for mobile */}
                         <button
                             onClick={() => goTo(Math.max(0, slide - 1))}
                             disabled={slide === 0}
                             aria-label="Previous slide"
-                            className="flex items-center justify-center w-10 h-10 rounded-full text-zinc-500 hover:text-zinc-200 active:text-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-200"
+                            className="flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-foreground active:text-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-200"
                         >
                             <ChevronLeft size={16} />
                         </button>
@@ -317,7 +326,7 @@ export default function RegularEventCard({ event }: { event: any }) {
                                             transition: "all 0.4s cubic-bezier(0.4,0,0.2,1)",
                                             background: slide === i
                                                 ? "linear-gradient(90deg, #f59e0b, #ef4444)"
-                                                : "rgba(113,113,122,0.5)",
+                                                : "var(--border)",
                                             boxShadow: slide === i
                                                 ? "0 0 8px rgba(245,158,11,0.7), 0 0 20px rgba(239,68,68,0.3)"
                                                 : "none",
@@ -333,7 +342,7 @@ export default function RegularEventCard({ event }: { event: any }) {
                             onClick={() => goTo(Math.min(totalSlides - 1, slide + 1))}
                             disabled={slide === totalSlides - 1}
                             aria-label="Next slide"
-                            className="flex items-center justify-center w-10 h-10 rounded-full text-zinc-500 hover:text-zinc-200 active:text-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-200"
+                            className="flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:text-foreground active:text-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-200"
                         >
                             <ChevronRight size={16} />
                         </button>

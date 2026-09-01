@@ -27,14 +27,14 @@ const EventSchema = new mongoose.Schema(
             default: 0
         },
         homeTeam: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             ref: "Team",
             required: function () {
                 return this.type === "sports";
             },
         },
         awayTeam: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             ref: "Team",
             required: function () {
                 return this.type === "sports";
@@ -58,6 +58,11 @@ const EventSchema = new mongoose.Schema(
         image: {
             type: String,
             required: false
+        },
+        ctaText: {
+            type: String,
+            default: "Book Ticket",
+            trim: true,
         },
         ticketTypes: [
             {

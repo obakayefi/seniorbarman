@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { PageHeader } from '@/components/ui/page-header'
+import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
@@ -9,7 +9,6 @@ import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import { MdOutlineStadium } from "react-icons/md";
 import { HunchoRoleChecker } from '@/lib/helpers';
-
 
 const UserDashboard = () => {
   const { user } = useApp()
@@ -85,60 +84,58 @@ const UserDashboard = () => {
   ]
 
   return (
-    <div className='md:p-10 p-6 w-full space-y-10'>
-      <PageHeader title={`Welcome back, ${user?.firstName || 'User'}!`} />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-          <div className="p-4 bg-orange-500/10 rounded-xl">
-            <Tickets className="text-orange-500" size={32} />
-          </div>
-          <div>
-            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Active Tickets</p>
-            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.tickets}</h3>
-          </div>
-        </div>
-
-        <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-          <div className="p-4 bg-blue-500/10 rounded-xl">
-            <TrendingUp className="text-blue-500" size={32} />
-          </div>
-          <div>
-            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Available Events</p>
-            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.events}</h3>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Links Section */}
-      <div className="space-y-6">
-        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
-          Quick Navigation
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {quickLinks.map((link) => (
-            <button
-              key={link.title}
-              onClick={() => router.push(link.url)}
-              className="bg-zinc-900/20 hover:bg-zinc-900/50 border border-white/5 hover:border-orange-500/30 p-6 rounded-2xl text-left transition-all duration-300 group flex items-center justify-between"
-            >
-              <div className="flex items-center gap-6">
-                <div className={`p-4 ${link.bg} rounded-xl group-hover:scale-110 transition-transform duration-500`}>
-                  <link.icon className={link.color} size={28} />
+        <DashboardLayoutWrapper title={`Welcome back, ${user?.firstName || 'User'}!`}>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-card text-card-foreground border border-border p-6 rounded-2xl shadow-sm flex items-center gap-6">
+                    <div className="p-4 bg-orange-500/10 rounded-xl">
+                        <Tickets className="text-orange-500" size={32} />
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Active Tickets</p>
+                        <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.tickets}</h3>
+                    </div>
                 </div>
-                <div>
-                  <h4 className="text-white font-black text-lg">{link.title}</h4>
-                  <p className="text-zinc-500 text-sm">{link.description}</p>
+
+                <div className="bg-card text-card-foreground border border-border p-6 rounded-2xl shadow-sm flex items-center gap-6">
+                    <div className="p-4 bg-blue-500/10 rounded-xl">
+                        <TrendingUp className="text-blue-500" size={32} />
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Available Events</p>
+                        <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.events}</h3>
+                    </div>
                 </div>
-              </div>
-              <ArrowRight className="text-zinc-700 group-hover:text-orange-500 group-hover:translate-x-2 transition-all duration-300" />
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+            </div>
+
+            {/* Quick Links Section */}
+            <div className="space-y-6">
+                <h2 className="text-xl font-black text-foreground uppercase tracking-widest flex items-center gap-2">
+                    Quick Navigation
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {quickLinks.map((link) => (
+                        <button
+                            key={link.title}
+                            onClick={() => router.push(link.url)}
+                            className="bg-card hover:bg-muted/50 text-card-foreground border border-border hover:border-orange-500/40 p-6 rounded-2xl text-left transition-all duration-300 group flex items-center justify-between shadow-sm cursor-pointer"
+                        >
+                            <div className="flex items-center gap-6">
+                                <div className={`p-4 ${link.bg} rounded-xl group-hover:scale-110 transition-transform duration-500`}>
+                                    <link.icon className={link.color} size={28} />
+                                </div>
+                                <div>
+                                    <h4 className="text-foreground font-black text-lg">{link.title}</h4>
+                                    <p className="text-muted-foreground text-sm">{link.description}</p>
+                                </div>
+                            </div>
+                            <ArrowRight className="text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-2 transition-all duration-300" />
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </DashboardLayoutWrapper>
+    )
 }
 
 export default UserDashboard

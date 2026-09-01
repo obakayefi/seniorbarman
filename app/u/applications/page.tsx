@@ -1,5 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
+import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -109,7 +110,7 @@ export default function ApplicationsPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
                 <p className="font-medium">Loading your applications…</p>
             </div>
@@ -117,30 +118,17 @@ export default function ApplicationsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white p-6 md:p-10 pb-24">
-            <div className="max-w-4xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3 mb-1">
-                        <div className="h-10 w-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                            <ClipboardList size={22} className="text-blue-500" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-white">My Applications</h1>
-                            <p className="text-zinc-500 text-sm">Track the status of all your event applications</p>
-                        </div>
-                    </div>
-                </div>
-
+        <DashboardLayoutWrapper title="My Applications" description="Track the status of all your event applications">
+            <div className="max-w-4xl space-y-8">
                 {/* Empty state */}
                 {applications.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
-                        <div className="h-16 w-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                            <ClipboardList size={28} className="text-zinc-600" />
+                        <div className="h-16 w-16 rounded-2xl bg-muted border border-border flex items-center justify-center">
+                            <ClipboardList size={28} className="text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-black text-zinc-400">No Applications Yet</h3>
-                        <p className="text-zinc-600 text-sm max-w-xs">When you apply to an event that requires an application, it will appear here.</p>
-                        <Button asChild className="mt-4 bg-orange-600 hover:bg-orange-700 rounded-2xl font-black">
+                        <h3 className="text-lg font-black text-foreground">No Applications Yet</h3>
+                        <p className="text-muted-foreground text-sm max-w-xs">When you apply to an event that requires an application, it will appear here.</p>
+                        <Button asChild className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black">
                             <Link href="/events">Explore Events</Link>
                         </Button>
                     </div>
@@ -157,7 +145,7 @@ export default function ApplicationsPage() {
                         return (
                             <div
                                 key={app._id}
-                                className="bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden hover:border-zinc-700 transition-all"
+                                className="bg-card text-card-foreground border border-border rounded-3xl overflow-hidden hover:border-orange-500/40 transition-all shadow-sm"
                             >
                                 {/* Top: Event info */}
                                 <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -167,24 +155,24 @@ export default function ApplicationsPage() {
                                             <img
                                                 src={event.image}
                                                 alt={event.title}
-                                                className="h-16 w-16 rounded-2xl object-cover shrink-0 border border-white/10"
+                                                className="h-16 w-16 rounded-2xl object-cover shrink-0 border border-border"
                                             />
                                         ) : (
-                                            <div className="h-16 w-16 rounded-2xl bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-700">
-                                                <ClipboardList size={24} className="text-zinc-600" />
+                                            <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center shrink-0 border border-border">
+                                                <ClipboardList size={24} className="text-muted-foreground" />
                                             </div>
                                         )}
 
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                                                 {event?.type === 'sports' ? 'Sports Match' : 'Event Application'}
                                             </p>
-                                            <h3 className="text-lg font-black text-white leading-tight">
+                                            <h3 className="text-lg font-black text-foreground leading-tight">
                                                 {event?.type === 'sports'
-                                                    ? `${event.homeTeam} vs ${event.awayTeam}`
+                                                    ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}`
                                                     : event?.title || "Unknown Event"}
                                             </h3>
-                                            <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                                 {event?.date && (
                                                     <span>{format(new Date(event.date), 'EEE, MMM dd yyyy')}</span>
                                                 )}
@@ -205,8 +193,8 @@ export default function ApplicationsPage() {
                                 </div>
 
                                 {/* Bottom: Meta + Actions */}
-                                <div className="border-t border-zinc-800 px-6 py-4 bg-zinc-950/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                    <div className="flex flex-wrap gap-4 text-[11px] text-zinc-500 uppercase tracking-widest font-bold">
+                                <div className="border-t border-border px-6 py-4 bg-muted/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div className="flex flex-wrap gap-4 text-[11px] text-muted-foreground uppercase tracking-widest font-bold">
                                         <span>
                                             Fee: {app.paymentStatus === 'free'
                                                 ? 'Free'
@@ -228,7 +216,7 @@ export default function ApplicationsPage() {
                                             asChild
                                             size="sm"
                                             variant="ghost"
-                                            className="text-zinc-500 hover:text-white h-8 text-xs gap-1"
+                                            className="text-muted-foreground hover:text-foreground h-8 text-xs gap-1"
                                         >
                                             <Link href={`/events/${event?._id}`}>
                                                 Event Page <ExternalLink size={12} />
@@ -255,7 +243,7 @@ export default function ApplicationsPage() {
                                                 <Button
                                                     asChild
                                                     size="sm"
-                                                    className="h-8 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-black rounded-xl gap-1"
+                                                    className="h-8 bg-muted hover:bg-muted/80 text-foreground text-xs font-black rounded-xl gap-1 border border-border"
                                                 >
                                                     <Link href={`/u/applications/${app._id}`}>
                                                         <QrCode size={12} />
@@ -265,7 +253,7 @@ export default function ApplicationsPage() {
                                                 <Button
                                                     size="sm"
                                                     asChild
-                                                    className="h-8 bg-orange-600 hover:bg-orange-700 text-white text-xs font-black rounded-xl gap-1"
+                                                    className="h-8 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black rounded-xl gap-1"
                                                 >
                                                     <Link href={`/events/${event?._id}`}>
                                                         Book Tickets <ArrowRight size={12} />
@@ -280,7 +268,7 @@ export default function ApplicationsPage() {
                                                 asChild
                                                 size="sm"
                                                 variant="outline"
-                                                className="h-8 border-zinc-800 text-zinc-400 hover:text-white text-xs rounded-xl gap-1"
+                                                className="h-8 border-border text-muted-foreground hover:text-foreground text-xs rounded-xl gap-1"
                                             >
                                                 <Link href={`/u/applications/${app._id}`}>
                                                     View Answers
@@ -294,6 +282,6 @@ export default function ApplicationsPage() {
                     })}
                 </div>
             </div>
-        </div>
+        </DashboardLayoutWrapper>
     )
 }

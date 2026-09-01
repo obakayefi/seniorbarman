@@ -4,6 +4,7 @@ import axios from "axios";
 import EventApplication from "@/models/EventApplication";
 import User from "@/models/User";
 import Event from "@/models/Event";
+import Team from "@/models/Team";
 import TicketOrder from "@/models/TicketOrder";
 import { notifyOrganizerOfPayment } from "@/lib/notifications";
 
@@ -36,6 +37,8 @@ export async function GET(req: Request) {
 
         if (paymentType === "event_application" && transaction?.status === "success") {
             await connectDB();
+            Team.init();
+            Event.init();
             const application = await EventApplication.findOneAndUpdate(
                 {
                     event: metadata.eventId,
@@ -48,7 +51,13 @@ export async function GET(req: Request) {
                     amountPaid: transaction.amount / 100, // store actual Naira amount
                 },
                 { new: true }
-            ).populate('event user');
+            ).populate({
+                path: 'event',
+                populate: [
+                    { path: 'homeTeam', select: 'name logo' },
+                    { path: 'awayTeam', select: 'name logo' }
+                ]
+            }).populate('user');
 
             if (application) {
                 const event = application.event as any;
@@ -60,7 +69,7 @@ export async function GET(req: Request) {
                         organizerEmail: organizer.email,
                         organizerName: organizer.firstName || organizer.username,
                         organizerId: organizer._id.toString(),
-                        eventTitle: event.title || 'Event',
+                        eventTitle: event.title || `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` || 'Event',
                         applicantName: `${applicant.firstName} ${applicant.lastName}`,
                         amount: transaction.amount / 100
                     });

@@ -2,14 +2,19 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import TicketOrder from "@/models/TicketOrder";
 import User from "@/models/User";
+import Team from "@/models/Team";
+import Event from "@/models/Event";
 import { getUserFromCookie } from "@/lib/auth";
 import { HunchoRoleChecker } from "@/lib/helpers";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
         await connectDB();
+        Team.init();
+        Event.init();
         const user = await getUserFromCookie();
         const canAccessResource = HunchoRoleChecker(user?.role)
 
@@ -32,10 +37,15 @@ export async function GET(req: Request) {
 
         // Find orders associated with user
         const orders = await TicketOrder.find({ user: userEmail._id })
-            .populate('event', 'title homeTeam awayTeam date type image')
+            .populate({
+                path: 'event',
+                select: 'title homeTeam awayTeam date type image'
+            })
             .populate('user', 'firstName lastName email')
             .sort({ createdAt: -1 })
             .lean();
+
+        await populateTeamsForEvents(orders.map((o: any) => o.event).filter(Boolean));
 
         return NextResponse.json({ success: true, orders }, { status: 200 });
 

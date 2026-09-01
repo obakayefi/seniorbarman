@@ -7,6 +7,7 @@ import TicketOrder from "@/models/TicketOrder";
 import User from "@/models/User";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { redis } from "@/lib/redis";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 
 type Params = {
@@ -49,11 +50,10 @@ export async function GET(req: Request, { params }: Params) {
         }
 
         //Cache Miss - Retrieve from database
-        const event = await Event.findById(eventId).populate("homeTeam awayTeam", "name logo");
-        const tickets = await Ticket.find({ createdBy: userId }).populate({
-            path: "event",
-            populate: { path: "homeTeam awayTeam", select: "name logo" }
-        });
+        const rawEvent = await Event.findById(eventId).lean();
+        const event = await populateTeamsForEvents(rawEvent);
+        const tickets = await Ticket.find({ createdBy: userId }).populate("event");
+        await populateTeamsForEvents(tickets.map(t => t.event).filter(Boolean));
         const pendingOrders = await TicketOrder.find({ event: eventId, user: userId, isGenerated: false }).lean();
 
         const ticketCount: Record<string, Record<string, number>> = {};

@@ -93,7 +93,9 @@ export default function PublicApplicationView() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                         <div className="relative z-10 p-8 sm:p-12 flex flex-col items-center text-center space-y-4">
-                            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tighter uppercase italic">{event.title}</h1>
+                            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tighter uppercase italic">
+                                {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
+                            </h1>
 
                             <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
                                 <div className="flex items-center gap-2">

@@ -115,37 +115,37 @@ export default function TicketWizardPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-zinc-950">
+            <div className="flex justify-center items-center min-h-screen bg-card">
                 <Loader2 className="animate-spin text-orange-500 h-8 w-8" />
             </div>
         )
     }
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-zinc-950 text-white pb-20">
+        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-card text-foreground pb-20">
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="flex flex-col space-y-4">
-                    <Link href={`/u/a/events/${id}`} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm w-fit group">
+                    <Link href={`/u/a/events/${id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm w-fit group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                         Back to Event
                     </Link>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-black text-white leading-tight uppercase tracking-tighter">
+                            <h1 className="text-3xl md:text-4xl font-black text-foreground leading-tight uppercase tracking-tighter">
                                 Generate Tickets Sale
                             </h1>
-                            <p className="text-zinc-400 mt-2">
-                                Configure batches for <strong className="text-white">{event?.title || event?.homeTeam}</strong>.
+                            <p className="text-muted-foreground mt-2">
+                                Configure batches for <strong className="text-foreground">{event?.title || event?.homeTeam}</strong>.
                             </p>
                         </div>
                         <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
                             {Object.entries(existingSummary).map(([stand, count]) => (
-                                <div key={stand} className="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-xl flex flex-col items-center min-w-[100px]">
-                                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{stand}</span>
-                                    <span className="text-lg font-black text-white">{count}</span>
+                                <div key={stand} className="bg-muted border border-border px-4 py-2 rounded-sm flex flex-col items-center min-w-[100px]">
+                                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">{stand}</span>
+                                    <span className="text-lg font-black text-foreground">{count}</span>
                                 </div>
                             ))}
-                            <div className="bg-orange-500/10 border border-orange-500/20 px-6 py-2 rounded-xl flex flex-col items-center min-w-[120px]">
+                            <div className="bg-orange-500/10 border border-orange-500/20 px-6 py-2 rounded-sm flex flex-col items-center min-w-[120px]">
                                 <span className="text-[10px] font-black text-orange-500/70 uppercase tracking-widest mb-1">TOTAL FOR SALE</span>
                                 <span className="text-xl font-black text-orange-500">{existingCount}</span>
                             </div>
@@ -155,41 +155,41 @@ export default function TicketWizardPage() {
 
                 {!isGenerated ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="md:col-span-2 bg-zinc-900 border-zinc-800 shadow-xl text-white">
-                            <CardHeader className="border-b border-zinc-800">
+                        <Card className="md:col-span-2 text-foreground">
+                            <CardHeader className="-b ">
                                 <CardTitle className="text-xl font-black flex items-center gap-2">
                                     <Plus className="text-orange-500" /> Define Batches
                                 </CardTitle>
-                                <CardDescription className="text-zinc-400">Add different stands and the amount of tickets to create for each.</CardDescription>
+                                <CardDescription className="text-muted-foreground">Add different stands and the amount of tickets to create for each.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-6">
                                 <div className="space-y-4">
                                     {batches.map((batch, index) => (
-                                        <div key={index} className="flex flex-col md:flex-row md:items-end gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800 relative group animate-in slide-in-from-left duration-300">
+                                        <div key={index} className="flex flex-col md:flex-row md:items-end gap-4 bg-card p-4 rounded-sm border border-border relative group animate-in slide-in-from-left duration-300">
                                             <div className="flex-1 space-y-2">
-                                                <Label className="text-zinc-400 text-xs font-bold uppercase">Stand / Ticket Type</Label>
+                                                <Label className="text-muted-foreground text-xs font-bold uppercase">Stand / Ticket Type</Label>
                                                 <input
                                                     type="text"
                                                     placeholder="e.g. Popular Stand"
                                                     value={batch.stand}
                                                     onChange={(e) => updateBatch(index, 'stand', e.target.value)}
-                                                    className="w-full bg-zinc-900 border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                                    className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="w-full md:w-32 space-y-2">
-                                                <Label className="text-zinc-400 text-xs font-bold uppercase">Quantity</Label>
+                                                <Label className="text-muted-foreground text-xs font-bold uppercase">Quantity</Label>
                                                 <input
                                                     type="number"
                                                     placeholder="0"
                                                     value={batch.quantity || ''}
                                                     onChange={(e) => updateBatch(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                    className="w-full bg-zinc-900 border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                                    className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                                                 />
                                             </div>
                                             {batches.length > 1 && (
                                                 <button
                                                     onClick={() => removeBatch(index)}
-                                                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-foreground p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X size={12} />
                                                 </button>
@@ -199,17 +199,17 @@ export default function TicketWizardPage() {
                                     <Button
                                         variant="outline"
                                         onClick={addBatch}
-                                        className="w-full border-dashed border-zinc-700 hover:border-orange-500 hover:bg-orange-500/5 text-zinc-400 hover:text-orange-500 py-6 transition-all"
+                                        className="w-full border-dashed border-border hover:border-orange-500 hover:bg-orange-500/5 text-muted-foreground hover:text-orange-500 py-6 transition-all"
                                     >
                                         <Plus className="mr-2" /> Add Another Batch
                                     </Button>
                                 </div>
 
-                                <div className="pt-4 border-t border-zinc-800 space-y-4">
-                                    <div className="flex justify-between items-center bg-zinc-950 p-4 rounded-lg">
-                                        <span className="text-zinc-400 font-medium tracking-tight">Total to generate:</span>
-                                        <span className={`text-2xl font-black ${totalTickets > 400 ? 'text-red-500' : 'text-white'}`}>
-                                            {totalTickets} <span className="text-sm font-normal text-zinc-500">/ 400 max</span>
+                                <div className="pt-4 border-t border-border space-y-4">
+                                    <div className="flex justify-between items-center bg-card p-4 rounded-sm">
+                                        <span className="text-muted-foreground font-medium tracking-tight">Total to generate:</span>
+                                        <span className={`text-2xl font-black ${totalTickets > 400 ? 'text-red-500' : 'text-foreground'}`}>
+                                            {totalTickets} <span className="text-sm font-normal text-muted-foreground">/ 400 max</span>
                                         </span>
                                     </div>
 
@@ -219,7 +219,7 @@ export default function TicketWizardPage() {
                                                 <span>Creating Tickets...</span>
                                                 <span>{genProgress}%</span>
                                             </div>
-                                            <div className="h-3 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                            <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-orange-500 transition-all duration-300 ease-out"
                                                     style={{ width: `${genProgress}%` }}
@@ -230,7 +230,7 @@ export default function TicketWizardPage() {
                                         <Button
                                             onClick={handleSubmit}
                                             disabled={totalTickets === 0 || totalTickets > 400}
-                                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black h-16 text-xl rounded-2xl shadow-lg border-2 border-orange-500/50 uppercase tracking-tighter"
+                                            className="w-full bg-orange-600 hover:bg-orange-700 text-foreground font-black h-16 text-xl rounded-sm shadow-lg border-2 border-orange-500/50 uppercase tracking-tighter"
                                         >
                                             Generate Tickets For Sale
                                         </Button>
@@ -239,11 +239,11 @@ export default function TicketWizardPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-zinc-900 border-zinc-800 shadow-xl text-white">
+                        <Card className=" text-foreground">
                             <CardHeader>
                                 <CardTitle className="text-lg font-black italic uppercase tracking-tighter">Instructions</CardTitle>
                             </CardHeader>
-                            <CardContent className="text-sm text-zinc-400 space-y-4">
+                            <CardContent className="text-sm text-muted-foreground space-y-4">
                                 <p>Once generated, these tickets will be available in the <strong>Print Tickets For Sale</strong> section for batch printing.</p>
                                 <ul className="list-disc pl-4 space-y-2">
                                     <li>Enter the name of the stand or ticket category.</li>
@@ -254,14 +254,14 @@ export default function TicketWizardPage() {
                         </Card>
                     </div>
                 ) : (
-                    <Card className="bg-zinc-900 border-orange-500/30 shadow-xl text-white overflow-hidden relative border-t-4 border-t-orange-500 animate-in zoom-in-95 duration-500">
+                    <Card className=" -orange-500/30 text-foreground overflow-hidden relative -t-4 -t-orange-500 animate-in zoom-in-95 duration-500">
                         <CardContent className="pt-20 pb-20 flex flex-col items-center text-center space-y-8">
                             <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center animate-bounce">
                                 <CheckCircle className="w-12 h-12 text-black" />
                             </div>
                             <div className="space-y-2">
-                                <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">Tickets Generated Successfully!</h1>
-                                <p className="text-zinc-400 max-w-md mx-auto">
+                                <h1 className="text-3xl md:text-4xl font-black text-foreground uppercase tracking-tighter">Tickets Generated Successfully!</h1>
+                                <p className="text-muted-foreground max-w-md mx-auto">
                                     Your batches have been created in the system. You can now download and print them.
                                 </p>
                             </div>
@@ -288,7 +288,7 @@ export default function TicketWizardPage() {
                                         setIsGenerated(false)
                                         setBatches([{ stand: 'Popular', quantity: 0 }])
                                     }}
-                                    className="flex-1 border-zinc-800 text-white hover:bg-zinc-900 h-14 font-bold"
+                                    className="flex-1 border-border text-foreground hover:bg-muted h-14 font-bold"
                                 >
                                     Generate More
                                 </Button>

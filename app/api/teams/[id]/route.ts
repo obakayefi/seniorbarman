@@ -3,13 +3,14 @@ import { connectDB } from "@/lib/mongodb";
 import Team from "@/models/Team";
 import { requireRole } from "@/lib/requireRole";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const authResult = await requireRole(["admin", "dev"]);
     if (authResult instanceof NextResponse) return authResult;
     try {
+        const { id } = await params;
         const body = await req.json();
         await connectDB();
-        const updated = await Team.findByIdAndUpdate(params.id, body, { new: true });
+        const updated = await Team.findByIdAndUpdate(id, body, { new: true });
         if (!updated) return NextResponse.json({ error: "Team not found" }, { status: 404 });
         return NextResponse.json({ success: true, team: updated });
     } catch (error: any) {
@@ -17,10 +18,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         await connectDB();
-        const team = await Team.findById(params.id).populate("managers", "firstName lastName email");
+        const team = await Team.findById(id).populate("managers", "firstName lastName email");
         if (!team) return NextResponse.json({ error: "Team not found" }, { status: 404 });
         return NextResponse.json({ success: true, team });
     } catch (error: any) {
