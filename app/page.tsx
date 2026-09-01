@@ -21,8 +21,6 @@ export default async function Home() {
             .limit(12)
             .lean();
 
-        console.log({ rawEvents })
-
         // Serialize for client components
         events = rawEvents.map((e: any) => ({
             _id: String(e._id),

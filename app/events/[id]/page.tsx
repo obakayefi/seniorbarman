@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,7 @@ import { BookEventModal } from '@/components/modals/book-event'
 import { ApplyEventModal } from '@/components/modals/apply-event-modal'
 import { HunchoRoleChecker } from '@/lib/helpers'
 
-export default function PublicEventDetailPage() {
+function PublicEventDetailContent() {
     const params = useParams()
     const id = params.id as string
     const searchParams = useSearchParams()
@@ -337,6 +337,19 @@ export default function PublicEventDetailPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function PublicEventDetailPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
+                <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
+                <p className="text-lg font-medium">Loading activity...</p>
+            </div>
+        }>
+            <PublicEventDetailContent />
+        </Suspense>
     )
 }
 

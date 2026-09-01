@@ -9,7 +9,7 @@ import useInput from "@/hooks/useInput"
 import axios from "axios"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useState, Suspense } from "react"
 import { toast } from "sonner"
 import { User, Briefcase, Trophy, ChevronRight, ChevronLeft, Check, Search, ShieldCheck } from "lucide-react"
 
@@ -54,7 +54,7 @@ const ACCOUNT_TYPES = [
     },
 ]
 
-export default function Register() {
+function RegisterContent() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [step, setStep] = useState<1 | 2>(1) // 1 = basic info, 2 = account type
@@ -424,5 +424,17 @@ export default function Register() {
                 )}
             </div>
         </div>
+    )
+}
+
+export default function Register() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Spinner className="text-orange-500" />
+            </div>
+        }>
+            <RegisterContent />
+        </Suspense>
     )
 }
