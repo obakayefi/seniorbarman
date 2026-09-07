@@ -69,9 +69,9 @@ export default function ApplicationsPage() {
     // Background verification for pending payments
     useEffect(() => {
         const verifyPending = async () => {
-            const pending = applications.filter(app => 
-                app.status === 'pending_payment' && 
-                app.paymentRef && 
+            const pending = applications.filter(app =>
+                app.status === 'pending_payment' &&
+                app.paymentRef &&
                 !verifiedRefs.current.has(app.paymentRef)
             );
 
@@ -82,10 +82,10 @@ export default function ApplicationsPage() {
             for (const app of pending) {
                 verifiedRefs.current.add(app.paymentRef);
                 try {
-                    console.log(`[SILENT-VERIFY] Checking reference: ${app.paymentRef}`);
+                    // console.log(`[SILENT-VERIFY] Checking reference: ${app.paymentRef}`);
                     const res = await fetch(`/api/payment/verify?reference=${app.paymentRef}`);
                     const data = await res.json();
-                    
+
                     if (data.status === 'success') {
                         anyVerified = true;
                         toast.success(`Payment confirmed for ${app.event?.title || 'your application'}!`, {

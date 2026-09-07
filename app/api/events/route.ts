@@ -28,7 +28,7 @@ export async function GET(req: Request) {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-        
+
         let dateCondition: any = { $gte: forScanner ? twoHoursAgo : today };
 
         if (dateFilter === "this-week") {
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         const nowInWat = new Date(watTime);
 
-        console.log({ upcomingActivities })
+        //console.log({ upcomingActivities })
 
         const filteredEvents = upcomingActivities.filter((event: any) => {
             const eventDate = new Date(event.date)
@@ -111,9 +111,9 @@ export async function GET(req: Request) {
         const paginated = paginateArray(filteredEvents, { page, limit });
 
         return NextResponse.json(
-            { 
+            {
                 events: paginated.data,
-                pagination: paginated.pagination 
+                pagination: paginated.pagination
             },
             { status: 200 }
         )

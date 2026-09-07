@@ -33,7 +33,7 @@ export default function EventDetailPage() {
             const res = await api.get(`/admin/events/${id}`)
             if (res.data.success) {
                 setData(res.data)
-                console.log({ res: res.data })
+                // console.log({ res: res.data })
                 // appStats.applications is now returned by the admin endpoint
                 // so we only fall back to a separate fetch if needed
                 if (res.data.event.requiresApplication && !res.data.appStats?.applications) {
@@ -539,12 +539,11 @@ export default function EventDetailPage() {
                                                 </span>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${
-                                                    app.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' :
-                                                    app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
-                                                    app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
-                                                    'bg-muted text-muted-foreground border-border dark:border-zinc-700'
-                                                }`}>
+                                                <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${app.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' :
+                                                        app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
+                                                            app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
+                                                                'bg-muted text-muted-foreground border-border dark:border-zinc-700'
+                                                    }`}>
                                                     {app.status.replace('_', ' ')}
                                                 </Badge>
                                             </TableCell>
