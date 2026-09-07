@@ -28,7 +28,7 @@ export default function CategoryQuickAccessCards() {
                         </span>
                         <div>
                             <h3 className="text-white text-xl font-extrabold leading-tight mb-1">
-                                Football Matches
+                                NPFL 2026 Matches
                             </h3>
                             <div className="flex items-center gap-1.5 mt-2">
                                 <span className="text-xs font-bold text-white/70">View Teams &amp; Fixtures</span>

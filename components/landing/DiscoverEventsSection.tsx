@@ -53,7 +53,7 @@ export default function DiscoverEventsSection({ events, isLoading = false }: Dis
                 <div className="flex items-center gap-3">
                     <Link
                         href="/events"
-                        className="hidden sm:block text-xs font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors mr-2"
+                        className="text-xs font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors mr-2"
                     >
                         View All →
                     </Link>
@@ -110,6 +110,18 @@ export default function DiscoverEventsSection({ events, isLoading = false }: Dis
                             <LandingEventCard event={event} />
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* View All CTA */}
+            {!isLoading && (
+                <div className="flex justify-center mt-6">
+                    <Link
+                        href="/events"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-sm border border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 hover:border-orange-500 text-xs font-bold uppercase tracking-widest transition-all"
+                    >
+                        View All Events →
+                    </Link>
                 </div>
             )}
         </section>

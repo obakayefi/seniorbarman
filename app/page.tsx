@@ -3,6 +3,8 @@ import Setting from "@/models/Setting";
 import EventModel from "@/models/Event";
 import HomeClient from "@/components/landing/HomeClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
     await connectDB();
     const settingsList = await Setting.find({});
@@ -12,17 +14,30 @@ export default async function Home() {
     // Fetch upcoming non-archived events, sorted by date ascending
     let events: any[] = [];
     try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         const rawEvents = await EventModel.find({
             type: "event",
             isArchived: { $ne: true },
-            date: { $gte: new Date() },
+            date: { $gte: today },
         })
             .sort({ createdAt: -1 })
             .limit(12)
             .lean();
 
+        const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+        const nowInWat = new Date(watTime);
+
+        const filteredEvents = rawEvents.filter((event: any) => {
+            const eventDate = new Date(event.date);
+            const eventEndOfDay = new Date(eventDate);
+            eventEndOfDay.setHours(23, 59, 59, 999);
+            return nowInWat < eventEndOfDay;
+        });
+
         // Serialize for client components
-        events = rawEvents.map((e: any) => ({
+        events = filteredEvents.map((e: any) => ({
             _id: String(e._id),
             title: e.title || "",
             date: e.date?.toISOString?.() ?? String(e.date),
@@ -47,3 +62,4 @@ export default async function Home() {
 
     return <HomeClient initialEvents={events} ctaText={ctaText} ctaLabel={ctaLabel} />;
 }
+
