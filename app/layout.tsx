@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { AppProvider } from "@/context/AppContext";
 import NativeNavbar from "@/components/ui/navbar";
 import GlobalPageGuard from "@/components/ui/GlobalPageGuard";
+import ConnectivityListener from "@/components/ui/ConnectivityListener";
 import { CloudOff } from "lucide-react";
 
 // Force rebuild to pick up new page routes and component changes
@@ -44,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { ThemeProvider } from "@/components/theme-provider";
 
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -62,6 +65,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <GlobalPageGuard />
+                    <ConnectivityListener />
                     {!subscribed ? (
                         <div className="flex flex-col min-h-screen bg-white dark:bg-[#202124] text-[#202124] dark:text-[#e8eaed] p-10 font-sans sm:px-16 pt-24 transition-colors">
                             <div className="max-w-[600px] w-full">
@@ -93,14 +97,16 @@ export default function RootLayout({
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <AppProvider>
-                                <NativeNavbar />
-                                {children}
-                            </AppProvider>
+                        <AppProvider>
+                            <NativeNavbar />
+                            <div className="min-h-screen flex flex-col w-full bg-background text-foreground transition-colors">
+                                <div className="flex-1 w-full">
+                                    {children}
+                                </div>
+                                <Footer />
+                            </div>
                             <Toaster />
-                            <Footer />
-                        </>
+                        </AppProvider>
                     )}
                 </ThemeProvider>
             </body>

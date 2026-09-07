@@ -45,6 +45,10 @@ type Props = {
 export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, setEventDate, setMonth }: Props) {
   const [open, setOpen] = React.useState(false)
 
+  const currentYear = new Date().getFullYear()
+  const startMonth = new Date(currentYear, 0)
+  const endMonth = new Date(currentYear + 1, 11)
+
   return (
     <div className="flex flex-col gap-3">
       <Label htmlFor="date" className="text-muted-foreground text-xs font-black uppercase tracking-widest">
@@ -87,6 +91,8 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
               selected={dateValue}
               captionLayout="dropdown"
               month={month}
+              startMonth={startMonth}
+              endMonth={endMonth}
               onMonthChange={setMonth}
               onSelect={(date) => {
                 // setDate(date)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar, SidebarGroupItem } from "@/components/app-sidebar"
 import { CalendarDays, CalendarPlus, History as HistoryIcon, LayoutDashboard, PartyPopper, ScanQrCode, ShieldUser, Sparkles, Tickets, UserPlus, UsersRound, Bug, Settings2, FolderKanban, ClipboardList, FolderClock } from 'lucide-react'
 import { getUserFromCookie } from '@/lib/auth'
@@ -163,10 +163,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     return (
         <SidebarProvider defaultOpen={true}>
             <AppSidebar groups={groups} />
-            <main className='w-full bg-background text-foreground min-h-screen transition-colors'>
+            <SidebarInset className='w-full bg-background text-foreground transition-colors flex flex-col flex-1 min-w-0'>
                 <SidebarTrigger className="m-2 text-foreground" />
-                {children}
-            </main>
+                <div className="flex-1 w-full">
+                    {children}
+                </div>
+            </SidebarInset>
         </SidebarProvider>
     )
 }

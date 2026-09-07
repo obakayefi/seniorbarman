@@ -18,6 +18,24 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, AlertTriangle, Trash2 } from "lucide-react";
 
+function formatOrderTickets(ticketsData: any) {
+    if (Array.isArray(ticketsData)) {
+        return ticketsData.map((item: any, idx: number) => ({
+            key: item._id || item.name || idx,
+            type: item.name || item.type || "Ticket",
+            qty: item.quantity ?? item.qty ?? 1
+        }));
+    }
+    if (typeof ticketsData === "object" && ticketsData !== null) {
+        return Object.entries(ticketsData).map(([type, qty]: [string, any]) => ({
+            key: type,
+            type: typeof qty === 'object' ? (qty.name || type) : type,
+            qty: typeof qty === 'object' ? (qty.quantity || qty.qty || 1) : qty
+        }));
+    }
+    return [];
+}
+
 export default function TicketDetailView() {
     const [tickets, setTickets] = useState([])
     const [eventInfo, setEventInfo] = useState<any>({})
@@ -32,10 +50,10 @@ export default function TicketDetailView() {
     const getTickets = async () => {
         try {
             setLoading(true)
-            const { data } = await api.get(`/tickets/${params.id}`);
+            const { data } = await api.get(`/tickets/${params.id}?t=${Date.now()}`);
             setEventInfo(data.response.event);
             setTickets(data.response.tickets?.tickets || []);
-            setTicketSummary(data.response.summary);
+            setTicketSummary(data.response.summary || []);
             setPendingOrders(data.response.pendingOrders || []);
         } catch (error) {
             console.error(error)
@@ -72,10 +90,14 @@ export default function TicketDetailView() {
             setGenerating(reference)
             // Call the generation endpoint passing the reference ID 
             const res = await api.get(`/ticket-order?reference=${reference}`)
-            if (res.data.createdTickets) {
+            const created = res.data.createdTickets || []
+            if (created.length > 0 || res.data.message || res.status === 200) {
                 toast.success("Tickets successfully generated!")
-                // Refresh data
-                getTickets()
+                if (created.length > 0) {
+                    setTickets((prev: any[]) => [...prev, ...created])
+                    setPendingOrders((prev: any[]) => prev.filter((o: any) => o.reference !== reference))
+                }
+                await getTickets()
             }
         } catch (error: any) {
             toast.error("Failed to generate tickets: " + (error.response?.data?.error || error.message))
@@ -119,17 +141,12 @@ export default function TicketDetailView() {
                                         <div className="space-y-2">
                                             <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Order Ref: <span className="text-foreground font-mono ml-2">{order.reference}</span></p>
                                             <div className="flex flex-wrap gap-2 text-sm">
-                                                {Object.entries(order.tickets || {}).map(([type, qty]: [string, any]) => {
-                                                    // Handle robust ticket formats
-                                                    const ticketType = typeof qty === 'object' ? (qty.name || type) : type;
-                                                    const ticketQty = typeof qty === 'object' ? (qty.quantity || qty.qty || 1) : qty;
-                                                    return (
-                                                        <span key={type} className="bg-background border border-border px-3 py-1.5 rounded-sm flex items-center">
-                                                            <span className="text-muted-foreground mr-2 text-[10px] uppercase font-black tracking-widest">{ticketType}</span>
-                                                            <span className="font-bold text-foreground text-sm">×{ticketQty}</span>
-                                                        </span>
-                                                    )
-                                                })}
+                                                {formatOrderTickets(order.tickets).map((item) => (
+                                                    <span key={item.key} className="bg-background border border-border px-3 py-1.5 rounded-sm flex items-center">
+                                                        <span className="text-muted-foreground mr-2 text-[10px] uppercase font-black tracking-widest">{item.type}</span>
+                                                        <span className="font-bold text-foreground text-sm">×{item.qty}</span>
+                                                    </span>
+                                                ))}
                                             </div>
                                         </div>
                                         <Button
@@ -331,16 +348,12 @@ export default function TicketDetailView() {
                                     <div className="space-y-2">
                                         <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Order Ref: <span className="text-zinc-300 font-mono ml-2">{order.reference}</span></p>
                                         <div className="flex flex-wrap gap-2 text-sm">
-                                            {Object.entries(order.tickets || {}).map(([type, qty]: [string, any]) => {
-                                                const ticketType = typeof qty === 'object' ? (qty.name || type) : type;
-                                                const ticketQty = typeof qty === 'object' ? (qty.quantity || qty.qty || 1) : qty;
-                                                return (
-                                                    <span key={type} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-lg flex items-center">
-                                                        <span className="text-zinc-400 mr-2 text-[10px] uppercase font-black tracking-widest">{ticketType}</span>
-                                                        <span className="font-bold text-white text-sm">×{ticketQty}</span>
-                                                    </span>
-                                                )
-                                            })}
+                                            {formatOrderTickets(order.tickets).map((item) => (
+                                                <span key={item.key} className="bg-white/5 border border-white/5 px-3 py-1.5 rounded-lg flex items-center">
+                                                    <span className="text-zinc-400 mr-2 text-[10px] uppercase font-black tracking-widest">{item.type}</span>
+                                                    <span className="font-bold text-white text-sm">×{item.qty}</span>
+                                                </span>
+                                            ))}
                                         </div>
                                     </div>
                                     <Button

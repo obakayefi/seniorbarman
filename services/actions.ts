@@ -12,7 +12,7 @@ export async function getUpcomingEvents(forScanner: boolean = false, eventType?:
 export async function fetchEventStats(id: string) {
     try {
         const { data } = await api.get(`/events/${id}/stats`);
-        console.log({ data })
+        // console.log({ data })
         return data
     } catch (e) {
         console.error(e)
