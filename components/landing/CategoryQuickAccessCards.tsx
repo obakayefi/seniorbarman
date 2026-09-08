@@ -54,7 +54,7 @@ export default function CategoryQuickAccessCards() {
                             Events
                         </span>
                         <div>
-                            <h3 className="text-white text-xl font-extrabold leading-tight mb-1">
+                            <h3 className="text-white text-xl font-extrabold leading- mb-1">
                                 Concerts &amp;
                                 <br />Parties
                             </h3>

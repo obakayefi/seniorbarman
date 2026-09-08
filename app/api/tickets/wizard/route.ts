@@ -46,7 +46,7 @@ export async function POST(req: Request) {
             }
         }
 
-        console.log('[WIZARD GENERATE] Request body:', { eventId, batches, holderName });
+        // console.log('[WIZARD GENERATE] Request body:', { eventId, batches, holderName });
 
         if (!eventId || !batches || !Array.isArray(batches) || batches.length === 0) {
             return NextResponse.json(

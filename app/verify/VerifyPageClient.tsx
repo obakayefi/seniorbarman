@@ -95,7 +95,7 @@ export default function VerifyPageClient() {
                     const delays = [3000, 5000, 7000, 10000, 15000];
                     const nextDelay = delays[retryCount] || 5000;
 
-                    console.log(`[VERIFY] Status pending. Retrying in ${nextDelay}ms (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+                    // console.log(`[VERIFY] Status pending. Retrying in ${nextDelay}ms (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
 
                     setTimeout(() => {
                         setRetryCount(prev => prev + 1);

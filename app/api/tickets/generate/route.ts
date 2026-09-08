@@ -29,7 +29,7 @@ export async function POST(req: Request) {
             }
         }
 
-        console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName, targetUserId });
+        // console.log('[GENERATE] Request body:', { eventId, quantity, type, price, stand, holderName, targetUserId });
 
         // Robust validation: check for null, undefined, or empty strings for mandatory fields
         const isMissingEvent = !eventId;
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
         let ticketOwnerId = user.id || user._id;
         if (targetUserId && (user.role === 'admin' || user.role === 'dev')) {
             ticketOwnerId = targetUserId;
-            console.log(`[GENERATE] Admin generating tickets for target user: ${targetUserId}`);
+            // console.log(`[GENERATE] Admin generating tickets for target user: ${targetUserId}`);
         }
 
         const _createdTickets = [];

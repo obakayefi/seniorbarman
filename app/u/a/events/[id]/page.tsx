@@ -38,7 +38,7 @@ export default function EventDetailPage() {
                 // so we only fall back to a separate fetch if needed
                 if (res.data.event.requiresApplication && !res.data.appStats?.applications) {
                     const appRes = await api.get(`/events/${id}/applicants`)
-                    console.log({ res_within: res.data })
+                    // console.log({ res_within: res.data })
 
                     setApplicants(appRes.data.applicants || [])
                 } else if (res.data.appStats?.applications) {

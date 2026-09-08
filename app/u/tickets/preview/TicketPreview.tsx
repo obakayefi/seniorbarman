@@ -17,7 +17,7 @@ export default function TicketPreview() {
     useEffect(() => {
         async function getTickets() {
             const data = await api(`/tickets/${params.id}`)
-            console.log({ tickets_are: data.data, params })
+            // console.log({ tickets_are: data.data, params })
             setTickets(data.data.tickets)
             setLoading(false)
         }
