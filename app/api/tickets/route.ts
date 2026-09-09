@@ -154,9 +154,9 @@ export async function GET(req: Request) {
         const events = await populateTeamsForEvents(rawEvents);
 
         // Debugging logs
-        console.log(`[API] Fetching tickets. User: ${userId}`);
-        console.log(`[API] Total raw tickets found: ${tickets.length}`);
-        console.log(`[API] Total events found: ${events.length}`);
+        // console.log(`[API] Fetching tickets. User: ${userId}`);
+        // console.log(`[API] Total raw tickets found: ${tickets.length}`);
+        // console.log(`[API] Total events found: ${events.length}`);
 
         const eventsSortedWithTickets = await SortTicketsForView(events, tickets, pendingOrders)
 
@@ -165,11 +165,11 @@ export async function GET(req: Request) {
             (group.transformedSummary && group.transformedSummary.length > 0) || group.hasPendingOrders
         );
 
-        console.log(`[API] Valid ticket groups after filtering: ${validTickets.length}`);
+        // console.log(`[API] Valid ticket groups after filtering: ${validTickets.length}`);
 
         const updatedCache = await redis.set(cacheKey, validTickets)
 
-        console.log(`[API] Updated cache: ${updatedCache}`)
+        // console.log(`[API] Updated cache: ${updatedCache}`)
 
         return NextResponse.json({
             message: "tickets fetched successfully",

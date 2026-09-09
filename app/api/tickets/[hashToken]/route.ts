@@ -18,7 +18,7 @@ export async function GET(req: Request, { params }: Params) {
     try {
         await connectDB();
         const token = (await cookies()).get("token")?.value;
-        console.log("Hash token request started...")
+        // console.log("Hash token request started...")
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
         if (typeof decoded === "string") {
@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: Params) {
         // Retrieve from Upstash
         const cacheKey = `user_event_tickets:${userId}:${eventId}`
         const cachedData = await redis.get(cacheKey)
-        console.log({ cachedData, cacheKey });
+        // console.log({ cachedData, cacheKey });
 
         if (cachedData) {
             return NextResponse.json(
