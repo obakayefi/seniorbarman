@@ -35,6 +35,7 @@ export async function POST(req: Request) {
             email,
             amount: amount * 100, // convert from KOBO to naira,
             callback_url: `${getBaseUrl()}/verify`,
+            channels: ['card', 'bank', 'ussd', 'qr', 'bank_transfer'],
             metadata: {
                 type: "ticket",
                 eventId,
