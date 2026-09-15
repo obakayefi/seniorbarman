@@ -16,7 +16,7 @@ export default function TicketWizardPage() {
     const [event, setEvent] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
-    const [batches, setBatches] = useState<{ stand: string, quantity: number }[]>([])
+    const [batches, setBatches] = useState<{ stand: string, quantity: number, price?: number }[]>([])
 
     const [isGenerating, setIsGenerating] = useState(false)
     const [isGenerated, setIsGenerated] = useState(false)

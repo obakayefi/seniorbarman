@@ -2,17 +2,14 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import axios from 'axios'
 import TicketOrder from "@/models/TicketOrder";
-import { getUserFromCookie } from "@/lib/auth";
-import { PrintTickets } from "../tickets/route";
 import Ticket from "@/models/Ticket";
-
+import { getUserFromCookie } from "@/lib/auth";
+import { generateTickets } from "@/services/ticketService";
 
 export async function POST(req: Request) {
     await connectDB()
     const { eventId, tickets, reference } = await req.json()
     const user = await getUserFromCookie()
-
-    // console.log({ eventId, tickets, reference })
 
     try {
         const newTicketOrder = await TicketOrder.create({
@@ -22,7 +19,6 @@ export async function POST(req: Request) {
             reference,
             paymentStatus: 'pending'
         })
-        // console.log({ newTicketOrder })
         return NextResponse.json({ message: "Ticket order created" }, { status: 200 })
     } catch (error: any) {
         return NextResponse.json({ error: "Could not get ticket order" }, { status: 400 })
@@ -41,28 +37,56 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Reference missing" }, { status: 400 })
         }
 
-        const ticketOrders = await TicketOrder.findOne({ reference })
+        const ticketOrder = await TicketOrder.findOne({ reference })
 
-        if (!ticketOrders) {
-            return NextResponse.json({ error: "You can't generate tickets like this, sorry" }, { status: 400 })
+        if (!ticketOrder) {
+            return NextResponse.json({ error: "Ticket order not found" }, { status: 404 })
         }
 
-        // console.log({ticketOrders, reference})
+        // If tickets have already been generated, return the existing generated tickets idempotently
+        if (ticketOrder.isGenerated) {
+            const existingTickets = await Ticket.find({
+                $or: [
+                    { "payment.reference": reference },
+                    { event: ticketOrder.event, createdBy: ticketOrder.user }
+                ]
+            }).populate('event');
 
-        // throw Error if tickets have already been generated
-        // if (ticketOrders?.isGenerated) return NextResponse.json({ error: 'Tickets for this order has been generated', }, { status: 400 })   
+            return NextResponse.json({ createdTickets: existingTickets }, { status: 200 })
+        }
 
-        const _ticketsToPrint = await PrintTickets(ticketOrders.tickets, ticketOrders.event, true)
+        // Atomic lock check: only update if isGenerated is still false
+        const claimedOrder = await TicketOrder.findOneAndUpdate(
+            { _id: ticketOrder._id, isGenerated: false },
+            { $set: { isGenerated: true } },
+            { new: true }
+        );
 
-        //  console.log({ ticketOrders, _ticketsToPrint });
+        if (!claimedOrder) {
+            // Concurrent request already claimed ticket generation, fetch created tickets
+            const existingTickets = await Ticket.find({
+                $or: [
+                    { "payment.reference": reference },
+                    { event: ticketOrder.event, createdBy: ticketOrder.user }
+                ]
+            }).populate('event');
 
-        const createdTickets = await Ticket.create(_ticketsToPrint)
+            return NextResponse.json({ createdTickets: existingTickets }, { status: 200 })
+        }
 
-        ticketOrders.isGenerated = true
-        await ticketOrders.save()
-        // return NextResponse.json({ message: "Hello" }, { status: 200 })
-        return NextResponse.json({ createdTickets }, { status: 200 })
+        const userId = ticketOrder.user?.toString() || user?.id || "";
+
+        const result = await generateTickets({
+            eventId: ticketOrder.event.toString(),
+            userId,
+            batches: ticketOrder.tickets,
+            paymentReference: reference,
+            isPaid: true,
+            generatedBy: 'online-sale'
+        });
+
+        return NextResponse.json({ createdTickets: result.tickets }, { status: 200 })
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
-}
+}
