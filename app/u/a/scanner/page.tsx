@@ -10,18 +10,20 @@ import { fetchEventStats, getUpcomingEvents } from "@/services/actions";
 import { Spinner } from "@/components/ui/spinner";
 import api from '@/lib/axios';
 import { IEventStats, TicketSummary } from "@/types/data";
-import { extractTicketStatus } from "@/lib/utils";
-import TicketScanner from "@/components/widgets/TicketScanner";
-import { Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon, Ticket, Users, History, UserCheck, UserMinus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { TbSoccerField } from "react-icons/tb";
-import { toast } from 'sonner';
-import { RiVerifiedBadgeFill } from "react-icons/ri";
-import { MdReport } from "react-icons/md";
-import { STATUS_TEXT } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { ROLES } from '@/lib/roles';
+import dynamic from 'next/dynamic';
+
+const TicketScanner = dynamic(() => import('@/components/widgets/TicketScanner'), {
+    ssr: false,
+    loading: () => (
+        <div className="flex flex-col items-center justify-center p-8 bg-zinc-900 rounded-lg text-zinc-400">
+            <Spinner className="text-orange-500 mb-2" />
+            <p className="text-xs">Loading Scanner Module...</p>
+        </div>
+    )
+});
 
 // ... (PreCheckInActions, PostCheckInActions etc)
 
