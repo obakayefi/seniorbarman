@@ -12,11 +12,21 @@ import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
 import BulkTicketView from "@/app/u/tickets/BulkTicketView";
 import RegularTicketView from "@/app/u/tickets/RegularTicketView";
-import TicketCarousel from "./TicketCarousel";
 import { useApp } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, AlertTriangle, Trash2 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const TicketCarousel = dynamic(() => import("./TicketCarousel"), {
+    ssr: false,
+    loading: () => (
+        <div className="flex flex-col items-center justify-center p-12 space-y-4">
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+            <p className="text-xs text-muted-foreground">Preparing ticket pass...</p>
+        </div>
+    )
+});
 
 function formatOrderTickets(ticketsData: any) {
     if (Array.isArray(ticketsData)) {

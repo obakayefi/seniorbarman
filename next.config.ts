@@ -25,6 +25,17 @@ const nextConfig: NextConfig = {
             },
         ]
     },
+    experimental: {
+        optimizePackageImports: [
+            "lucide-react",
+            "react-icons",
+            "@tabler/icons-react",
+            "@heroui/system",
+            "@heroui/theme",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-select"
+        ]
+    },
     allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', "http://192.168.56.1:3000", "192.168.1.167"],
 };
 
