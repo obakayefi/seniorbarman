@@ -16,7 +16,7 @@ export default function TicketWizardPage() {
     const [event, setEvent] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
-    const [batches, setBatches] = useState([
+    const [batches, setBatches] = useState<{ stand: string; quantity: number; price?: number }[]>([
         { stand: 'Popular', quantity: 0 },
         { stand: 'Regular', quantity: 0 },
         { stand: 'Executive', quantity: 0 },
@@ -34,6 +34,13 @@ export default function TicketWizardPage() {
                 const res = await api.get(`/admin/events/${id}`)
                 if (res.data.success) {
                     setEvent(res.data.event)
+                    if (res.data.event.ticketTypes?.length > 0) {
+                        setBatches(res.data.event.ticketTypes.map((t: any) => ({
+                            stand: t.name,
+                            quantity: 0,
+                            price: t.price || 0
+                        })))
+                    }
                     const gateTickets = res.data.tickets.filter((t: any) =>
                         t.generatedBy === 'gate-sale' || t.generatedBy === 'wizard' || (!t.generatedBy && t.price === 0)
                     )
@@ -168,11 +175,43 @@ export default function TicketWizardPage() {
                                         <div key={index} className="flex flex-col md:flex-row md:items-end gap-4 bg-card p-4 rounded-sm border border-border relative group animate-in slide-in-from-left duration-300">
                                             <div className="flex-1 space-y-2">
                                                 <Label className="text-muted-foreground text-xs font-bold uppercase">Stand / Ticket Type</Label>
+                                                {event?.ticketTypes?.length > 0 ? (
+                                                    <select
+                                                        value={batch.stand}
+                                                        onChange={(e) => {
+                                                            const selectedType = event.ticketTypes.find((t: any) => t.name === e.target.value);
+                                                            const newBatches = [...batches];
+                                                            newBatches[index] = {
+                                                                ...newBatches[index],
+                                                                stand: e.target.value,
+                                                                price: selectedType?.price ?? newBatches[index].price ?? 0
+                                                            };
+                                                            setBatches(newBatches);
+                                                        }}
+                                                        className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                                    >
+                                                        {event.ticketTypes.map((t: any) => (
+                                                            <option key={t.name} value={t.name}>{t.name} (₦{t.price})</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. Popular Stand"
+                                                        value={batch.stand}
+                                                        onChange={(e) => updateBatch(index, 'stand', e.target.value)}
+                                                        className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="w-full md:w-32 space-y-2">
+                                                <Label className="text-muted-foreground text-xs font-bold uppercase">Price (₦)</Label>
                                                 <input
-                                                    type="text"
-                                                    placeholder="e.g. Popular Stand"
-                                                    value={batch.stand}
-                                                    onChange={(e) => updateBatch(index, 'stand', e.target.value)}
+                                                    type="number"
+                                                    placeholder="0"
+                                                    min="0"
+                                                    value={batch.price ?? ''}
+                                                    onChange={(e) => updateBatch(index, 'price', parseInt(e.target.value) || 0)}
                                                     className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                                                 />
                                             </div>
@@ -181,6 +220,7 @@ export default function TicketWizardPage() {
                                                 <input
                                                     type="number"
                                                     placeholder="0"
+                                                    min="0"
                                                     value={batch.quantity || ''}
                                                     onChange={(e) => updateBatch(index, 'quantity', parseInt(e.target.value) || 0)}
                                                     className="w-full bg-muted border-border rounded-sm p-3 text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all"

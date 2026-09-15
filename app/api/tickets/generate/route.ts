@@ -4,6 +4,7 @@ import Ticket from "@/models/Ticket";
 import { getUserFromCookie } from "@/lib/auth";
 import crypto from 'crypto';
 import mongoose from "mongoose";
+import { generateTickets } from "@/services/ticketService";
 
 export async function POST(req: Request) {
     try {
@@ -67,50 +68,33 @@ export async function POST(req: Request) {
         }
 
         // Determine ticket owner
-        let ticketOwnerId = user.id || user._id;
+        let ticketOwnerId = (user.id || user._id).toString();
         if (targetUserId && (user.role === 'admin' || user.role === 'dev')) {
-            ticketOwnerId = targetUserId;
-            // console.log(`[GENERATE] Admin generating tickets for target user: ${targetUserId}`);
+            ticketOwnerId = targetUserId.toString();
         }
 
-        const _createdTickets = [];
         const batchId = crypto.randomUUID();
 
-        for (let i = 0; i < numQuantity; i++) {
-            const ticketId = new mongoose.Types.ObjectId();
-            const checkInToken = crypto.randomBytes(16).toString('hex');
-            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-
-            _createdTickets.push({
-                _id: ticketId,
-                checkInToken,
-                event: eventId,
-                createdBy: ticketOwnerId,
+        const result = await generateTickets({
+            eventId: eventId.toString(),
+            userId: ticketOwnerId,
+            batches: [{
                 stand: stand || "Regular",
-                price: Number(price),
-                ticketNumber: `${eventId.toString().slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`,
-                payment: {
-                    status: 'success',
-                    reference: `ADMIN-GEN-${batchId}`,
-                    authorizationUrl: 'N/A'
-                },
-                holderName: holderName || "Guest",
-                batchId: batchId,
-                isInside: false,
-                isPrinted: false
-            });
-        }
-
-        const savedTickets = await Ticket.insertMany(_createdTickets);
-
-        // Populate event details so the frontend preview has everything it needs
-        const populatedTickets = await Ticket.find({ _id: { $in: savedTickets.map(t => t._id) } }).populate('event');
+                quantity: numQuantity,
+                price: Number(price)
+            }],
+            paymentReference: `ONLINE-GEN-${batchId}`,
+            isPaid: true,
+            generatedBy: 'online-sale',
+            holderName: holderName || "Guest",
+            batchId
+        });
 
         return NextResponse.json({
             success: true,
             message: `Successfully generated ${numQuantity} tickets`,
-            tickets: populatedTickets,
-            batchId
+            tickets: result.tickets,
+            batchId: result.batchId
         }, { status: 201 });
 
     } catch (error: any) {

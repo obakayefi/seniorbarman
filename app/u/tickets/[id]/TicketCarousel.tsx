@@ -45,10 +45,17 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
     if (!tickets || tickets.length === 0) return null;
 
+    const getTicketTypeName = (t: any) => {
+        if (typeof t.ticketType === 'object' && t.ticketType?.name) return t.ticketType.name;
+        if (typeof t.ticketType === 'string') return t.ticketType;
+        if (typeof t.stand === 'string') return t.stand;
+        return 'General';
+    };
+
     // Group tickets by type
-    const ticketTypes = Array.from(new Set(tickets.map((t: any) => t.stand || t.ticketType || 'General')));
+    const ticketTypes = Array.from(new Set(tickets.map(getTicketTypeName)));
     const filteredTickets = selectedType
-        ? tickets.filter((t: any) => (t.stand || t.ticketType || 'General') === selectedType)
+        ? tickets.filter((t: any) => getTicketTypeName(t) === selectedType)
         : tickets;
 
     const currentTicket = filteredTickets[currentIndex];
@@ -360,7 +367,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                         <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-border">
                             <div className="text-center">
                                 <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Gate/Type</p>
-                                <p className="text-foreground font-bold text-sm sm:text-base">{currentTicket.stand || currentTicket.ticketType || 'General'}</p>
+                                <p className="text-foreground font-bold text-sm sm:text-base">{getTicketTypeName(currentTicket)}</p>
                             </div>
                             <div className="text-center">
                                 <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Variant</p>

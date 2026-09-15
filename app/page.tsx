@@ -23,7 +23,7 @@ export default async function Home() {
             date: { $gte: today },
         })
             .sort({ createdAt: -1 })
-            .limit(12)
+            .limit(16)
             .lean();
 
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });

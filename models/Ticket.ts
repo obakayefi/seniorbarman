@@ -21,6 +21,22 @@ const CheckInLogSchema = new Schema({
     },
 })
 
+const TicketTypeSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        default: "Regular"
+    },
+    price: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    description: {
+        type: String
+    }
+}, { _id: false });
+
 const ticketSchema = new Schema({
     payment: {
         reference: String,
@@ -55,13 +71,10 @@ const ticketSchema = new Schema({
         unique: true,
         required: true
     },
-    stand: {
-        type: String,
-        default: "Regular"
-    },
-    price: {
-        type: Number,
+    ticketType: {
+        type: TicketTypeSchema,
         required: true,
+        default: () => ({ name: "Regular", price: 0 })
     },
     issuedAt: {
         type: Date,
@@ -90,6 +103,31 @@ const ticketSchema = new Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 })
+
+// Backwards-compatibility virtual getters & setters
+ticketSchema.virtual("stand")
+    .get(function () {
+        return this.ticketType?.name || "Regular";
+    })
+    .set(function (val: string) {
+        if (!this.ticketType) {
+            this.ticketType = { name: val, price: 0 };
+        } else {
+            this.ticketType.name = val;
+        }
+    });
+
+ticketSchema.virtual("price")
+    .get(function () {
+        return this.ticketType?.price ?? 0;
+    })
+    .set(function (val: number) {
+        if (!this.ticketType) {
+            this.ticketType = { name: "Regular", price: val };
+        } else {
+            this.ticketType.price = val;
+        }
+    });
 
 ticketSchema.virtual("status").get(function () {
     if (!this.checkInLogs || this.checkInLogs.length === 0) return "Not Checked In"

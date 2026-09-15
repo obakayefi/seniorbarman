@@ -24,8 +24,8 @@ export default function HomeClient({ initialEvents, ctaText, ctaLabel }: HomeCli
         setLoading(true);
         try {
             const url = filter
-                ? `/api/events?type=event&dateFilter=${encodeURIComponent(filter)}&limit=12`
-                : `/api/events?type=event&limit=12`;
+                ? `/api/events?type=event&dateFilter=${encodeURIComponent(filter)}&limit=16`
+                : `/api/events?type=event&limit=16`;
             const res = await fetch(url);
             const data = await res.json();
             if (data.events) {

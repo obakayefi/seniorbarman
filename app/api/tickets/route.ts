@@ -17,6 +17,7 @@ import { getBaseUrl } from "@/lib/utils";
 import { summary } from "framer-motion/m";
 import { redis } from "@/lib/redis";
 import { populateTeamsForEvents } from "@/lib/populateEventTeams";
+import { generateTickets } from "@/services/ticketService";
 
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -184,107 +185,55 @@ export async function GET(req: Request) {
     }
 }
 
-export async function PrintTickets(data: any, eventId: string, isPaid: boolean) {
-    const userId = (await getUserFromCookie())?.id
-    const _createdTickets = []
-    const tickets = data.filter((ticket: any) => ticket.quantity !== 0)
-    // console.log({nowTickets: tickets})
+export async function PrintTickets(data: any, eventId: string, isPaid: boolean, userIdOverride?: string, reference?: string) {
+    const userId = userIdOverride || (await getUserFromCookie())?.id;
+    if (!userId) throw new Error("User ID is required to print tickets");
 
-    for (let i = 0; i < tickets.length; i++) {
-        // console.log({ singleTicket: tickets[i] })
-        for (let j = 0; j < tickets[i].quantity; j++) {
-            const ticketNumber = `${eventId}-${crypto.randomBytes(24).toString('hex')}`
-            const ticketId = new mongoose.Types.ObjectId()
-            // console.log({newTicketNumber: ticketNumber})
-            const checkInToken = crypto.randomBytes(16).toString('hex')
-            if (!ticketId) {
-                return NextResponse.json({ error: "A ticket ID is required" },
-                    { status: 500 })
-            }
-            const previewUrl = `${getBaseUrl()}/tickets/p/${checkInToken}`
-            const qrCode = await QRCode.toDataURL(previewUrl)
+    const result = await generateTickets({
+        eventId,
+        userId,
+        batches: data,
+        paymentReference: reference,
+        isPaid,
+        generatedBy: 'online-sale'
+    });
 
-            //console.log({ printNow: tickets[i], j, i })
-
-            _createdTickets.push({
-                _id: ticketId,
-                checkInToken,
-                payment: { status: isPaid ? 'success' : 'pending' },
-                event: eventId,
-                createdBy: userId,
-                stand: tickets[i].name,
-                price: tickets[i].price,
-                ticketNumber: `${eventId}-${Date.now()}-${j}XSX`,
-            })
-        }
-
-    }
-    return _createdTickets
+    return result.tickets;
 }
 
 export async function POST(req: Request) {
     try {
         await connectDB();
-        const data = await req.json()
+        const data = await req.json();
 
-        const token = (await cookies()).get('token')?.value ?? ""
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
-        if (typeof decoded === "string") {
-            throw new Error("Invalid token format");
+        const user = await getUserFromCookie();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        const userId = (decoded as JwtPayload).id;
-        // const event = await Event.findById(data.eventId)
-        let _createdTickets = []
-        let totalTickets = 0
 
+        let totalTickets = 0;
         data.ticketsToPurchase.forEach((ticket: any) => {
-            totalTickets += ticket.quantity
-        })
+            totalTickets += (ticket.quantity || 0);
+        });
 
         if (totalTickets > 400) {
-            // console.log('Bulk tickets are being generated...')
             return NextResponse.json({
-                message: "Bulk Tickets Order, yet to structure"
-            })
-        } else {
-            // console.log('Few tickets! Wait for your tickets', decoded)
-
-            // prepare the ticket
-            const tickets = data.ticketsToPurchase.filter((ticket: any) => ticket.quantity !== 0)
-
-            for (let i = 0; i < tickets.length; i++) {
-                for (let j = 0; j < tickets[i].quantity; j++) {
-                    const ticketNumber = `${data.eventId}-${crypto.randomBytes(24).toString('hex')}`
-                    const ticketId = new mongoose.Types.ObjectId()
-                    // console.log({newTicketNumber: ticketNumber})
-                    const checkInToken = crypto.randomBytes(16).toString('hex')
-                    if (!ticketId) {
-                        return NextResponse.json({ error: "A ticket ID is required" },
-                            { status: 500 })
-                    }
-                    const previewUrl = `${getBaseUrl()}/tickets/p/${checkInToken}`
-                    const qrCode = await QRCode.toDataURL(previewUrl)
-
-                    // console.log({printNow: tickets[i], j, i})
-
-                    _createdTickets.push({
-                        _id: ticketId,
-                        checkInToken,
-                        event: data.eventId,
-                        createdBy: userId,
-                        stand: tickets[i].name,
-                        price: tickets[i].price,
-                        ticketNumber: `${data.eventId}-${Date.now()}-${j}XC10-SBM`,
-                    })
-                }
-            }
-            await Ticket.insertMany(_createdTickets)
-
-            return NextResponse.json({
-                message: "Ticket created successfully",
-                tickets: _createdTickets
-            })
+                message: "Bulk Tickets Order exceeds maximum limit"
+            }, { status: 400 });
         }
+
+        const result = await generateTickets({
+            eventId: data.eventId,
+            userId: user.id,
+            batches: data.ticketsToPurchase,
+            isPaid: true,
+            generatedBy: 'online-sale'
+        });
+
+        return NextResponse.json({
+            message: "Ticket created successfully",
+            tickets: result.tickets
+        }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json(
             { error: "Failed to create ticket: " + error.message },

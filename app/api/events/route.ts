@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const eventType = searchParams.get("type");
     const forScanner = searchParams.get("forScanner") === "true";
     const page = searchParams.get("page");
-    const limit = searchParams.get("limit") || "5";
+    const limit = searchParams.get("limit") || "16";
 
     const dateFilter = searchParams.get("dateFilter");
 

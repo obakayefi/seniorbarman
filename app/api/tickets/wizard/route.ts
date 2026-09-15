@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 
 import Event from "@/models/Event";
 import { hasManagerAccessToTeams } from "@/services/teamService";
+import { generateTickets } from "@/services/ticketService";
 
 const MAX_TICKETS_PER_REQUEST = 400;
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
         }
 
         const isAdminOrDev = user.role === 'admin' || user.role === 'dev';
-        
+
         if (!isAdminOrDev) {
             const event = await Event.findById(eventId).lean() as any;
             if (!event) {
@@ -73,52 +74,25 @@ export async function POST(req: Request) {
             );
         }
 
-        const ticketOwnerId = user.id || user._id;
-        const _createdTickets = [];
+        const ticketOwnerId = (user.id || user._id).toString();
         const batchId = crypto.randomUUID();
 
-        for (const batch of batches) {
-            const { quantity, stand, price } = batch;
-            const numQuantity = Number(quantity);
-            const numPrice = Number(price) || 0;
-            
-            for (let i = 0; i < numQuantity; i++) {
-                const ticketId = new mongoose.Types.ObjectId();
-                const checkInToken = crypto.randomBytes(16).toString('hex');
-                const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-
-                _createdTickets.push({
-                    _id: ticketId,
-                    checkInToken,
-                    event: eventId,
-                    createdBy: ticketOwnerId,
-                    stand: stand || "Regular",
-                    price: numPrice,
-                    ticketNumber: `${eventId.toString().slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`,
-                    payment: {
-                        status: 'success',
-                        reference: `ADMIN-WIZARD-${batchId}`,
-                        authorizationUrl: 'N/A'
-                    },
-                    holderName: holderName || "Guest",
-                    batchId: batchId,
-                    isInside: false,
-                    isPrinted: false,
-                    generatedBy: 'gate-sale' // Explicitly set as per user request
-                });
-            }
-        }
-
-        const savedTickets = await Ticket.insertMany(_createdTickets);
-
-        // Populate event details so the frontend preview has everything it needs
-        const populatedTickets = await Ticket.find({ _id: { $in: savedTickets.map(t => t._id) } }).populate('event');
+        const result = await generateTickets({
+            eventId: eventId.toString(),
+            userId: ticketOwnerId,
+            batches,
+            paymentReference: `TICKET_WIZARD-${batchId}`,
+            isPaid: true,
+            generatedBy: 'wizard',
+            holderName: holderName || "Guest",
+            batchId
+        });
 
         return NextResponse.json({
             success: true,
-            message: `Successfully generated ${totalQuantity} tickets`,
-            tickets: populatedTickets,
-            batchId
+            message: `Successfully generated ${result.totalGenerated} tickets`,
+            tickets: result.tickets,
+            batchId: result.batchId
         }, { status: 201 });
 
     } catch (error: any) {

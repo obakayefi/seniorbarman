@@ -15,7 +15,7 @@ export default function EventsPage() {
     );
 
     useEffect(() => {
-        fetch("/api/events?type=event")
+        fetch("/api/events?type=event&limit=16")
             .then((res) => res.json())
             .then((data) => setEvents(data.events || []))
             .catch(() => setEvents([]))
