@@ -79,10 +79,37 @@ export async function GET(req: Request) {
 
         if (paymentType === "ticket" && transaction?.status === "success") {
             await connectDB();
-            await TicketOrder.findOneAndUpdate(
+            const ticketOrder = await TicketOrder.findOneAndUpdate(
                 { reference },
-                { paymentStatus: "success" }
+                { paymentStatus: "success" },
+                { new: true }
             );
+
+            if (ticketOrder && !ticketOrder.isGenerated) {
+                // Atomic claim to prevent double generation
+                const claimedOrder = await TicketOrder.findOneAndUpdate(
+                    { _id: ticketOrder._id, isGenerated: false },
+                    { $set: { isGenerated: true } },
+                    { new: true }
+                );
+
+                if (claimedOrder) {
+                    try {
+                        const { generateTickets } = await import("@/services/ticketService");
+                        const userId = ticketOrder.user?.toString() || metadata?.userId || "";
+                        await generateTickets({
+                            eventId: ticketOrder.event.toString(),
+                            userId,
+                            batches: ticketOrder.tickets,
+                            paymentReference: reference,
+                            isPaid: true,
+                            generatedBy: 'online-sale'
+                        });
+                    } catch (genErr: any) {
+                        console.error("Auto ticket generation failed during verify:", genErr.message);
+                    }
+                }
+            }
         }
 
         return NextResponse.json(

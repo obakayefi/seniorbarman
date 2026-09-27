@@ -73,6 +73,40 @@ export async function POST(req: Request) {
                     }
                 }
             }
+            // Handle ticket order payment
+            if (metadata?.type === "ticket" || !metadata?.type) {
+                const TicketOrder = (await import("@/models/TicketOrder")).default;
+                const ticketOrder = await TicketOrder.findOneAndUpdate(
+                    { reference: data.reference },
+                    { paymentStatus: "success" },
+                    { new: true }
+                );
+
+                if (ticketOrder && !ticketOrder.isGenerated) {
+                    const claimedOrder = await TicketOrder.findOneAndUpdate(
+                        { _id: ticketOrder._id, isGenerated: false },
+                        { $set: { isGenerated: true } },
+                        { new: true }
+                    );
+
+                    if (claimedOrder) {
+                        try {
+                            const { generateTickets } = await import("@/services/ticketService");
+                            const userId = ticketOrder.user?.toString() || metadata?.userId || "";
+                            await generateTickets({
+                                eventId: ticketOrder.event.toString(),
+                                userId,
+                                batches: ticketOrder.tickets,
+                                paymentReference: data.reference,
+                                isPaid: true,
+                                generatedBy: 'online-sale'
+                            });
+                        } catch (genErr: any) {
+                            console.error("Auto ticket generation failed in webhook:", genErr.message);
+                        }
+                    }
+                }
+            }
         }
     }
 
