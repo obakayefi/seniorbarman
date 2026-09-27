@@ -173,6 +173,11 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                     <div className="flex gap-2.5 flex-wrap justify-start md:justify-end">
+                        <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-10">
+                            <Link href={`/u/a/events/${id}/orders`}>
+                                <Wallet className="mr-1.5 h-4 w-4 text-emerald-500" /> View Ticket Orders
+                            </Link>
+                        </Button>
                         <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10">
                             <Link href={`/u/a/events/${event._id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Event
@@ -219,7 +224,12 @@ export default function EventDetailPage() {
                         </div>
                         <div className="mt-3">
                             <div className="text-3xl text-foreground font-black tracking-tight">₦{stats.totalRevenue.toLocaleString()}</div>
-                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">From ticket sales</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">From ticket sales</p>
+                                <Link href={`/u/a/events/${id}/orders`} className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    View Orders &rarr;
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -540,9 +550,9 @@ export default function EventDetailPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${app.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' :
-                                                        app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
-                                                            app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
-                                                                'bg-muted text-muted-foreground border-border dark:border-zinc-700'
+                                                    app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
+                                                        app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
+                                                            'bg-muted text-muted-foreground border-border dark:border-zinc-700'
                                                     }`}>
                                                     {app.status.replace('_', ' ')}
                                                 </Badge>
