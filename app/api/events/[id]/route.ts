@@ -119,6 +119,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             updatedData.formFields = updatedData.requiresApplication ? formFields : [];
         }
 
+        const descriptionRaw = formData.get("description") as string;
+        if (descriptionRaw !== null && descriptionRaw !== undefined) {
+            updatedData.description = descriptionRaw.trim();
+        }
+
         if (type === "sports") {
             updatedData.homeTeam = homeTeam;
             updatedData.awayTeam = awayTeam;

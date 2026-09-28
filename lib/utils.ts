@@ -453,6 +453,7 @@ export const sitemap = {
         createEvent: "/u/a/events/create",
         ticketSearch: "/u/a/tickets/search",
         ticketGrantWizard: "/u/a/ticket-grant-wizard",
+        applicationGrantWizard: "/u/a/application-grant-wizard",
         auditLogs: "/u/a/audit",
         errorLogs: "/u/a/errors",
         ticketOrders: "/u/a/ticket-orders"

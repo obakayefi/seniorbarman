@@ -81,9 +81,9 @@ export default function ApplyPage() {
                 method: 'POST'
             })
             const data = await res.json()
-            
+
             if (!res.ok) throw new Error(data.error || "Failed to start application")
-            
+
             if (data.paymentUrl) {
                 // Redirect to paystack
                 window.location.href = data.paymentUrl;
@@ -118,7 +118,7 @@ export default function ApplyPage() {
         e.preventDefault();
         try {
             setSubmitting(true)
-            
+
             // Format answers
             const formattedAnswers = Object.keys(answers).map(label => {
                 const field = event.formFields.find((f: any) => f.label === label);
@@ -153,10 +153,10 @@ export default function ApplyPage() {
                 method: 'PATCH',
                 body: formData
             })
-            
+
             const data = await res.json()
             if (!res.ok) throw new Error(data.error || "Failed to submit form")
-            
+
             toast.success("Application submitted successfully!")
             router.push(`/u/applications/${data.application._id}`)
         } catch (error: any) {
@@ -192,12 +192,12 @@ export default function ApplyPage() {
             <div className="relative h-64 w-full overflow-hidden border-b border-border bg-muted/20">
                 <div className="absolute inset-0 bg-cover bg-center filter blur-lg opacity-25 scale-110" style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop'})` }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                
+
                 <div className="relative z-10 max-w-4xl mx-auto px-6 h-full flex flex-col justify-end pb-8 space-y-4">
                     <Link href={`/events/${id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium w-fit">
                         <ChevronLeft size={16} /> Back to Event Details
                     </Link>
-                    
+
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <Badge className="bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold uppercase tracking-widest text-[10px] rounded-lg">
@@ -224,23 +224,20 @@ export default function ApplyPage() {
                         ].map((item, idx) => (
                             <React.Fragment key={item.s}>
                                 <div className="flex flex-col items-center gap-2">
-                                    <div className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${
-                                        step >= item.s 
-                                            ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]" 
-                                            : "bg-muted text-muted-foreground"
-                                    }`}>
+                                    <div className={`h-10 w-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${step >= item.s
+                                        ? "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+                                        : "bg-muted text-muted-foreground"
+                                        }`}>
                                         {item.icon}
                                     </div>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                        step >= item.s ? "text-orange-500" : "text-muted-foreground"
-                                    }`}>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${step >= item.s ? "text-orange-500" : "text-muted-foreground"
+                                        }`}>
                                         {item.label}
                                     </span>
                                 </div>
                                 {idx < 2 && (
-                                    <div className={`flex-1 h-[2px] mb-6 transition-all duration-500 ${
-                                        step > item.s ? "bg-orange-500" : "bg-border"
-                                    }`} />
+                                    <div className={`flex-1 h-[2px] mb-6 transition-all duration-500 ${step > item.s ? "bg-orange-500" : "bg-border"
+                                        }`} />
                                 )}
                             </React.Fragment>
                         ))}
@@ -253,7 +250,7 @@ export default function ApplyPage() {
                         <div className="space-y-4">
                             <h2 className="text-2xl font-black tracking-tight text-foreground uppercase italic">Access Authentication</h2>
                             <p className="text-muted-foreground text-sm leading-relaxed">
-                                Thank you for your interest in joining this event. Because of the exclusive nature of this activity, all attendees must complete an application. 
+                                Thank you for your interest in joining this event. Because of the exclusive nature of this activity, all attendees must complete an application.
                                 {event.applicationFee > 0 && ` An application fee of ₦${event.applicationFee.toLocaleString()} is required before you can access the form.`}
                             </p>
                         </div>
@@ -276,8 +273,8 @@ export default function ApplyPage() {
                             </div>
                         </div>
 
-                        <Button 
-                            onClick={handleApplyOrPay} 
+                        <Button
+                            onClick={handleApplyOrPay}
                             disabled={submitting}
                             className="w-full h-16 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99] rounded-2xl"
                         >
@@ -299,7 +296,7 @@ export default function ApplyPage() {
                                     </Label>
                                     <CardDescription className="text-muted-foreground text-xs mt-1">Please provide a clear front-facing portrait photo of yourself.</CardDescription>
                                 </div>
-                                
+
                                 <div className="flex flex-col md:flex-row items-center gap-6 py-2">
                                     <div className="relative h-36 w-36 rounded-3xl bg-muted border border-border overflow-hidden flex items-center justify-center shadow-inner shrink-0">
                                         {photoPreview ? (
@@ -311,11 +308,11 @@ export default function ApplyPage() {
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     <div className="flex-1 w-full space-y-3">
-                                        <input 
-                                            type="file" 
-                                            accept="image/*" 
+                                        <input
+                                            type="file"
+                                            accept="image/*"
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
@@ -323,15 +320,15 @@ export default function ApplyPage() {
                                                     setPhotoPreview(URL.createObjectURL(file));
                                                 }
                                             }}
-                                            className="hidden" 
-                                            id="portrait-upload" 
+                                            className="hidden"
+                                            id="portrait-upload"
                                         />
                                         <p className="text-muted-foreground text-[11px] leading-normal">
                                             Supported formats: JPG, PNG, WEBP. Max file size: 5MB. Ensure good lighting and a simple background.
                                         </p>
-                                        <Button 
-                                            asChild 
-                                            variant="outline" 
+                                        <Button
+                                            asChild
+                                            variant="outline"
                                             className="w-full md:w-auto border-border hover:bg-muted font-black uppercase tracking-widest text-[10px] h-11 rounded-2xl cursor-pointer"
                                         >
                                             <label htmlFor="portrait-upload">
@@ -359,31 +356,30 @@ export default function ApplyPage() {
                                                 <Label className="text-foreground font-black uppercase text-[10px] tracking-widest flex items-center gap-1">
                                                     {field.label} {field.required && <span className="text-red-500 font-bold">*</span>}
                                                 </Label>
-                                                
+
                                                 {field.type === "text" && (
-                                                    <Input 
-                                                        value={value} 
-                                                        onChange={(e) => handleAnswerChange(field.label, e.target.value)} 
+                                                    <Input
+                                                        value={value}
+                                                        onChange={(e) => handleAnswerChange(field.label, e.target.value)}
                                                         className="bg-background border-input text-foreground rounded-2xl h-12 focus:border-orange-500 transition-all font-medium"
                                                         placeholder="Enter your response..."
                                                         required={field.required}
                                                     />
                                                 )}
-                                                
+
                                                 {field.type === "radio" && (
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                                         {field.options?.map((opt: string) => (
-                                                            <label 
-                                                                key={opt} 
-                                                                className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${
-                                                                    value === opt 
-                                                                        ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400" 
-                                                                        : "bg-muted/30 border-border text-foreground hover:border-border/80"
-                                                                }`}
+                                                            <label
+                                                                key={opt}
+                                                                className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${value === opt
+                                                                    ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400"
+                                                                    : "bg-muted/30 border-border text-foreground hover:border-border/80"
+                                                                    }`}
                                                             >
-                                                                <input 
-                                                                    type="radio" 
-                                                                    name={field.label} 
+                                                                <input
+                                                                    type="radio"
+                                                                    name={field.label}
                                                                     value={opt}
                                                                     checked={value === opt}
                                                                     onChange={(e) => handleAnswerChange(field.label, e.target.value)}
@@ -395,22 +391,21 @@ export default function ApplyPage() {
                                                         ))}
                                                     </div>
                                                 )}
-                                                
+
                                                 {field.type === "checkbox" && (
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                                         {field.options?.map((opt: string) => {
                                                             const isChecked = (answers[field.label] || []).includes(opt);
                                                             return (
-                                                                <label 
-                                                                    key={opt} 
-                                                                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${
-                                                                        isChecked 
-                                                                            ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400" 
-                                                                            : "bg-muted/30 border-border text-foreground hover:border-border/80"
-                                                                    }`}
+                                                                <label
+                                                                    key={opt}
+                                                                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm transition-all font-semibold cursor-pointer ${isChecked
+                                                                        ? "bg-orange-500/10 border-orange-500 text-orange-500 dark:text-orange-400"
+                                                                        : "bg-muted/30 border-border text-foreground hover:border-border/80"
+                                                                        }`}
                                                                 >
-                                                                    <input 
-                                                                        type="checkbox" 
+                                                                    <input
+                                                                        type="checkbox"
                                                                         value={opt}
                                                                         checked={isChecked}
                                                                         onChange={(e) => handleAnswerChange(field.label, e.target.value, true)}
@@ -435,7 +430,7 @@ export default function ApplyPage() {
                         </Card>
 
                         {/* Submit Actions */}
-                        <Button 
+                        <Button
                             type="submit"
                             disabled={submitting || (event.requestPicture && !photo)}
                             className="w-full h-16 bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(249,115,22,0.3)] hover:scale-[1.01] active:scale-[0.99] rounded-2xl"

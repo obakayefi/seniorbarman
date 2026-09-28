@@ -22,6 +22,10 @@ type RecentEvent = {
     _id: string
     title: string
     date: string
+    type?: string
+    homeTeam?: any
+    awayTeam?: any
+    venue?: string
     ticketTypes: { name: string, price: number }[]
 }
 

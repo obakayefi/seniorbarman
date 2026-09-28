@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from "sonner"
-import { 
-    Loader2, ChevronLeft, Calendar, MapPin, ShieldAlert, 
+import {
+    Loader2, ChevronLeft, Calendar, MapPin, ShieldAlert,
     CheckCircle, AlertTriangle, RefreshCw, Eye, Download,
     CheckCircle2, Clock, User, Mail, CreditCard, KeyRound, QrCode
 } from "lucide-react"
@@ -33,6 +33,7 @@ export default function ApplicationViewPage() {
     const [application, setApplication] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
+    const [updatingHasPaid, setUpdatingHasPaid] = useState(false)
 
     // Modal controllers
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false)
@@ -101,19 +102,39 @@ export default function ApplicationViewPage() {
         )
     }
 
+    const handleHasPaid = async () => {
+        try {
+            setUpdatingHasPaid(true)
+            toast.info("Updating application payment status!")
+            const { data } = await api.patch(`/applications/update/${id}`)
+            if (data.success) {
+                toast.success("Application updated to paid successfully!")
+                setApplication((prev: any) => ({
+                    ...prev,
+                    paymentStatus: "paid"
+                }))
+            }
+        } catch (error: any) {
+            console.error("Failed to update status:", error)
+            toast.error(error.response?.data?.error || "Failed to update status")
+        } finally {
+            setUpdatingHasPaid(false)
+        }
+    }
+
     const handleUpdateStatus = async (targetStatus: string, reason?: string) => {
         try {
             setUpdating(true)
-            const res = await api.patch(`/events/${event._id}/applicants/${application._id}`, { 
-                status: targetStatus, 
-                reason 
+            const res = await api.patch(`/events/${event._id}/applicants/${application._id}`, {
+                status: targetStatus,
+                reason
             })
             if (res.data.success) {
                 toast.success(`Application updated to ${targetStatus.replace('_', ' ')} successfully!`)
-                setApplication(prev => ({ 
-                    ...prev, 
-                    status: targetStatus, 
-                    rejectionReason: targetStatus === 'rejected' ? reason : undefined 
+                setApplication((prev: any) => ({
+                    ...prev,
+                    status: targetStatus,
+                    rejectionReason: targetStatus === 'rejected' ? reason : undefined
                 }))
             }
         } catch (error: any) {
@@ -132,20 +153,20 @@ export default function ApplicationViewPage() {
         <div className="min-h-screen bg-background text-foreground pb-24">
             {/* Header backdrop */}
             <div className="relative h-72 w-full overflow-hidden border-b border-border bg-muted/20">
-                <div 
-                    className="absolute inset-0 bg-cover bg-center filter blur-xl opacity-20 scale-110" 
-                    style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop'})` }} 
+                <div
+                    className="absolute inset-0 bg-cover bg-center filter blur-xl opacity-20 scale-110"
+                    style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop'})` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                
+
                 <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-8 space-y-4">
-                    <Link 
-                        href={isApplicant ? "/u/applications" : `/u/organizer/events/${event._id}`} 
+                    <Link
+                        href={isApplicant ? "/u/applications" : `/u/organizer/events/${event._id}`}
                         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-xs font-bold uppercase tracking-wider w-fit"
                     >
                         <ChevronLeft size={16} /> Back to Dashboard
                     </Link>
-                    
+
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <Badge variant="outline" className="text-[10px] uppercase tracking-widest bg-orange-500/10 border-orange-500/30 text-orange-500 font-bold rounded-xs px-2.5 py-0.5">
@@ -173,10 +194,10 @@ export default function ApplicationViewPage() {
             {/* Layout Grid */}
             <div className="max-w-7xl mx-auto px-6 -mt-6 relative z-20">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    
+
                     {/* Left Column: Response details */}
                     <div className="lg:col-span-8 space-y-6">
-                        
+
                         {/* Applicant details */}
                         <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm overflow-hidden shadow-md dark:shadow-black/40">
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5 sm:p-6">
@@ -264,7 +285,7 @@ export default function ApplicationViewPage() {
                     {/* Right Column: Dynamic Action center */}
                     <div className="lg:col-span-4 lg:sticky lg:top-8">
                         <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 overflow-hidden">
-                            
+
                             <div className="p-5 sm:p-6 border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40">
                                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Live Application Status</h3>
                                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xs border text-xs font-bold uppercase tracking-wider ${statusCfg.bg} ${statusCfg.color}`}>
@@ -274,7 +295,7 @@ export default function ApplicationViewPage() {
                             </div>
 
                             <div className="p-5 sm:p-6 space-y-6">
-                                
+
                                 {/* APPLICANT VIEW */}
                                 {isApplicant && (
                                     <div className="space-y-6">
@@ -289,9 +310,9 @@ export default function ApplicationViewPage() {
                                                 </div>
 
                                                 <div className="bg-white p-3.5 rounded-sm shadow-sm border border-zinc-200">
-                                                    <img 
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${window.location.origin}/applications/p/${application._id}`} 
-                                                        alt="Entry Pass QR" 
+                                                    <img
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${window.location.origin}/applications/p/${application._id}`}
+                                                        alt="Entry Pass QR"
                                                         className="w-36 h-36"
                                                     />
                                                 </div>
@@ -378,7 +399,7 @@ export default function ApplicationViewPage() {
                                         </div>
 
                                         <div className="flex flex-col gap-2.5 pt-2">
-                                            <Button 
+                                            <Button
                                                 onClick={() => handleUpdateStatus('approved')}
                                                 disabled={updating || status === 'approved'}
                                                 className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold uppercase text-xs tracking-wider rounded-sm transition-all shadow-sm disabled:opacity-40"
@@ -387,7 +408,7 @@ export default function ApplicationViewPage() {
                                                 Approve Application
                                             </Button>
 
-                                            <Button 
+                                            <Button
                                                 onClick={() => setResetModalOpen(true)}
                                                 disabled={updating || status === 'pending_form'}
                                                 variant="outline"
@@ -397,7 +418,17 @@ export default function ApplicationViewPage() {
                                                 Reset Form Entries
                                             </Button>
 
-                                            <Button 
+                                            {/* <Button
+                                                onClick={handleHasPaid}
+                                                disabled={updatingHasPaid}
+                                                variant="outline"
+                                                className="w-full h-11 border-yellow-500/50 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500 hover:text-white font-bold uppercase text-xs tracking-wider rounded-sm transition-all disabled:opacity-40"
+                                            >
+                                                {updatingHasPaid ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
+                                                Has Paid
+                                            </Button> */}
+
+                                            <Button
                                                 onClick={() => setRejectionModalOpen(true)}
                                                 disabled={updating || status === 'rejected'}
                                                 variant="outline"
@@ -437,8 +468,8 @@ export default function ApplicationViewPage() {
 
                     <DialogFooter className="flex gap-2">
                         <Button variant="ghost" onClick={() => setRejectionModalOpen(false)} className="text-muted-foreground hover:text-foreground text-xs font-bold uppercase rounded-sm">Cancel</Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             className="font-bold rounded-sm text-xs uppercase h-10 px-5"
                             disabled={!rejectionReason.trim() || updating}
                             onClick={() => handleUpdateStatus('rejected', rejectionReason)}
@@ -470,7 +501,7 @@ export default function ApplicationViewPage() {
 
                     <DialogFooter className="flex gap-2">
                         <Button variant="ghost" onClick={() => setResetModalOpen(false)} className="text-muted-foreground hover:text-foreground text-xs font-bold uppercase rounded-sm">Cancel</Button>
-                        <Button 
+                        <Button
                             className="font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-xs uppercase h-10 px-5 shadow-sm"
                             disabled={!resetReason.trim() || updating}
                             onClick={() => handleUpdateStatus('pending_form', resetReason)}

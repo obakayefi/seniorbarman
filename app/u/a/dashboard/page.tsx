@@ -4,7 +4,7 @@ import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapp
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, Bug, Settings2 } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, CalendarClock, Mic2, Bug, Settings2 } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import EnvViewer from '@/components/features/admin/EnvViewer'
@@ -12,20 +12,16 @@ import EnvViewer from '@/components/features/admin/EnvViewer'
 const AdminDashboard = () => {
     const { user } = useApp()
     const router = useRouter()
-    const [stats, setStats] = useState({ totalEvents: 0, totalUsers: 0 })
+    const [stats, setStats] = useState({ totalEvents: 0, totalUsers: 0, upcomingEvents: 0, totalAuditions: 0 })
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchAdminStats = async () => {
             try {
-                const [eventsRes, usersRes] = await Promise.all([
-                    api.get('/events'),
-                    api.get('/users')
-                ])
-                setStats({
-                    totalEvents: eventsRes.data.events?.length || 0,
-                    totalUsers: usersRes.data.users?.length || 0
-                })
+                const res = await api.get('/admin/stats')
+                if (res.data.success) {
+                    setStats(res.data.stats)
+                }
             } catch (error) {
                 console.error("Error fetching admin stats", error)
             } finally {
@@ -140,7 +136,7 @@ const AdminDashboard = () => {
         >
             {/* Admin Stats Grid - Only show for full admins */}
             {user?.role !== 'organizer' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
                         <div className="p-4 bg-orange-500/10 rounded-sm">
                             <BarChart3 className="text-orange-500" size={32} />
@@ -158,6 +154,26 @@ const AdminDashboard = () => {
                         <div>
                             <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Total Accounts</p>
                             <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.totalUsers}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-emerald-500/10 rounded-sm">
+                            <CalendarClock className="text-emerald-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Upcoming</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.upcomingEvents}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-violet-500/10 rounded-sm">
+                            <Mic2 className="text-violet-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Auditions</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.totalAuditions}</h3>
                         </div>
                     </div>
                 </div>

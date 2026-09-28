@@ -6,6 +6,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "../ui/label"
 import { ApplyDatePicker } from "./ApplyDatePicker"
 import { Spinner } from "../ui/spinner"
@@ -227,6 +228,7 @@ const CreateEventForm = () => {
     const [homeTeam, setHomeTeam] = useState("")
     const [awayTeam, setAwayTeam] = useState("")
     const [eventVenue, setEventVenue] = useState("")
+    const [descriptionVal, setDescriptionVal] = useState("")
     const [files, setFiles] = useState<File[]>([])
     const [eventTitleVal, setEventTitleVal] = useState("")
     const [eventTimeVal, setEventTimeVal] = useState("16:00")
@@ -241,7 +243,7 @@ const CreateEventForm = () => {
     const parsePrice = (value: string) => Number(value.replace(/,/g, "")) || 0
 
     const formReset = (type: string = currentEventType) => {
-        setAwayTeam(""); setEventTitleVal(""); setEventTimeVal("16:00"); setCtaTextVal("Book Ticket")
+        setAwayTeam(""); setEventTitleVal(""); setDescriptionVal(""); setEventTimeVal("16:00"); setCtaTextVal("Book Ticket")
         setEventDate(undefined); setDateValue(undefined); setMonth(undefined)
         setFiles([]); setResetKey(prev => prev + 1)
         setRequiresApplication(false); setApplicationFee(0)
@@ -285,6 +287,7 @@ const CreateEventForm = () => {
             eventDate: combinedDate,
             imageFile: files[0],
             eventTime: eventTimeVal,
+            description: descriptionVal.trim(),
             ctaText: ctaTextVal.trim() || "Book Ticket",
             ticketTypes: JSON.stringify(ticketTypes),
             requiresApplication: String(requiresApplication),
@@ -533,6 +536,26 @@ const CreateEventForm = () => {
                                 />
                             </div>
 
+                            {/* Event Description */}
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">
+                                        Event Description
+                                    </Label>
+                                    <span className="text-[10px] text-muted-foreground">Optional</span>
+                                </div>
+                                <Textarea
+                                    rows={4}
+                                    className="text-foreground border-border bg-card rounded-sm resize-none"
+                                    value={descriptionVal}
+                                    onChange={e => setDescriptionVal(e.target.value)}
+                                    placeholder="Provide compelling details about your event, schedule, dress code, guest artists, or expectations for attendees..."
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    This description is prominently featured on your event&apos;s public landing page.
+                                </p>
+                            </div>
+
                             {/* Button CTA Text */}
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
@@ -585,7 +608,7 @@ const CreateEventForm = () => {
                             {!allowNoTickets && (
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center justify-between">
-                                        <SectionLabel>Ticket Types <span className="opacity-50">(max 4)</span></SectionLabel>
+                                        <SectionLabel>Ticket Types <span className="opacity-50">(max 10)</span></SectionLabel>
                                     </div>
                                     {ticketTypes.map((ticket, index) => (
                                         <div key={index} className="grid grid-cols-[1fr_140px_auto] gap-3 items-center p-3 bg-muted/20 border border-border rounded-sm">
@@ -616,7 +639,7 @@ const CreateEventForm = () => {
                                             </button>
                                         </div>
                                     ))}
-                                    {ticketTypes.length < 4 && (
+                                    {ticketTypes.length < 10 && (
                                         <button
                                             type="button"
                                             onClick={() => setTicketTypes([...ticketTypes, { name: "", price: 0 }])}
@@ -636,74 +659,61 @@ const CreateEventForm = () => {
                                 </div>
                             </div>
 
-                            {/* Application Toggle */}
-                            <div className="border border-border rounded-sm overflow-hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => setRequiresApplication(v => !v)}
-                                    className={cn(
-                                        "w-full flex items-center justify-between p-4 transition-colors",
-                                        requiresApplication ? "bg-orange-500/8" : "bg-card hover:bg-muted/30"
-                                    )}
-                                >
+                            {/* Application Settings — Auditions Only */}
+                            {isAudition && (
+                                <div className="p-5 border border-purple-500/20 bg-purple-500/5 rounded-sm space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={cn("h-9 w-9 rounded-sm flex items-center justify-center transition-colors",
-                                            requiresApplication ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground")}>
+                                        <div className="h-9 w-9 rounded-sm bg-purple-500 text-white flex items-center justify-center shrink-0">
                                             <ClipboardList size={17} />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="font-black text-foreground text-sm">Requires Application</p>
-                                            <p className="text-[10px] text-muted-foreground">People must apply before attending</p>
-                                        </div>
-                                    </div>
-                                    <Toggle checked={requiresApplication} onChange={() => setRequiresApplication(v => !v)} />
-                                </button>
-                                {requiresApplication && (
-                                    <div className="p-5 space-y-5 border-t border-border bg-muted/10">
-                                        <div className="flex flex-col gap-2">
-                                            <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Application Fee</Label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₦</span>
-                                                <Input
-                                                    type="text"
-                                                    className="text-foreground border-border bg-card pl-8 pr-16 rounded-sm"
-                                                    value={applicationFeeDisplay}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value.replace(/,/g, "")
-                                                        if (raw === "") { setApplicationFeeDisplay(""); setApplicationFee(0); return }
-                                                        const num = Number(raw)
-                                                        if (!isNaN(num)) { setApplicationFee(num); setApplicationFeeDisplay(num.toLocaleString()) }
-                                                    }}
-                                                    placeholder="0"
-                                                />
-                                                {applicationFee === 0 && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-green-500 font-black">FREE</span>}
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground">Set to 0 for a free application process</p>
-                                        </div>
                                         <div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowFormBuilder(v => !v)}
-                                                className="flex items-center gap-2 text-sm font-bold text-orange-500 hover:text-orange-400 transition-colors"
-                                            >
-                                                {showFormBuilder ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                                                {showFormBuilder ? "Hide" : "Build"} Application Form
-                                                {formFields.length > 0 && (
-                                                    <span className="bg-orange-500/15 text-orange-500 text-[10px] px-2 py-0.5 rounded-full font-black">
-                                                        {formFields.length} {formFields.length === 1 ? "field" : "fields"}
-                                                    </span>
-                                                )}
-                                            </button>
-                                            {showFormBuilder && (
-                                                <div className="mt-4">
-                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-3">Design the questions applicants will answer</p>
-                                                    <EventFormBuilder fields={formFields} onChange={setFormFields} />
-                                                </div>
-                                            )}
+                                            <p className="font-black text-foreground text-sm">Application Required by Default</p>
+                                            <p className="text-[10px] text-muted-foreground">Auditions require an application flow for candidates</p>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                    <div className="flex flex-col gap-2 pt-2 border-t border-purple-500/20">
+                                        <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Application Fee</Label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₦</span>
+                                            <Input
+                                                type="text"
+                                                className="text-foreground border-border bg-card pl-8 pr-16 rounded-sm"
+                                                value={applicationFeeDisplay}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value.replace(/,/g, "")
+                                                    if (raw === "") { setApplicationFeeDisplay(""); setApplicationFee(0); return }
+                                                    const num = Number(raw)
+                                                    if (!isNaN(num)) { setApplicationFee(num); setApplicationFeeDisplay(num.toLocaleString()) }
+                                                }}
+                                                placeholder="0"
+                                            />
+                                            {applicationFee === 0 && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-green-500 font-black">FREE</span>}
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground">Set to 0 for a free audition application process</p>
+                                    </div>
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowFormBuilder(v => !v)}
+                                            className="flex items-center gap-2 text-sm font-bold text-purple-500 hover:text-purple-400 transition-colors"
+                                        >
+                                            {showFormBuilder ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                                            {showFormBuilder ? "Hide" : "Build"} Application Form
+                                            {formFields.length > 0 && (
+                                                <span className="bg-purple-500/15 text-purple-500 text-[10px] px-2 py-0.5 rounded-full font-black">
+                                                    {formFields.length} {formFields.length === 1 ? "field" : "fields"}
+                                                </span>
+                                            )}
+                                        </button>
+                                        {showFormBuilder && (
+                                            <div className="mt-4">
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-3">Design the questions applicants will answer</p>
+                                                <EventFormBuilder fields={formFields} onChange={setFormFields} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

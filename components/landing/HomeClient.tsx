@@ -12,9 +12,10 @@ interface HomeClientProps {
     initialEvents: any[];
     ctaText: string;
     ctaLabel: string;
+    announcements?: string[];
 }
 
-export default function HomeClient({ initialEvents, ctaText, ctaLabel }: HomeClientProps) {
+export default function HomeClient({ initialEvents, ctaText, ctaLabel, announcements }: HomeClientProps) {
     const [activeFilter, setActiveFilter] = useState("");
     const [events, setEvents] = useState(initialEvents);
     const [loading, setLoading] = useState(false);
@@ -55,7 +56,7 @@ export default function HomeClient({ initialEvents, ctaText, ctaLabel }: HomeCli
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors">
             {/* Top announcement ticker */}
-            <AnnouncementBanner />
+            <AnnouncementBanner announcements={announcements} />
 
             {/* Orange CTA sub-banner */}
             <LandingHeroBanner

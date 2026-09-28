@@ -59,7 +59,7 @@ export default function TicketBatchManager({ eventId }: TicketBatchManagerProps)
 
             // Premium fits 8, Standard fits 20
             const ticketsPerPage = eventType === 'standard' ? 20 : 8;
-            const uniqueStands = Array.from(new Set(tickets.map((t: any) => t.stand || "Regular")))
+            const uniqueStands: string[] = Array.from(new Set(tickets.map((t: any) => String(t.stand || "Regular"))))
             const zip = new JSZip()
 
             let totalPages = 0

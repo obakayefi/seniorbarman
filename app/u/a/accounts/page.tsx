@@ -10,6 +10,7 @@ import { Loader2, Search, Users, ChevronLeft, ChevronRight, Trophy } from "lucid
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { hasSecureOchEnv } from "@/app/actions/getSecureEnv"
+import { useApp } from "@/context/AppContext"
 
 // Inline component that handles the team_manager team-selection flow per row
 function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUpdated: (id: string, role: string) => void; canEscalateDev: boolean }) {
@@ -161,11 +162,13 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
 }
 
 const Accounts = () => {
+  const { user: currentUser } = useApp()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [canEscalateDev, setCanEscalateDev] = useState(false)
+  const isDev = currentUser?.role === 'dev'
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -260,6 +263,7 @@ const Accounts = () => {
                             onRoleUpdated={handleRoleUpdated}
                             canEscalateDev={canEscalateDev}
                           />
+                          {isDev && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -285,6 +289,7 @@ const Accounts = () => {
                           >
                             Impersonate
                           </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -13,7 +13,7 @@ import { cookies } from "next/headers";
  * Stores original dev token in `original_dev_token` cookie and issues target user token in `token`.
  */
 export async function POST(req: Request) {
-  const authResult = await requireRole(["dev", "admin"]);
+  const authResult = await requireRole(["dev"]);
   if (authResult instanceof NextResponse) return authResult;
 
   try {

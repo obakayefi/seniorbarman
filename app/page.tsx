@@ -60,6 +60,21 @@ export default async function Home() {
         "Create and share your event with the world effortlessly today";
     const ctaLabel = settings.root_hero_cta_label || "Create Event";
 
-    return <HomeClient initialEvents={events} ctaText={ctaText} ctaLabel={ctaLabel} />;
+    // Banner announcements: stored as a JSON string array in settings
+    let announcements: string[] | undefined;
+    if (settings.banner_announcements) {
+        try {
+            const parsed = typeof settings.banner_announcements === "string"
+                ? JSON.parse(settings.banner_announcements)
+                : settings.banner_announcements;
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                announcements = parsed;
+            }
+        } catch {
+            // fall back to defaults
+        }
+    }
+
+    return <HomeClient initialEvents={events} ctaText={ctaText} ctaLabel={ctaLabel} announcements={announcements} />;
 }
 

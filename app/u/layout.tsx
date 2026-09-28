@@ -45,7 +45,8 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
                     { title: "Create Events", url: sitemap.admin.createEvent, icon: "CalendarPlus" },
                     { title: "Event Applicants", url: "/u/a/applications", icon: "ClipboardList" },
                     { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
-                    { title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles" },
+                    {title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles"},
+                    {title: "Application Grant Wizard", url: sitemap.admin.applicationGrantWizard, icon: "ClipboardList"},
                 ]
             },
             {

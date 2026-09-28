@@ -27,7 +27,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
 
-        // Check permissions for team_manager
+        // Check permissions for organizer and team_manager
+        if (user.role === ROLES.ORGANIZER && event.createdBy?.toString() !== user.id) {
+            return NextResponse.json(
+                { error: "Forbidden: You can only view orders for events you created" },
+                { status: 403 }
+            );
+        }
+
         if (user.role === ROLES.TEAM_MANAGER) {
             const isCreator = event.createdBy?.toString() === user.id;
             const isManagerOfTeams = await hasManagerAccessToTeams(user.id, [

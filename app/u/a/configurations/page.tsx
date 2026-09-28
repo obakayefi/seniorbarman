@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save, Upload, X, RefreshCw, Shield, Trophy, Search, Archive } from "lucide-react"
+import { Loader2, Save, Upload, X, RefreshCw, Shield, Trophy, Search, Archive, Megaphone, Sparkles, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { CLUBS } from "@/lib/utils"
@@ -203,6 +203,9 @@ export default function ConfigurationsPage() {
     const [seoDescription, setSeoDescription] = useState("")
     const [heroHeading, setHeroHeading] = useState("")
     const [heroSubheading, setHeroSubheading] = useState("")
+    const [ctaText, setCtaText] = useState("")
+    const [ctaLabel, setCtaLabel] = useState("")
+    const [announcements, setAnnouncements] = useState<string[]>([""])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -220,6 +223,21 @@ export default function ConfigurationsPage() {
                 setSeoDescription(loadedSettings.global_seo_description || "")
                 setHeroHeading(loadedSettings.root_hero_heading || "")
                 setHeroSubheading(loadedSettings.root_hero_subheading || "")
+                setCtaText(loadedSettings.root_hero_cta_text || "")
+                setCtaLabel(loadedSettings.root_hero_cta_label || "")
+                // Parse announcements
+                if (loadedSettings.banner_announcements) {
+                    try {
+                        const parsed = typeof loadedSettings.banner_announcements === 'string'
+                            ? JSON.parse(loadedSettings.banner_announcements)
+                            : loadedSettings.banner_announcements;
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            setAnnouncements(parsed)
+                        }
+                    } catch {
+                        // keep default
+                    }
+                }
                 const activeEvents = (eventsRes.data.events || []).filter((e: any) =>
                     e.type === 'event' && new Date(e.date) >= new Date(new Date().setHours(0, 0, 0, 0))
                 )
@@ -233,7 +251,7 @@ export default function ConfigurationsPage() {
         fetchData()
     }, [])
 
-    const handleSaveConfig = async (configData: { key: string; value: string }[]) => {
+    const handleSaveConfig = async (configData: { key: string; value: string | string[] }[]) => {
         setSaving(true)
         try {
             await Promise.all(configData.map(data => api.patch('/settings', data)))
@@ -258,6 +276,26 @@ export default function ConfigurationsPage() {
         { key: 'root_hero_heading', value: heroHeading },
         { key: 'root_hero_subheading', value: heroSubheading }
     ])
+    const handleSaveCtaConfig = () => handleSaveConfig([
+        { key: 'root_hero_cta_text', value: ctaText },
+        { key: 'root_hero_cta_label', value: ctaLabel }
+    ])
+    const handleSaveAnnouncements = () => {
+        const filtered = announcements.filter(a => a.trim() !== '')
+        if (filtered.length === 0) {
+            toast.error("Add at least one announcement")
+            return
+        }
+        handleSaveConfig([{ key: 'banner_announcements', value: filtered }])
+    }
+
+    const updateAnnouncement = (index: number, value: string) => {
+        setAnnouncements(prev => prev.map((a, i) => i === index ? value : a))
+    }
+    const addAnnouncement = () => setAnnouncements(prev => [...prev, ""])
+    const removeAnnouncement = (index: number) => {
+        setAnnouncements(prev => prev.filter((_, i) => i !== index))
+    }
 
     const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -492,6 +530,92 @@ export default function ConfigurationsPage() {
                                 >
                                     {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
                                     Upload and Save Banner
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Landing Page CTA Banner */}
+                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500/20 via-amber-500 to-amber-500/20" />
+                            <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
+                                <CardTitle className="text-foreground text-base font-bold tracking-tight flex items-center gap-2">
+                                    <Megaphone size={16} className="text-amber-500" /> Landing Page CTA Banner
+                                </CardTitle>
+                                <CardDescription className="text-muted-foreground text-xs">Configure the orange promotional banner strip shown to organizers and visitors on the homepage.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 sm:p-6 space-y-5">
+                                <div className="space-y-2">
+                                    <Label className="text-foreground text-xs font-bold">Banner Message</Label>
+                                    <Input
+                                        placeholder="e.g., Create and share your event with the world effortlessly today"
+                                        value={ctaText}
+                                        onChange={e => setCtaText(e.target.value)}
+                                        className="bg-background border-border dark:border-zinc-700 text-foreground rounded-sm h-11 text-sm focus:border-amber-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-foreground text-xs font-bold">Button Label</Label>
+                                    <Input
+                                        placeholder="e.g., Create Event"
+                                        value={ctaLabel}
+                                        onChange={e => setCtaLabel(e.target.value)}
+                                        className="bg-background border-border dark:border-zinc-700 text-foreground rounded-sm h-11 text-sm focus:border-amber-500"
+                                    />
+                                </div>
+                                <Button
+                                    onClick={handleSaveCtaConfig}
+                                    disabled={saving}
+                                    className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm h-10 uppercase tracking-wider text-xs shadow-sm transition-all"
+                                >
+                                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                                    Save CTA Banner
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Announcement Marquee */}
+                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group lg:col-span-2">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20" />
+                            <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
+                                <CardTitle className="text-foreground text-base font-bold tracking-tight flex items-center gap-2">
+                                    <Sparkles size={16} className="text-emerald-500" /> Announcement Marquee
+                                </CardTitle>
+                                <CardDescription className="text-muted-foreground text-xs">Manage the scrolling announcement ticker shown at the very top of the landing page. Each line scrolls continuously.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 sm:p-6 space-y-4">
+                                {announcements.map((text, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <span className="text-muted-foreground text-xs font-bold w-6 text-right shrink-0">{i + 1}.</span>
+                                        <Input
+                                            placeholder={`Announcement ${i + 1}...`}
+                                            value={text}
+                                            onChange={e => updateAnnouncement(i, e.target.value)}
+                                            className="bg-background border-border dark:border-zinc-700 text-foreground rounded-sm h-10 text-sm focus:border-emerald-500 flex-1"
+                                        />
+                                        {announcements.length > 1 && (
+                                            <button
+                                                onClick={() => removeAnnouncement(i)}
+                                                className="p-2 rounded-sm text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
+                                                title="Remove announcement"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={addAnnouncement}
+                                    className="flex items-center gap-2 text-emerald-500 hover:text-emerald-400 text-xs font-bold uppercase tracking-wider transition-colors py-2"
+                                >
+                                    <Plus size={14} /> Add Another Announcement
+                                </button>
+                                <Button
+                                    onClick={handleSaveAnnouncements}
+                                    disabled={saving}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm h-10 uppercase tracking-wider text-xs shadow-sm transition-all"
+                                >
+                                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                                    Save Announcements
                                 </Button>
                             </CardContent>
                         </Card>

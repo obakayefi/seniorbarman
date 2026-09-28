@@ -19,6 +19,7 @@ import {
     Field,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import useInput from "@/hooks/useInput"
 import { Label } from "../ui/label"
 import { ApplyDatePicker } from "./ApplyDatePicker"
@@ -62,6 +63,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     const eventTitle = useInput('')
     const eventTime = useInput('16:00')
     const ctaTextInput = useInput('Book Ticket')
+    const eventDescription = useInput('')
 
     // Application Settings
     const [requiresApplication, setRequiresApplication] = React.useState(false)
@@ -100,6 +102,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                 eventTitle.setValue(data.title || '')
                 eventTime.setValue(data.time || '16:00')
                 ctaTextInput.setValue(data.ctaText || 'Book Ticket')
+                eventDescription.setValue(data.description || '')
                 setTicketTypes(data.ticketTypes || [])
                 setEventVenue(data.venue || '')
 
@@ -143,6 +146,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
         formData.append("eventTime", eventTime.value);
         formData.append("eventVenue", eventVenue);
         formData.append("ctaText", ctaTextInput.value.trim() || 'Book Ticket');
+        formData.append("description", eventDescription.value.trim());
         formData.append("ticketTypes", JSON.stringify(ticketTypes));
         if (eventDate) {
             formData.append("eventDate", eventDate.toISOString());
@@ -328,6 +332,23 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
+                                        <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Event Description</Label>
+                                        <span className="text-[10px] text-muted-foreground">Optional</span>
+                                    </div>
+                                    <Textarea
+                                        rows={4}
+                                        className={'text-foreground bg-card border-border rounded-sm resize-none'}
+                                        value={eventDescription.value}
+                                        onChange={(e) => eventDescription.onChange(e as any)}
+                                        placeholder="Provide compelling details about your event, schedule, dress code, guest artists, or expectations for attendees..."
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">
+                                        This description is prominently featured on your event&apos;s public landing page.
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
                                         <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Button Action Text (CTA)</Label>
                                         <span className="text-[10px] text-muted-foreground">Default: &quot;Book Ticket&quot;</span>
                                     </div>
@@ -388,6 +409,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                             </Button>
                                         </div>
                                     ))}
+                                    {ticketTypes.length < 10 && (
                                     <Button 
                                         type="button" 
                                         variant="outline" 
@@ -396,6 +418,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                     >
                                         Add Ticket Type
                                     </Button>
+                                    )}
                                 </div>
 
                                 {/* Application Settings */}
