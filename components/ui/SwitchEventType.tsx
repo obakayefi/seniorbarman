@@ -1,4 +1,4 @@
-import { Switch } from "@heroui/react-u";
+import { Switch } from "@/components/ui/switch";
 
 export const MoonIcon = (props: any) => {
     return (
@@ -40,15 +40,9 @@ export const SunIcon = (props: any) => {
 
 export default function SwitchEventType() {
     return (
-        <Switch
-            defaultSelected
-            color="secondary"
-            size="lg"
-            thumbIcon={({ isSelected, className }: any) =>
-                isSelected ? <SunIcon className={className} /> : <MoonIcon className={className} />
-            }
-        >
-            Dark mode
-        </Switch>
+        <div className="flex items-center gap-2">
+            <Switch defaultChecked />
+            <span className="text-xs text-foreground font-medium">Dark mode</span>
+        </div>
     );
 }

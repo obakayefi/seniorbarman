@@ -13,6 +13,7 @@ import { TicketOperationStatus } from "@/components/ui/ticket-operation-status";
 
 import { TicketSummary } from "@/types/data";
 import { ScanError } from "@/types/scan-error";
+import { Button } from "@/components/ui/button";
 
 type Props = {
     canScan: boolean;

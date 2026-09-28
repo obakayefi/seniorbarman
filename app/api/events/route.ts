@@ -224,13 +224,16 @@ export async function POST(req: Request) {
             );
         }
 
+        const descriptionRaw = formData.get("description") as string;
+        const description = descriptionRaw !== null && descriptionRaw !== undefined ? descriptionRaw.trim() : "";
+
         let newEvent = type === "sports" ? {
             homeTeam,
             awayTeam,
             venue,
             type,
             date: finalDate,
-            description: "Join us for an exciting match!",
+            description: description || "Join us for an exciting match!",
             ctaText: ctaText.trim() || "Book Ticket",
             ticketTypes: ticketTypes,
             image: imageUrl,
@@ -240,7 +243,7 @@ export async function POST(req: Request) {
             date: finalDate,
             type,
             venue,
-            description: "Join us for an exciting event!",
+            description: description || (formData.get("isAudition") === "true" ? "Open call audition. Apply now to showcase your talent." : "Join us for an exciting event!"),
             ctaText: ctaText.trim() || "Book Ticket",
             ticketTypes: ticketTypes,
             image: imageUrl,

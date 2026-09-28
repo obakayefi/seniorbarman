@@ -171,10 +171,11 @@ export function AppSidebar({ groups, links }: { groups?: SidebarGroupItem[]; lin
                   const Icon = IconMap[item.icon] || LayoutDashboard;
 
                   const isSportsLink =
-                    item.title.toLowerCase().includes("matches") ||
+                    !item.url.startsWith("/u/a/teams") &&
+                    (item.title.toLowerCase().includes("matches") ||
                     item.title.toLowerCase().includes("rangers") ||
-                    item.url.includes("/teams") ||
-                    item.url.includes("/rangers");
+                    item.url === "/teams" ||
+                    item.url.includes("/rangers"));
 
                   const targetUrl = isSportsLink
                     ? favTeamId

@@ -449,9 +449,11 @@ export const sitemap = {
         manageActivities: "/u/a/events/manage",
         createAdmin: "/u/a/staff/create",
         users: "/u/a/accounts",
+        teams: "/u/a/teams",
         createEvent: "/u/a/events/create",
         ticketSearch: "/u/a/tickets/search",
         ticketGrantWizard: "/u/a/ticket-grant-wizard",
+        applicationGrantWizard: "/u/a/application-grant-wizard",
         auditLogs: "/u/a/audit",
         errorLogs: "/u/a/errors",
         ticketOrders: "/u/a/ticket-orders"

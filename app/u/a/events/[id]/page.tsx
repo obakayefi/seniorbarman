@@ -10,12 +10,13 @@ import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
     ArrowLeft, Edit, Calendar, MapPin, Search, Plus, Download,
-    ClipboardList, Wallet, Layers
+    ClipboardList, Wallet, Layers, Share2
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ShareEventModal } from '@/components/modals/share-event-modal'
 
 export default function EventDetailPage() {
     const params = useParams()
@@ -26,6 +27,7 @@ export default function EventDetailPage() {
     const [attendeeSearch, setAttendeeSearch] = useState('')
     const [applicants, setApplicants] = useState<any[]>([])
     const [selectedAppForView, setSelectedAppForView] = useState<any>(null)
+    const [shareModalOpen, setShareModalOpen] = useState(false)
 
     const fetchData = async () => {
         try {
@@ -173,12 +175,23 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                     <div className="flex gap-2.5 flex-wrap justify-start md:justify-end">
+                        <Button 
+                            onClick={() => setShareModalOpen(true)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs flex items-center gap-1.5"
+                        >
+                            <Share2 size={15} /> Share Link
+                        </Button>
+                        <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-10">
+                            <Link href={`/u/a/events/${id}/orders`}>
+                                <Wallet className="mr-1.5 h-4 w-4 text-emerald-500" /> View Ticket Orders
+                            </Link>
+                        </Button>
                         <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10">
                             <Link href={`/u/a/events/${event._id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Event
                             </Link>
                         </Button>
-                        <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
+                        <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
                             <Link href={`/u/a/events/${id}/generate-wizard`}>
                                 <Plus size={15} className="mr-1.5" /> Generate Tickets
                             </Link>
@@ -190,6 +203,12 @@ export default function EventDetailPage() {
                         </Button>
                     </div>
                 </div>
+
+                <ShareEventModal
+                    isOpen={shareModalOpen}
+                    onClose={() => setShareModalOpen(false)}
+                    event={event}
+                />
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -219,7 +238,12 @@ export default function EventDetailPage() {
                         </div>
                         <div className="mt-3">
                             <div className="text-3xl text-foreground font-black tracking-tight">₦{stats.totalRevenue.toLocaleString()}</div>
-                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">From ticket sales</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">From ticket sales</p>
+                                <Link href={`/u/a/events/${id}/orders`} className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    View Orders &rarr;
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -540,9 +564,9 @@ export default function EventDetailPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${app.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' :
-                                                        app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
-                                                            app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
-                                                                'bg-muted text-muted-foreground border-border dark:border-zinc-700'
+                                                    app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
+                                                        app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
+                                                            'bg-muted text-muted-foreground border-border dark:border-zinc-700'
                                                     }`}>
                                                     {app.status.replace('_', ' ')}
                                                 </Badge>

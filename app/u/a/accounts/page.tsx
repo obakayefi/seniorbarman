@@ -10,6 +10,7 @@ import { Loader2, Search, Users, ChevronLeft, ChevronRight, Trophy } from "lucid
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { hasSecureOchEnv } from "@/app/actions/getSecureEnv"
+import { useApp } from "@/context/AppContext"
 
 // Inline component that handles the team_manager team-selection flow per row
 function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUpdated: (id: string, role: string) => void; canEscalateDev: boolean }) {
@@ -161,11 +162,13 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
 }
 
 const Accounts = () => {
+  const { user: currentUser } = useApp()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [canEscalateDev, setCanEscalateDev] = useState(false)
+  const isDev = currentUser?.role === 'dev'
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -254,11 +257,40 @@ const Accounts = () => {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right pt-3 pb-3">
-                        <RoleCell
-                          user={user}
-                          onRoleUpdated={handleRoleUpdated}
-                          canEscalateDev={canEscalateDev}
-                        />
+                        <div className="flex items-center justify-end gap-3">
+                          <RoleCell
+                            user={user}
+                            onRoleUpdated={handleRoleUpdated}
+                            canEscalateDev={canEscalateDev}
+                          />
+                          {isDev && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/admin/impersonate", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ userId: user._id })
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  toast.success(`Switched session to ${user.firstName} ${user.lastName}`);
+                                  window.location.href = "/u/dashboard";
+                                } else {
+                                  toast.error(data.error || "Impersonation failed");
+                                }
+                              } catch (err) {
+                                toast.error("Error starting impersonation session");
+                              }
+                            }}
+                            className="h-8 text-xs font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md"
+                          >
+                            Impersonate
+                          </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

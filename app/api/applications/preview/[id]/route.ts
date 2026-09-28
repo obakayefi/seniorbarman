@@ -35,3 +35,4 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
+

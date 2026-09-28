@@ -13,6 +13,7 @@ import { IEventStats, TicketSummary } from "@/types/data";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { ROLES } from '@/lib/roles';
+import { Power } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const TicketScanner = dynamic(() => import('@/components/widgets/TicketScanner'), {

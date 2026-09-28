@@ -10,6 +10,8 @@ import { GiSoccerField } from "react-icons/gi";
 import { TbSoccerField } from 'react-icons/tb'
 import { BiParty } from 'react-icons/bi'
 
+import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner'
+
 const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     const user = await getUserFromCookie()
 
@@ -43,13 +45,15 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
                     { title: "Create Events", url: sitemap.admin.createEvent, icon: "CalendarPlus" },
                     { title: "Event Applicants", url: "/u/a/applications", icon: "ClipboardList" },
                     { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
-                    { title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles" },
+                    {title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles"},
+                    {title: "Application Grant Wizard", url: sitemap.admin.applicationGrantWizard, icon: "ClipboardList"},
                 ]
             },
             {
                 groupLabel: "System & Administration",
                 items: [
                     { title: "User Management", url: sitemap.admin.users, icon: "UsersRound" },
+                    { title: "Teams Management", url: sitemap.admin.teams, icon: "TbSoccerField" },
                     { title: "Create Admin", url: sitemap.admin.createAdmin, icon: "ShieldUser" },
                     { title: "Provider Requests", url: "/u/a/provider-requests", icon: "UserPlus" },
                     { title: "Configurations", url: "/u/a/configurations", icon: "Settings2" },
@@ -161,15 +165,18 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <SidebarProvider defaultOpen={true}>
-            <AppSidebar groups={groups} />
-            <SidebarInset className='w-full bg-background text-foreground transition-colors flex flex-col flex-1 min-w-0'>
-                <SidebarTrigger className="m-2 text-foreground" />
-                <div className="flex-1 w-full">
-                    {children}
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <div className="flex flex-col min-h-screen w-full">
+            {user.isImpersonating && <ImpersonationBanner userEmail={user.email} />}
+            <SidebarProvider defaultOpen={true}>
+                <AppSidebar groups={groups} />
+                <SidebarInset className='w-full bg-background text-foreground transition-colors flex flex-col flex-1 min-w-0'>
+                    <SidebarTrigger className="m-2 text-foreground" />
+                    <div className="flex-1 w-full">
+                        {children}
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+        </div>
     )
 }
 

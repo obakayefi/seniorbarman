@@ -10,12 +10,13 @@ import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
     ArrowLeft, Edit, Printer, Calendar, MapPin, Search, Plus, Download, Trash,
-    ExternalLink
+    ExternalLink, Share2, Wallet, ClipboardList, Layers, FileSpreadsheet, CheckCircle2
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ShareEventModal } from '@/components/modals/share-event-modal'
 
 export default function EventDetailPage() {
     const params = useParams()
@@ -26,6 +27,7 @@ export default function EventDetailPage() {
     const [attendeeSearch, setAttendeeSearch] = useState('')
     const [applicants, setApplicants] = useState<any[]>([])
     const [selectedAppForView, setSelectedAppForView] = useState<any>(null)
+    const [shareModalOpen, setShareModalOpen] = useState(false)
     const router = useRouter()
 
     const handleDelete = async () => {
@@ -81,9 +83,46 @@ export default function EventDetailPage() {
     const [rejectionModal, setRejectionModal] = useState<{ appId: string } | null>(null)
     const [rejectionReason, setRejectionReason] = useState('')
 
+    const exportApplicantsToCSV = () => {
+        if (applicants.length === 0) return;
+
+        const headers = ["Name", "Email", "Status", "Submitted At"];
+        const sampleApp = applicants.find(a => a.formAnswers && a.formAnswers.length > 0);
+        const formHeaders = sampleApp ? sampleApp.formAnswers.map((a: any) => a.fieldLabel) : [];
+        const allHeaders = [...headers, ...formHeaders];
+
+        const rows = applicants.map(app => {
+            const baseData = [
+                `${app.user?.firstName || ''} ${app.user?.lastName || ''}`,
+                app.user?.email || '',
+                app.status || '',
+                app.submittedAt ? format(new Date(app.submittedAt), 'yyyy-MM-dd') : 'N/A'
+            ];
+
+            const formData = formHeaders.map((header: string) => {
+                const answerObj = app.formAnswers?.find((a: any) => a.fieldLabel === header);
+                if (!answerObj) return "";
+                return Array.isArray(answerObj.answer) ? answerObj.answer.join("; ") : answerObj.answer;
+            });
+
+            return [...baseData, ...formData].map(val => `"${val}"`).join(",");
+        });
+
+        const csvContent = [allHeaders.join(","), ...rows].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `applicants_${event?.title || 'audition'}_${format(new Date(), 'yyyyMMdd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
                 <p className="text-lg font-medium">Analyzing event data...</p>
             </div>
@@ -92,7 +131,7 @@ export default function EventDetailPage() {
 
     if (!data?.event) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <p className="text-xl">Event not found</p>
                 <Button asChild variant="outline">
                     <Link href="/u/organizer/events/manage">Back to Management</Link>
@@ -101,7 +140,8 @@ export default function EventDetailPage() {
         )
     }
 
-    const { event, stats, tickets } = data
+    const { event, stats, tickets, appStats } = data
+    const totalCombinedRevenue = (stats?.totalRevenue || 0) + (appStats?.applicationRevenue || 0)
     const filteredTickets = tickets.filter((t: any) =>
         (t.holderName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
         (t.createdBy?.firstName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
@@ -143,9 +183,20 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                     <div className="flex gap-2.5 flex-wrap justify-start md:justify-end">
+                        <Button 
+                            onClick={() => setShareModalOpen(true)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs flex items-center gap-1.5"
+                        >
+                            <Share2 size={15} /> Share Link
+                        </Button>
+                        <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
+                            <Link href={`/u/organizer/events/${id}/orders`}>
+                                <Wallet className="mr-1.5 h-4 w-4 text-emerald-500" /> View Ticket Orders
+                            </Link>
+                        </Button>
                         {!event.allowNoTickets && (
                             <>
-                                <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
+                                <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
                                     <Link href={`/u/organizer/events/${id}/generate-wizard`}>
                                         <Plus size={15} className="mr-1.5" /> Generate Tickets
                                     </Link>
@@ -168,6 +219,12 @@ export default function EventDetailPage() {
                     </div>
                 </div>
 
+                <ShareEventModal
+                    isOpen={shareModalOpen}
+                    onClose={() => setShareModalOpen(false)}
+                    event={event}
+                />
+
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-orange-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
@@ -188,7 +245,7 @@ export default function EventDetailPage() {
                     <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-emerald-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
                         <div className="flex items-center justify-between">
                             <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
-                                Total Revenue
+                                {event.requiresApplication ? "Ticket Revenue" : "Total Revenue"}
                             </span>
                             <div className="w-8 h-8 rounded-xs bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                                 <TrendingUp className="h-4 w-4" />
@@ -196,7 +253,12 @@ export default function EventDetailPage() {
                         </div>
                         <div className="mt-3">
                             <div className="text-3xl text-foreground font-black tracking-tight">₦{stats.totalRevenue.toLocaleString()}</div>
-                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Gross Potential</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">From ticket sales</p>
+                                <Link href={`/u/organizer/events/${id}/orders`} className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    View Orders &rarr;
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -235,6 +297,94 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* ── Audition & Application Revenue Analytics (for audition events) ── */}
+                {event.requiresApplication && (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-black text-foreground uppercase tracking-wider flex items-center gap-2">
+                                    <ClipboardList className="w-5 h-5 text-orange-500" />
+                                    Audition & Application Analytics
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">Performance metrics and income generated from participant registrations</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {/* Application Fee Revenue */}
+                            <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Application Revenue
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                                        <Wallet className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-amber-600 dark:text-amber-400 font-black tracking-tight">
+                                        ₦{(appStats?.applicationRevenue || 0).toLocaleString()}
+                                    </div>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-2">
+                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+                                            {appStats?.paidCount || 0} paid · {event.applicationFee ? `₦${Number(event.applicationFee).toLocaleString()} fee` : 'Free'}
+                                        </span>
+                                        {(appStats?.freeCount || 0) > 0 && (
+                                            <span className="text-[11px] text-muted-foreground/80 uppercase tracking-wider">{appStats?.freeCount} free</span>
+                                        )}
+                                        {(appStats?.unpaidCount || 0) > 0 && (
+                                            <span className="text-[11px] text-red-500 font-medium uppercase tracking-wider">{appStats?.unpaidCount} unpaid</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Applications Registered */}
+                            <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-blue-500/0 via-blue-500 to-blue-500/0" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Registered Applicants
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                        <ClipboardList className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-foreground font-black tracking-tight">
+                                        {applicants.length}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                                        <span className="text-emerald-500 font-bold">{applicants.filter(a => a.status === 'approved').length} Approved</span>
+                                        <span>·</span>
+                                        <span className="text-blue-500 font-bold">{applicants.filter(a => a.status === 'completed').length} Submitted</span>
+                                        <span>·</span>
+                                        <span className="text-red-500 font-bold">{applicants.filter(a => a.status === 'rejected').length} Rejected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Combined Revenue */}
+                            <div className="bg-card border border-orange-500/30 rounded-sm p-5 shadow-md shadow-orange-500/5 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-500 to-red-500" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Total Combined Revenue
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                        <Layers className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-foreground font-black tracking-tight">₦{totalCombinedRevenue.toLocaleString()}</div>
+                                    <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Tickets + Audition Registrations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Category Breakdown */}
@@ -351,8 +501,16 @@ export default function EventDetailPage() {
                         <div className="p-5 border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <h3 className="text-foreground text-base font-bold">Applicants List</h3>
-                                <p className="text-muted-foreground text-xs mt-0.5">Review and approve attendee applications</p>
+                                <p className="text-muted-foreground text-xs mt-0.5">Review, verify payments, and manage audition registrations</p>
                             </div>
+                            <Button
+                                onClick={exportApplicantsToCSV}
+                                variant="outline"
+                                size="sm"
+                                className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-bold rounded-sm shadow-sm text-xs"
+                            >
+                                <Download size={14} className="mr-2" /> Export Applicants CSV
+                            </Button>
                         </div>
                         <div className="p-0 max-h-[500px] overflow-auto flex-1">
                             <Table>
@@ -360,7 +518,8 @@ export default function EventDetailPage() {
                                     <TableRow className="border-border dark:border-zinc-800">
                                         <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Applicant</TableHead>
                                         <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Submitted</TableHead>
-                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Status</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Fee Status</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Review Status</TableHead>
                                         <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -379,6 +538,21 @@ export default function EventDetailPage() {
                                                 <span className="text-xs text-muted-foreground font-medium">
                                                     {app.submittedAt ? format(new Date(app.submittedAt), 'MMM dd, yyyy') : 'Not submitted'}
                                                 </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {app.paymentStatus === 'paid' ? (
+                                                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Paid (₦{(app.amountPaid || event.applicationFee || 0).toLocaleString()})
+                                                    </Badge>
+                                                ) : app.paymentStatus === 'free' ? (
+                                                    <Badge variant="outline" className="text-muted-foreground text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Free
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Unpaid
+                                                    </Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${
@@ -406,7 +580,7 @@ export default function EventDetailPage() {
                                     ))}
                                     {applicants.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground text-sm italic">
+                                            <TableCell colSpan={5} className="text-center py-16 text-muted-foreground text-sm italic">
                                                 No applicants found yet.
                                             </TableCell>
                                         </TableRow>
