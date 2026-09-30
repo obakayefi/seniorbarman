@@ -350,7 +350,7 @@ export default function TicketScanner({
                                         )}
 
                                         {/* Action Buttons */}
-                                        <div className="pt-4">
+                                        {/* <div className="pt-4">
                                             {!isTeamManager && (
                                                 ticketOperation === 'check-in' ? (
                                                     <PreCheckInActions
@@ -368,7 +368,7 @@ export default function TicketScanner({
                                                     />
                                                 )
                                             )}
-                                        </div>
+                                        </div> */}
                                     </div>
                                 )}
 
