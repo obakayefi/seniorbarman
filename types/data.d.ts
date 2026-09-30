@@ -3,7 +3,7 @@ export interface IEventStats {
     totalPeopleCheckedIn: number;
     totalPeopleInside: number;
     totalPeopleOutside: number;
-
+    standBreakdown: {};
 }
 
 export type TicketPayload = {
