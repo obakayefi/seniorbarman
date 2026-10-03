@@ -288,6 +288,15 @@ export async function DELETE(req: Request) {
             createdBy: user.id
         });
 
+        try {
+            await Promise.all([
+                redis.del(`user_event_tickets:${user.id}:${eventId}`),
+                redis.del(`TICKETS_${user.id}`)
+            ]);
+        } catch (cacheErr) {
+            console.error("[Delete Event Tickets] Redis cache invalidation error:", cacheErr);
+        }
+
         return NextResponse.json({
             success: true,
             message: `Deleted ${result.deletedCount} tickets successfully.`,
