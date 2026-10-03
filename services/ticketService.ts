@@ -110,6 +110,18 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
 
     const savedTickets = await Ticket.insertMany(createdTicketsPayload);
 
+    // Invalidate Redis cache for user and event so new tickets and QR codes are instantly visible
+    try {
+        const { redis } = await import("@/lib/redis");
+        const userIdStr = userId.toString();
+        await Promise.all([
+            redis.del(`user_event_tickets:${userIdStr}:${eventIdStr}`),
+            redis.del(`TICKETS_${userIdStr}`)
+        ]);
+    } catch (cacheErr) {
+        console.error("[generateTickets] Redis cache invalidation error:", cacheErr);
+    }
+
     // Populate event details so response has rich data
     const populatedTickets = await Ticket.find({
         _id: { $in: savedTickets.map(t => t._id) }

@@ -102,9 +102,11 @@ export async function GET(req: Request, { params }: Params) {
 
         // Retrieve from Upstash (only if we didn't just generate new tickets)
         if (autoGenCount === 0) {
-            const cachedData = await redis.get(cacheKey);
+            const cachedData: any = await redis.get(cacheKey);
 
-            if (cachedData) {
+            // Only serve cache if it contains actual tickets for this event.
+            // If the cache was stored when there were 0 tickets, force a DB fetch.
+            if (cachedData && cachedData?.tickets?.tickets?.length > 0) {
                 return NextResponse.json(
                     { message: "Ticket found(cached)", response: cachedData },
                     { status: 200 }
