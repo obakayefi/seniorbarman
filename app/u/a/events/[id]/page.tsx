@@ -17,6 +17,8 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ShareEventModal } from '@/components/modals/share-event-modal'
+import { ThreeDLightSwitch } from '@/components/ui/3d-light-switch'
+import { DownloadEventQR } from '@/components/features/download-event-qr'
 
 export default function EventDetailPage() {
     const params = useParams()
@@ -145,62 +147,97 @@ export default function EventDetailPage() {
     return (
         <div className="md:p-10 p-4 sm:p-6 w-full space-y-8 min-h-screen bg-background text-foreground pb-20">
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-                    <div className="space-y-4">
-                        <Link href="/u/a/events/manage" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-xs font-semibold uppercase tracking-wider group">
-                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                            Back to Management
-                        </Link>
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-3">
+                {/* Header: Title and Meta Information */}
+                <div className="space-y-4">
+                    <Link href="/u/a/events/manage" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-xs font-semibold uppercase tracking-wider group">
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Management
+                    </Link>
+
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-2">
+                        {/* Title and Meta Information */}
+                        <div className="space-y-3 max-w-3xl">
+                            <div className="flex flex-wrap items-center gap-2.5">
                                 <Badge variant="outline" className="text-[10px] uppercase tracking-widest bg-orange-500/10 border-orange-500/30 text-orange-500 dark:text-orange-400 font-bold px-2 py-0.5 rounded-xs">
                                     Admin Report
                                 </Badge>
                                 <span className="text-muted-foreground text-xs font-mono">ID: {event._id.slice(-8)}</span>
+                                {event.createdBy && (
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                        • Hosted by <strong className="text-foreground">{typeof event.createdBy === 'object' ? `${event.createdBy.firstName || ''} ${event.createdBy.lastName || ''}`.trim() || event.createdBy.name : 'Organizer'}</strong>
+                                    </span>
+                                )}
                             </div>
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight">
+
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight leading-tight">
                                 {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
-                                <div className="flex items-center gap-1.5 font-medium">
-                                    <Calendar size={15} className="text-orange-500" />
-                                    {format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}
+
+                            <div className="flex flex-wrap items-center gap-y-2 gap-x-5 text-muted-foreground text-sm pt-1">
+                                <div className="flex items-center gap-2 font-medium">
+                                    <Calendar size={16} className="text-orange-500 shrink-0" />
+                                    <span>{format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 font-medium">
-                                    <MapPin size={15} className="text-orange-500" />
-                                    {event.venue}
+                                <div className="flex items-center gap-2 font-medium">
+                                    <MapPin size={16} className="text-orange-500 shrink-0" />
+                                    <span>{event.venue}</span>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Sales Control Switch */}
+                        <div className="shrink-0 w-full sm:w-auto">
+                            <ThreeDLightSwitch
+                                eventId={event._id}
+                                isEnded={event.isEnded || false}
+                                eventDate={event.date}
+                                onToggleSuccess={(newIsEnded) => {
+                                    setData((prev: any) => ({
+                                        ...prev,
+                                        event: {
+                                            ...prev.event,
+                                            isEnded: newIsEnded
+                                        }
+                                    }));
+                                }}
+                            />
+                        </div>
                     </div>
-                    <div className="flex gap-2.5 flex-wrap justify-start md:justify-end">
-                        <Button 
-                            onClick={() => setShareModalOpen(true)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs flex items-center gap-1.5"
-                        >
-                            <Share2 size={15} /> Share Link
-                        </Button>
-                        <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-10">
-                            <Link href={`/u/a/events/${id}/orders`}>
-                                <Wallet className="mr-1.5 h-4 w-4 text-emerald-500" /> View Ticket Orders
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10">
-                            <Link href={`/u/a/events/${event._id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit Event
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-10 uppercase tracking-wider text-xs">
-                            <Link href={`/u/a/events/${id}/generate-wizard`}>
-                                <Plus size={15} className="mr-1.5" /> Generate Tickets
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400 bg-orange-500/5 hover:bg-orange-500/10 font-bold rounded-sm shadow-sm h-10">
-                            <Link href={`/u/a/events/${id}/tickets-for-sale`}>
-                                <Download size={15} className="mr-1.5" /> Print Tickets
-                            </Link>
-                        </Button>
+
+                    {/* Action Bar / Controls Panel */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-1 border-y border-border/60 dark:border-zinc-800/80">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button 
+                                onClick={() => setShareModalOpen(true)}
+                                className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs flex items-center gap-1.5"
+                            >
+                                <Share2 size={14} /> Share Link
+                            </Button>
+                            <DownloadEventQR event={event} className="h-9" />
+                            <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                <Link href={`/u/a/events/${id}/orders`}>
+                                    <Wallet className="mr-1.5 h-3.5 w-3.5 text-emerald-500" /> Ticket Orders
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                <Link href={`/u/a/events/${id}/generate-wizard`}>
+                                    <Plus size={14} className="mr-1.5" /> Generate Tickets
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400 bg-orange-500/5 hover:bg-orange-500/10 font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                <Link href={`/u/a/events/${id}/tickets-for-sale`}>
+                                    <Download size={14} className="mr-1.5" /> Print Tickets
+                                </Link>
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                            <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-9 text-xs">
+                                <Link href={`/u/a/events/${event._id}/edit`}>
+                                    <Edit size={14} className="mr-1.5" /> Edit Event
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -215,15 +252,19 @@ export default function EventDetailPage() {
                     <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-orange-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
                         <div className="flex items-center justify-between">
                             <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
-                                Total Tickets
+                                Total Tickets Sold
                             </span>
                             <div className="w-8 h-8 rounded-xs bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
                                 <Ticket className="h-4 w-4" />
                             </div>
                         </div>
                         <div className="mt-3">
-                            <div className="text-3xl text-foreground font-black tracking-tight">{stats.totalTickets}</div>
-                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Units Sold</p>
+                            <div className="text-3xl text-foreground font-black tracking-tight">{stats.successfulSoldCount ?? stats.totalTickets}</div>
+                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">
+                                {stats.totalGeneratedTickets && stats.totalGeneratedTickets !== (stats.successfulSoldCount ?? stats.totalTickets)
+                                    ? `Successful Sales (${stats.totalGeneratedTickets} Pre-Generated)`
+                                    : "Successful Sales"}
+                            </p>
                         </div>
                     </div>
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event";
 import Ticket from "@/models/Ticket";
+import TicketOrder from "@/models/TicketOrder";
 import EventApplication from "@/models/EventApplication";
 import User from "@/models/User";
 import { getUserFromCookie } from "@/lib/auth";
@@ -30,20 +31,23 @@ export async function GET(
 
         const { id } = await params;
 
-        // Fetch event details
-        const rawEvent = await Event.findById(id).lean() as any;
+        // Fetch event details with creator info
+        const rawEvent = await Event.findById(id).populate('createdBy', 'firstName lastName email').lean() as any;
         if (!rawEvent) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }
         const event = await populateTeamsForEvents(rawEvent);
 
+        // Check creator ID (handling both populated object or ObjectId)
+        const creatorId = event.createdBy?._id?.toString() || event.createdBy?.toString();
+
         // Restrict organizers and team managers to their own/managed events
-        if (user.role === ROLES.ORGANIZER && event.createdBy?.toString() !== user.id) {
+        if (user.role === ROLES.ORGANIZER && creatorId !== user.id) {
             return NextResponse.json({ error: "Forbidden: You can only view events you created" }, { status: 403 });
         }
 
         if (user.role === ROLES.TEAM_MANAGER) {
-            const isCreator = event.createdBy?.toString() === user.id;
+            const isCreator = creatorId === user.id;
             const isManagerOfTeams = await hasManagerAccessToTeams(user.id, [event.homeTeam?._id?.toString(), event.awayTeam?._id?.toString()]);
             if (!isCreator && !isManagerOfTeams) {
                 return NextResponse.json({ error: "Forbidden: You can only view events for your managed teams" }, { status: 403 });
@@ -57,8 +61,45 @@ export async function GET(
             .lean();
 
         // Calculate ticket statistics
-        const totalTickets = tickets.length;
-        const totalRevenue = tickets.reduce((sum, t) => sum + (t.price || 0), 0);
+        const totalGeneratedTickets = tickets.length;
+
+        // ── Calculate accurate successful sales count and revenue from TicketOrders ──
+        const successfulOrders = await TicketOrder.find({ event: id, paymentStatus: 'success' }).lean() as any[];
+        let successfulSoldCount = 0;
+        let successfulRevenue = 0;
+
+        successfulOrders.forEach((order: any) => {
+            const ticketsData = order.tickets;
+            if (!ticketsData) return;
+            if (Array.isArray(ticketsData)) {
+                ticketsData.forEach((item: any) => {
+                    const qty = Number(item.quantity) || 0;
+                    const price = Number(item.price) || 0;
+                    successfulSoldCount += qty;
+                    successfulRevenue += qty * price;
+                });
+            } else {
+                Object.entries(ticketsData).forEach(([key, val]: [string, any]) => {
+                    if (typeof val === 'number') {
+                        successfulSoldCount += val;
+                    } else {
+                        const qty = Number(val?.quantity || val?.qty || 1);
+                        const price = Number(val?.price || 0);
+                        successfulSoldCount += qty;
+                        successfulRevenue += qty * price;
+                    }
+                });
+            }
+        });
+
+        // If there are no TicketOrders yet, check if there are direct tickets with successful payment
+        if (successfulSoldCount === 0) {
+            const paidTickets = tickets.filter(t => t.payment?.status === 'success' || t.generatedBy === 'online-sale');
+            if (paidTickets.length > 0) {
+                successfulSoldCount = paidTickets.length;
+                successfulRevenue = paidTickets.reduce((sum, t) => sum + (t.price || 0), 0);
+            }
+        }
 
         // Count by stand/category
         const categoryBreakdown: Record<string, number> = {};
@@ -74,10 +115,14 @@ export async function GET(
         });
 
         const stats = {
-            totalTickets,
-            totalRevenue,
+            totalTickets: successfulSoldCount,
+            totalGeneratedTickets,
+            successfulSoldCount,
+            totalRevenue: successfulRevenue,
             checkedInCount,
-            checkInRate: totalTickets > 0 ? (checkedInCount / totalTickets) * 100 : 0,
+            checkInRate: successfulSoldCount > 0
+                ? Math.min(100, (checkedInCount / successfulSoldCount) * 100)
+                : (totalGeneratedTickets > 0 ? Math.min(100, (checkedInCount / totalGeneratedTickets) * 100) : 0),
             categoryBreakdown: Object.entries(categoryBreakdown).map(([name, count]) => ({
                 name,
                 count,

@@ -270,7 +270,7 @@ export default function EventTicketOrdersPage() {
             </Button>
             <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-10 px-4 rounded-md shadow-xs shadow-orange-500/20">
               <Link href={`/u/a/events/${eventId}/generate-wizard`}>
-                <Sparkles className="h-4 w-4 mr-2" /> Grant Wizard
+                <Sparkles className="h-4 w-4 mr-2" /> Print Tickets for Sale
               </Link>
             </Button>
           </div>
@@ -409,11 +409,10 @@ export default function EventTicketOrdersPage() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3.5 py-2 rounded-md capitalize transition-colors ${
-                  statusFilter === status
+                className={`px-3.5 py-2 rounded-md capitalize transition-colors ${statusFilter === status
                     ? "bg-background text-foreground shadow-xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {status} ({status === "all" ? data?.orders?.length || 0 : data?.orders?.filter((o: any) => o.paymentStatus === status).length || 0})
               </button>

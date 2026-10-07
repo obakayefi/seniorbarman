@@ -22,6 +22,7 @@ import {
     MapPin,
     QrCode
 } from "lucide-react"
+import { DownloadEventQR } from '@/components/features/download-event-qr'
 
 interface ShareEventModalProps {
     isOpen: boolean
@@ -174,6 +175,20 @@ export function ShareEventModal({ isOpen, onClose, event }: ShareEventModalProps
                                 </a>
                             </Button>
                         </div>
+                    </div>
+
+                    {/* Branded Event QR Code */}
+                    <div className="p-4 rounded-sm bg-orange-500/5 border border-orange-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                            <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                <QrCode size={14} className="text-orange-500" />
+                                Branded Event QR Card
+                            </h5>
+                            <p className="text-[11px] text-muted-foreground">
+                                High-res flyer card with poster, logo & direct event share link.
+                            </p>
+                        </div>
+                        <DownloadEventQR event={event} className="shrink-0 w-full sm:w-auto" />
                     </div>
                 </div>
             </DialogContent>

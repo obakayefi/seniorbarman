@@ -74,6 +74,11 @@ export async function GET(req: Request) {
         //console.log({ upcomingActivities })
 
         const filteredEvents = upcomingActivities.filter((event: any) => {
+            // Automatically hide manually ended / suspended events from homepage and public listing
+            if (!forScanner && event.isEnded) {
+                return false;
+            }
+
             const eventDate = new Date(event.date)
             // Normalize event date for midnight comparison
             const eventMidnight = new Date(eventDate)
