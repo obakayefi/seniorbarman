@@ -41,12 +41,12 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             {
                 groupLabel: "Management & Operations",
                 items: [
-                    { title: "Manage Activities", url: sitemap.admin.manageActivities, icon: "CalendarDays" },
+                    { title: "Manage Events", url: sitemap.admin.manageActivities, icon: "CalendarDays" },
                     { title: "Create Events", url: sitemap.admin.createEvent, icon: "CalendarPlus" },
                     { title: "Event Applicants", url: "/u/a/applications", icon: "ClipboardList" },
                     { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },
-                    {title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles"},
-                    {title: "Application Grant Wizard", url: sitemap.admin.applicationGrantWizard, icon: "ClipboardList"},
+                    { title: "Ticket Grant Wizard", url: sitemap.admin.ticketGrantWizard, icon: "Sparkles" },
+                    { title: "Application Grant Wizard", url: sitemap.admin.applicationGrantWizard, icon: "ClipboardList" },
                 ]
             },
             {
@@ -104,7 +104,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
             {
                 groupLabel: "Activities & Management",
                 items: [
-                    { title: "Manage Activities", url: "/u/organizer/events/manage", icon: "FolderKanban" },
+                    { title: "Manage Events", url: "/u/organizer/events/manage", icon: "FolderKanban" },
                     { title: "Create Event", url: sitemap.organizer.createEvent, icon: "CalendarPlus" },
                     { title: "Activity Log", url: "/u/tm/audit", icon: "History" },
                     { title: "Scanner", url: sitemap.bouncer.scanner, icon: "ScanQrCode" },

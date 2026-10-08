@@ -10,7 +10,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     try {
         const { id } = await params;
         await connectDB();
-        const rawEvent = await Event.findById(id).lean();
+        const rawEvent = await Event.findById(id).populate('createdBy', 'firstName lastName email').lean();
         if (!rawEvent) {
             return NextResponse.json({ error: "Event not found" }, { status: 404 });
         }

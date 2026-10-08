@@ -325,7 +325,22 @@ function PublicEventDetailContent() {
                             <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-purple-600" />
                             
                             <div className="p-6 sm:p-7 space-y-6">
-                                {event.requiresApplication ? (
+                                {event.isEnded ? (
+                                    <div className="space-y-4 py-4 text-center">
+                                        <div className="p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl space-y-2">
+                                            <div className="h-10 w-10 mx-auto rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30 text-red-500">
+                                                <Clock size={20} />
+                                            </div>
+                                            <h3 className="text-base font-black text-red-500 uppercase tracking-tight">Sales Suspended / Event Ended</h3>
+                                            <p className="text-xs text-zinc-400 font-medium leading-relaxed">
+                                                Ticket sales for this event have been officially closed by the organizer. You can no longer purchase tickets for this event.
+                                            </p>
+                                        </div>
+                                        <Button disabled className="w-full h-12 rounded-sm bg-zinc-800 text-zinc-500 font-bold uppercase tracking-wider cursor-not-allowed">
+                                            Sales Ended
+                                        </Button>
+                                    </div>
+                                ) : event.requiresApplication ? (
                                     <>
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">

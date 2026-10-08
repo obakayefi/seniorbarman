@@ -113,6 +113,10 @@ const EventSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        isEnded: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

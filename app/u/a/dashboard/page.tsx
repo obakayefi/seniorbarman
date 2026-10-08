@@ -97,7 +97,7 @@ const AdminDashboard = () => {
             bg: "bg-indigo-500/10"
         },
         {
-            title: "Manage Activities",
+            title: "Manage Events",
             description: "Edit or delete any past or future event",
             icon: CalendarDays,
             url: "/u/a/events/manage",
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
     });
 
     return (
-        <DashboardLayoutWrapper 
+        <DashboardLayoutWrapper
             title={user?.role === 'organizer' ? "Organizer Hub" : "Admin Oversight"}
             headerAction={<EnvViewer />}
         >

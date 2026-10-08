@@ -29,7 +29,22 @@ export async function POST(req: Request) {
                 { status: 400 }
             )
         }
-        //const foundEvent = await Event.findById(eventId)
+
+        await connectDB();
+        const foundEvent = await Event.findById(eventId);
+        if (!foundEvent) {
+            return NextResponse.json(
+                { error: "Event not found" },
+                { status: 404 }
+            );
+        }
+
+        if (foundEvent.isEnded) {
+            return NextResponse.json(
+                { error: "Ticket sales for this event have been ended/suspended by the organizer." },
+                { status: 400 }
+            );
+        }
 
         const paystackPayload = {
             email,
