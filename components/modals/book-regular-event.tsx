@@ -34,7 +34,9 @@ export function BookRegularEventModal({ event }: { event: any }) {
         price: Number(t.price || 0),
         icon: idx === 1 ? Crown : Ticket,
         color: idx === 0 ? "text-blue-500" : idx === 1 ? "text-yellow-500" : "text-orange-500",
-        max: 500
+        max: 500,
+        isCombo: Boolean(t.isCombo),
+        comboSize: t.comboSize || (t.isCombo ? 3 : 1)
     })) || []
 
     const [payNowLoading, setPayNowLoading] = useState(false)
@@ -42,7 +44,14 @@ export function BookRegularEventModal({ event }: { event: any }) {
     const [ticketQty, setTicketQty] = useState<Record<string, number>>({});
 
     const [ticketsToPurchase, setTicketsToPurchase] = useState(
-        [...ticketTypes].map(ticket => ({ id: ticket.id, name: ticket.name, price: ticket.price, quantity: 0 }))
+        [...ticketTypes].map(ticket => ({
+            id: ticket.id,
+            name: ticket.name,
+            price: ticket.price,
+            quantity: 0,
+            isCombo: ticket.isCombo,
+            comboSize: ticket.comboSize
+        }))
     )
     const [modalState, setModalState] = useState(0)
 
@@ -107,8 +116,16 @@ export function BookRegularEventModal({ event }: { event: any }) {
                     t.id === id ? { ...t, quantity: numericValue } : t
                 );
             } else {
-                // add new ticket
-                return [...prev, { id, name, price, quantity: numericValue }];
+                // add new ticket with combo metadata if available
+                const matched = ticketTypes.find(t => t.id === id);
+                return [...prev, {
+                    id,
+                    name,
+                    price,
+                    quantity: numericValue,
+                    isCombo: matched?.isCombo,
+                    comboSize: matched?.comboSize
+                }];
             }
         });
     }

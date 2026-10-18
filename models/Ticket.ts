@@ -88,6 +88,14 @@ const ticketSchema = new Schema({
         type: String,
         index: true
     },
+    isCombo: {
+        type: Boolean,
+        default: false
+    },
+    comboGroupId: {
+        type: String,
+        index: true
+    },
     isPrinted: {
         type: Boolean,
         default: false

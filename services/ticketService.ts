@@ -8,6 +8,8 @@ export interface TicketBatchInput {
     name?: string;
     quantity: number;
     price?: number;
+    isCombo?: boolean;
+    comboSize?: number;
 }
 
 export interface GenerateTicketsParams {
@@ -30,7 +32,7 @@ export interface GenerateTicketsResult {
 
 /**
  * Centralized, reusable ticket generation service method.
- * Handles ticket document creation, unique token generation, and DB insertion.
+ * Handles ticket document creation, unique token generation, combo expansion, and DB insertion.
  */
 export async function generateTickets(params: GenerateTicketsParams): Promise<GenerateTicketsResult> {
     await connectDB();
@@ -62,40 +64,51 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
 
         const standName = batch.stand || batch.name || "Regular";
         const ticketPrice = Number(batch.price) || 0;
+        const isCombo = Boolean(batch.isCombo);
+        const comboSize = isCombo ? Math.max(1, Math.min(15, Number(batch.comboSize) || 1)) : 1;
 
-        for (let i = 0; i < quantity; i++) {
-            const ticketId = new mongoose.Types.ObjectId();
-            const checkInToken = crypto.randomBytes(16).toString('hex');
-            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+        // Outer loop: each purchased unit (single ticket or combo pack)
+        for (let q = 0; q < quantity; q++) {
+            const comboGroupId = isCombo ? crypto.randomUUID() : undefined;
 
-            // Collision-resistant ticket number format
-            const ticketNumber = `${eventIdStr.slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`;
+            // Inner loop: generate each ticket in the unit (1 for single, comboSize for combo)
+            for (let c = 0; c < comboSize; c++) {
+                const ticketId = new mongoose.Types.ObjectId();
+                const checkInToken = crypto.randomBytes(16).toString('hex');
+                const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
 
-            createdTicketsPayload.push({
-                _id: ticketId,
-                checkInToken,
-                event: eventId,
-                createdBy: userId,
-                ticketType: {
-                    name: standName,
-                    price: ticketPrice
-                },
-                stand: standName,
-                price: ticketPrice,
-                ticketNumber,
-                payment: {
-                    status: isPaid ? 'success' : 'pending',
-                    reference: paymentReference || `GEN-${batchId}`,
-                    authorizationUrl: 'N/A'
-                },
-                holderName: holderName || "Guest",
-                batchId,
-                isInside: false,
-                isPrinted: false,
-                generatedBy
-            });
+                // Collision-proof ticket number format using batchId slice + unique random suffix
+                const batchSnippet = batchId.replace(/-/g, '').slice(-6).toUpperCase();
+                const ticketNumber = `${eventIdStr.slice(-4)}-${batchSnippet}-${uniqueSuffix}`;
 
-            totalGenerated++;
+                createdTicketsPayload.push({
+                    _id: ticketId,
+                    checkInToken,
+                    event: eventId,
+                    createdBy: userId,
+                    ticketType: {
+                        name: standName,
+                        price: ticketPrice
+                    },
+                    stand: standName,
+                    price: ticketPrice,
+                    ticketNumber,
+                    payment: {
+                        status: isPaid ? 'success' : 'pending',
+                        reference: paymentReference || `GEN-${batchId}`,
+                        authorizationUrl: 'N/A'
+                    },
+                    holderName: holderName || "Guest",
+                    batchId,
+                    isCombo,
+                    ...(comboGroupId ? { comboGroupId } : {}),
+                    isInside: false,
+                    isPrinted: false,
+                    generatedBy
+                });
+
+                totalGenerated++;
+            }
         }
     }
 

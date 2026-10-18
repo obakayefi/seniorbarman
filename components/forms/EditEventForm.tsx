@@ -55,7 +55,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     const [isSubmitting, setIsSubmitting] = React.useState(false)
     const [homeTeam, setHomeTeam] = React.useState('')
     const [awayTeam, setAwayTeam] = React.useState('')
-    const [ticketTypes, setTicketTypes] = React.useState<{name: string, price: number}[]>([])
+    const [ticketTypes, setTicketTypes] = React.useState<{name: string, price: number, isCombo?: boolean, comboSize?: number}[]>([])
     const [eventVenue, setEventVenue] = React.useState('')
     const [files, setFiles] = React.useState<File[]>([])
     const [teams, setTeams] = React.useState<any[]>([])
@@ -371,42 +371,123 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                 <div className="flex flex-col gap-4 border-t border-border pt-4">
                                     <Label className="text-muted-foreground text-xs font-black uppercase tracking-widest">Ticket Types</Label>
                                     {ticketTypes.map((ticket, index) => (
-                                        <div key={index} className="flex gap-4 items-center">
-                                            <Input 
-                                                className="text-foreground flex-1 border-border bg-card rounded-sm" 
-                                                value={ticket.name} 
-                                                onChange={(e) => {
-                                                    const newTickets = [...ticketTypes];
-                                                    newTickets[index].name = e.target.value;
-                                                    setTicketTypes(newTickets);
-                                                }} 
-                                                placeholder="Ticket Name (e.g., Regular, VIP)" 
-                                            />
-                                            <Input 
-                                                type="number" 
-                                                min={0}
-                                                className="text-foreground w-32 border-border bg-card rounded-sm" 
-                                                value={ticket.price === 0 ? '' : ticket.price} 
-                                                onChange={(e) => {
-                                                    const newTickets = [...ticketTypes];
-                                                    newTickets[index].price = Number(e.target.value) || 0;
-                                                    setTicketTypes(newTickets);
-                                                }} 
-                                                placeholder="Price (₦)" 
-                                            />
-                                            <Button 
-                                                type="button" 
-                                                variant="ghost" 
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-sm"
-                                                onClick={() => {
-                                                    const newTickets = [...ticketTypes];
-                                                    newTickets.splice(index, 1);
-                                                    setTicketTypes(newTickets);
-                                                }}
-                                                disabled={ticketTypes.length <= 1}
-                                            >
-                                                Remove
-                                            </Button>
+                                        <div key={index} className="flex flex-col gap-2 p-3 bg-muted/20 border border-border rounded-sm">
+                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                                <Input 
+                                                    className="text-foreground flex-1 border-border bg-card rounded-sm" 
+                                                    value={ticket.name} 
+                                                    onChange={(e) => {
+                                                        const newTickets = [...ticketTypes];
+                                                        newTickets[index].name = e.target.value;
+                                                        setTicketTypes(newTickets);
+                                                    }} 
+                                                    placeholder={ticket.isCombo ? "Combo Name (e.g., Table of 5)" : "Ticket Name (e.g., Regular, VIP)"} 
+                                                />
+                                                <Input 
+                                                    type="number" 
+                                                    min={0}
+                                                    className="text-foreground w-full sm:w-32 border-border bg-card rounded-sm" 
+                                                    value={ticket.price === 0 ? '' : ticket.price} 
+                                                    onChange={(e) => {
+                                                        const newTickets = [...ticketTypes];
+                                                        newTickets[index].price = Number(e.target.value) || 0;
+                                                        setTicketTypes(newTickets);
+                                                    }} 
+                                                    placeholder="Price (₦)" 
+                                                />
+
+                                                {/* Single / Combo Selector */}
+                                                <div className="flex items-center bg-card border border-border rounded-md p-0.5 shrink-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTickets = [...ticketTypes];
+                                                            newTickets[index].isCombo = false;
+                                                            newTickets[index].comboSize = 1;
+                                                            setTicketTypes(newTickets);
+                                                        }}
+                                                        className={`px-2.5 py-1 text-xs font-bold rounded-sm transition-all ${
+                                                            !ticket.isCombo ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                                                        }`}
+                                                    >
+                                                        Single
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTickets = [...ticketTypes];
+                                                            newTickets[index].isCombo = true;
+                                                            newTickets[index].comboSize = newTickets[index].comboSize && newTickets[index].comboSize > 1 ? newTickets[index].comboSize : 3;
+                                                            setTicketTypes(newTickets);
+                                                        }}
+                                                        className={`px-2.5 py-1 text-xs font-bold rounded-sm transition-all ${
+                                                            ticket.isCombo ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                                                        }`}
+                                                    >
+                                                        Combo
+                                                    </button>
+                                                </div>
+
+                                                <Button 
+                                                    type="button" 
+                                                    variant="ghost" 
+                                                    className="text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-sm"
+                                                    onClick={() => {
+                                                        const newTickets = [...ticketTypes];
+                                                        newTickets.splice(index, 1);
+                                                        setTicketTypes(newTickets);
+                                                    }}
+                                                    disabled={ticketTypes.length <= 1}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
+
+                                            {ticket.isCombo && (
+                                                <div className="flex items-center justify-between gap-3 pt-2 mt-1 border-t border-border/60 text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black uppercase tracking-wider text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-sm">
+                                                            Combo Pack
+                                                        </span>
+                                                        <span className="text-muted-foreground text-xs">
+                                                            Generates <strong>{ticket.comboSize || 3}</strong> individual tickets per purchase
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-muted-foreground font-medium">Tickets:</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newTickets = [...ticketTypes];
+                                                                    newTickets[index].comboSize = Math.max(2, (newTickets[index].comboSize || 3) - 1);
+                                                                    setTicketTypes(newTickets);
+                                                                }}
+                                                                disabled={(ticket.comboSize || 3) <= 2}
+                                                                className="h-6 w-6 rounded bg-card border border-border flex items-center justify-center font-bold text-foreground hover:bg-muted disabled:opacity-30"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span className="w-8 text-center font-black text-foreground text-xs">
+                                                                {ticket.comboSize || 3}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newTickets = [...ticketTypes];
+                                                                    newTickets[index].comboSize = Math.min(15, (newTickets[index].comboSize || 3) + 1);
+                                                                    setTicketTypes(newTickets);
+                                                                }}
+                                                                disabled={(ticket.comboSize || 3) >= 15}
+                                                                className="h-6 w-6 rounded bg-card border border-border flex items-center justify-center font-bold text-foreground hover:bg-muted disabled:opacity-30"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                        <span className="text-[10px] text-muted-foreground font-mono">(max 15)</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                     {ticketTypes.length < 10 && (
@@ -414,7 +495,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
                                         type="button" 
                                         variant="outline" 
                                         className="w-fit border-border bg-muted hover:bg-muted/80 text-foreground font-bold transition-all rounded-sm text-xs"
-                                        onClick={() => setTicketTypes([...ticketTypes, { name: '', price: 0 }])}
+                                        onClick={() => setTicketTypes([...ticketTypes, { name: '', price: 0, isCombo: false, comboSize: 1 }])}
                                     >
                                         Add Ticket Type
                                     </Button>

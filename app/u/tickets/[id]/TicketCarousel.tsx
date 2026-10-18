@@ -1,9 +1,10 @@
 "use client"
-import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useRef, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2, ExternalLink, Ticket as TicketIcon, Copy, Check } from 'lucide-react';
 import { useQRCode } from "next-qrcode";
 import { extractTicketStatus, formattedDate, formatTime, formatEventTime, getBaseUrl, giveLogo } from "@/lib/utils";
 import Image from 'next/image';
+import Link from 'next/link';
 import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
@@ -39,9 +40,44 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
     const [isDownloading, setIsDownloading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingBatch, setIsDeletingBatch] = useState(false);
+    const [copiedComboId, setCopiedComboId] = useState<string | null>(null);
     const ticketRef = useRef<HTMLDivElement>(null);
     const { Image: QRImage } = useQRCode();
     const { user: currentUser } = useApp();
+
+    // Partition tickets into Single and Combo Groups
+    const { singleTickets, comboGroups } = useMemo(() => {
+        const singles: any[] = [];
+        const comboMap: Record<string, any[]> = {};
+
+        tickets.forEach(ticket => {
+            if (ticket.isCombo && ticket.comboGroupId) {
+                if (!comboMap[ticket.comboGroupId]) {
+                    comboMap[ticket.comboGroupId] = [];
+                }
+                comboMap[ticket.comboGroupId].push(ticket);
+            } else {
+                singles.push(ticket);
+            }
+        });
+
+        return {
+            singleTickets: singles,
+            comboGroups: Object.entries(comboMap).map(([groupId, groupTickets]) => ({
+                groupId,
+                tickets: groupTickets,
+                ticketType: groupTickets[0]?.stand || groupTickets[0]?.ticketType?.name || 'Combo Pass',
+                price: groupTickets[0]?.price || 0,
+                createdAt: groupTickets[0]?.createdAt
+            }))
+        };
+    }, [tickets]);
+
+    const hasSingles = singleTickets.length > 0;
+    const hasCombos = comboGroups.length > 0;
+
+    // View mode: default to combo if user ONLY has combos, else single
+    const [viewMode, setViewMode] = useState<'single' | 'combo'>(!hasSingles && hasCombos ? 'combo' : 'single');
 
     if (!tickets || tickets.length === 0) return null;
 
@@ -52,19 +88,28 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
         return 'General';
     };
 
-    // Group tickets by type
-    const ticketTypes = Array.from(new Set(tickets.map(getTicketTypeName)));
+    // Filter single tickets
+    const activeSinglesPool = singleTickets.length > 0 ? singleTickets : tickets;
+    const ticketTypes = Array.from(new Set(activeSinglesPool.map(getTicketTypeName)));
     const filteredTickets = selectedType
-        ? tickets.filter((t: any) => getTicketTypeName(t) === selectedType)
-        : tickets;
+        ? activeSinglesPool.filter((t: any) => getTicketTypeName(t) === selectedType)
+        : activeSinglesPool;
 
-    const currentTicket = filteredTickets[currentIndex];
+    const currentTicket = filteredTickets[currentIndex] || filteredTickets[0];
     const totalTickets = filteredTickets.length;
 
     // Reset index when changing type
     const handleTypeChange = (type: string | null) => {
         setSelectedType(type);
         setCurrentIndex(0);
+    };
+
+    const handleCopyComboLink = (groupId: string) => {
+        const url = `${getBaseUrl()}/u/tickets/${eventInfo._id}/combo/${groupId}`;
+        navigator.clipboard.writeText(url);
+        setCopiedComboId(groupId);
+        toast.success("Combo pack link copied!");
+        setTimeout(() => setCopiedComboId(null), 2500);
     };
 
     const handlePrevious = () => {
@@ -242,60 +287,163 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
 
     return (
-        <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-4">
-            {/* Header with status badge */}
-            <div className="w-full flex flex-col sm:flex-row justify-center                                                                                                                                                                                      items-center gap-3 mb-4">
-                <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
-                    {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
-                </div>
-                {/* 
-                <button
-                    onClick={() => setShowEmailModal(true)}
-                    className="p-2 hover:bg-muted rounded-full transition-colors"
-                    aria-label="Email ticket"
-                >
-                    <Mail size={20} className="text-muted-foreground" />
-                </button> 
-                */}
-            </div>
-
-            {/* Breadcrumb */}
-            <div className="w-full text-center text-muted-foreground text-xs sm:text-sm mb-6 px-2">
-                <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-foreground">Pass {currentIndex + 1} of {totalTickets}</span>
-            </div>
-
-            {/* Ticket Type Filter */}
-            {ticketTypes.length > 1 && (
-                <div className="w-full mb-6">
-                    <p className="text-muted-foreground text-xs sm:text-sm mb-3 text-center">Filter by ticket type</p>
-                    <div className="flex gap-2 justify-center flex-wrap px-2">
+        <div className="flex flex-col items-center w-full max-w-3xl mx-auto px-4">
+            {/* Top-Level Single vs Combo View Mode Toggle (shown when user has both, or has combos) */}
+            {(hasCombos && hasSingles) && (
+                <div className="flex items-center justify-center mb-6">
+                    <div className="flex bg-muted/60 p-1 rounded-sm border border-border shadow-inner">
                         <button
-                            onClick={() => handleTypeChange(null)}
-                            className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === null
-                                ? 'bg-orange-500 text-white font-bold'
-                                : 'bg-muted text-muted-foreground hover:bg-muted/70'
-                                }`}
+                            type="button"
+                            onClick={() => setViewMode('single')}
+                            className={`flex items-center gap-2 px-5 py-2 text-xs font-black uppercase tracking-wider rounded-sm transition-all duration-200 ${
+                                viewMode === 'single'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
                         >
-                            All ({tickets.length})
+                            <TicketIcon size={14} /> Single Tickets ({singleTickets.length})
                         </button>
-                        {ticketTypes.map((type) => {
-                            const count = tickets.filter((t: any) => (t.stand || t.ticketType || 'General') === type).length;
-                            return (
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('combo')}
+                            className={`flex items-center gap-2 px-5 py-2 text-xs font-black uppercase tracking-wider rounded-sm transition-all duration-200 ${
+                                viewMode === 'combo'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <span className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+                            Combo Packs ({comboGroups.length})
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── COMBO VIEW MODE ── */}
+            {viewMode === 'combo' && hasCombos ? (
+                <div className="w-full flex flex-col gap-6">
+                    <div className="text-center space-y-1 mb-2">
+                        <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
+                            Combo Packs Purchased
+                        </p>
+                        <h2 className="text-xl sm:text-2xl font-black text-foreground">
+                            {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title}
+                        </h2>
+                        <p className="text-xs text-muted-foreground">
+                            Each combo pack contains multiple individual passes. You can view or share any pack below.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                        {comboGroups.map((group, idx) => (
+                            <div 
+                                key={group.groupId} 
+                                className="bg-card border border-border rounded-sm p-5 shadow-sm flex flex-col justify-between hover:border-orange-500/50 transition-colors"
+                            >
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest bg-orange-500 text-white rounded-sm">
+                                            Combo #{idx + 1}
+                                        </span>
+                                        <span className="text-xs font-bold text-foreground">
+                                            {group.tickets.length} Tickets
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-base font-extrabold text-foreground uppercase tracking-wide">
+                                            {group.ticketType}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                                            Pack ID: {group.groupId.slice(0, 8)}...
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-muted/30 border border-border rounded-sm p-3 text-xs space-y-1.5">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Price per Pass:</span>
+                                            <span className="font-bold text-foreground">₦{(group.price || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Status:</span>
+                                            <span className="font-semibold text-emerald-500">Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-5 pt-3 border-t border-border">
+                                    <Link 
+                                        href={`/u/tickets/${eventInfo._id}/combo/${group.groupId}`}
+                                        className="flex-1"
+                                    >
+                                        <Button
+                                            size="sm"
+                                            className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-sm gap-1.5"
+                                        >
+                                            <ExternalLink size={13} /> View Passes
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleCopyComboLink(group.groupId)}
+                                        className="rounded-sm border-border bg-card text-foreground hover:bg-muted text-xs font-bold gap-1.5 shrink-0"
+                                    >
+                                        {copiedComboId === group.groupId ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
+                                        {copiedComboId === group.groupId ? "Copied" : "Share"}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                /* ── SINGLE TICKETS CAROUSEL VIEW MODE ── */
+                <>
+                    {/* Header with status badge */}
+                    <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-3 mb-4">
+                        <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
+                            {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
+                        </div>
+                    </div>
+
+                    {/* Breadcrumb */}
+                    <div className="w-full text-center text-muted-foreground text-xs sm:text-sm mb-6 px-2">
+                        <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-foreground">Pass {currentIndex + 1} of {totalTickets}</span>
+                    </div>
+
+                    {/* Ticket Type Filter (shown for single tickets) */}
+                    {ticketTypes.length > 1 && (
+                        <div className="w-full mb-6">
+                            <p className="text-muted-foreground text-xs sm:text-sm mb-3 text-center">Filter by ticket type</p>
+                            <div className="flex gap-2 justify-center flex-wrap px-2">
                                 <button
-                                    key={type}
-                                    onClick={() => handleTypeChange(type)}
-                                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === type
+                                    onClick={() => handleTypeChange(null)}
+                                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === null
                                         ? 'bg-orange-500 text-white font-bold'
                                         : 'bg-muted text-muted-foreground hover:bg-muted/70'
                                         }`}
                                 >
-                                    {type} ({count})
+                                    All ({activeSinglesPool.length})
                                 </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
+                                {ticketTypes.map((type) => {
+                                    const count = activeSinglesPool.filter((t: any) => (t.stand || t.ticketType || 'General') === type).length;
+                                    return (
+                                        <button
+                                            key={type}
+                                            onClick={() => handleTypeChange(type)}
+                                            className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === type
+                                                ? 'bg-orange-500 text-white font-bold'
+                                                : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                                                }`}
+                                        >
+                                            {type} ({count})
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
             {/* Main Ticket Card */}
             <div ref={ticketRef} className="w-full bg-card border border-border rounded-sm p-4 sm:p-6 mb-6 shadow-sm">
@@ -536,6 +684,8 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     </DialogContent>
                 </Dialog>
             </div>
+                </>
+            )}
 
         </div>
     );
