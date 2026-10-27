@@ -90,65 +90,91 @@ export default function Login() {
     }
 
     return (
-        <Card className="w-full mx-6 max-w-lg border-neutral-800">
-            <CardHeader className="mb-10">
-                <div className={'flex sm:flex-row-reverse justify-between flex-col'}>
-                    <div className={'border border-zinc-900 mb-4'}>
-                        <Button className={'text-neutral-400  bg-transparent w-full px-2'} variant="link"
-                            onClick={() => router.push('/auth/register')}>Create an account</Button>
-                    </div>
-                    <div>
-                        <h1 className="md:text-3xl text-slate-100 text-2xl">Login to your account</h1>
-                        <p className="text-gray-400 text-sm md:text-normal">
-                            Enter your email below to login to your account
-                        </p>
-                    </div>
-
+        <div className="w-full max-w-md mx-auto">
+            <div className="bg-card/95 dark:bg-zinc-950/90 backdrop-blur-md border border-border dark:border-zinc-800 rounded-sm p-6 sm:p-8 shadow-xl dark:shadow-black/40 transition-all">
+                <div className="mb-6 space-y-1.5">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                        Welcome Back
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                        Enter your credentials to access your account
+                    </p>
                 </div>
-            </CardHeader>
-            <form onSubmit={onLoginSubmit}>
-                <CardContent className={'text-neutral-700'}>
-                    <div className="flex flex-col text-neutral-400 gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+
+                <form onSubmit={onLoginSubmit} className="space-y-5">
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                                Email Address
+                            </Label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="johndoe@example.com"
+                                placeholder="name@example.com"
                                 value={String(email.value ?? "")}
                                 onChange={email.onChange}
                                 required
+                                autoComplete="email"
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">Password</Label>
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                                    Password
+                                </Label>
                                 <Link
                                     href="/auth/reset-password"
-                                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                                    className="text-xs font-medium text-orange-500 hover:text-orange-400 hover:underline transition-colors"
                                 >
-                                    Forgot your password?
+                                    Forgot password?
                                 </Link>
                             </div>
                             <PasswordInput
                                 id="password"
+                                placeholder="••••••••"
                                 value={password.value}
                                 onChange={password.onChange}
                                 required
+                                autoComplete="current-password"
                             />
                         </div>
                     </div>
-                </CardContent>
-                <CardFooter className="flex-col gap-2">
-                    <Button type="submit" disabled={isLoading || !formFilled}
-                        className="mt-6 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-600 w-full">
-                        Login {isLoading ? <Spinner /> : null}
-                    </Button>
-                    {/* <Button variant="outline" className="w-full">
-                    Login with Google
-                    </Button> */}
-                </CardFooter>
-            </form>
-        </Card>
+
+                    <div className="pt-2 space-y-4">
+                        <Button
+                            type="submit"
+                            disabled={isLoading || !formFilled}
+                            className="w-full h-10 rounded-sm bg-orange-500 hover:bg-orange-600 active:scale-[0.99] text-white font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Spinner /> Signing in...
+                                </span>
+                            ) : (
+                                "Sign In"
+                            )}
+                        </Button>
+
+                        <div className="relative flex items-center justify-center">
+                            <div className="w-full border-t border-border/60 dark:border-zinc-800" />
+                            <span className="bg-card dark:bg-zinc-950 px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground absolute">
+                                New to Senior Barman?
+                            </span>
+                        </div>
+
+                        <p className="text-sm text-center text-muted-foreground pt-2">
+                            Don&apos;t have an account?{" "}
+                            <Link
+                                href="/auth/register"
+                                className="text-orange-500 hover:text-orange-400 hover:underline font-bold transition-colors"
+                            >
+                                Create an account
+                            </Link>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
     )
 }

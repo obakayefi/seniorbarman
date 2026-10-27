@@ -81,6 +81,19 @@ export async function POST(req: Request) {
 
         await Ticket.insertMany(_createdTickets);
 
+        // Invalidate Redis cache for recipient
+        try {
+            const { redis } = await import("@/lib/redis");
+            const recipientIdStr = userId.toString();
+            const eventIdStr = eventId.toString();
+            await Promise.all([
+                redis.del(`user_event_tickets:${recipientIdStr}:${eventIdStr}`),
+                redis.del(`TICKETS_${recipientIdStr}`)
+            ]);
+        } catch (cacheErr) {
+            console.error("[Grant Tickets] Redis cache deletion error:", cacheErr);
+        }
+
         // Record Audit Log
         await recordAuditLog({
             adminId: user!.id,

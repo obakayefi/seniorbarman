@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Event from "@/models/Event";
 import Team from "@/models/Team";
 import { requireRole } from "@/lib/requireRole";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,11 @@ export async function GET() {
 
         if (authResult.role === "team_manager") {
             const managedTeams = await Team.find({ managers: authResult.id }).select("_id");
-            const teamIds = managedTeams.map((t) => t._id);
+            const managedTeamIds = managedTeams.map((t: any) => t._id);
 
             query.$or = [
-                { homeTeam: { $in: teamIds } },
-                { awayTeam: { $in: teamIds } }
+                { homeTeam: { $in: managedTeamIds } },
+                { awayTeam: { $in: managedTeamIds } }
             ];
         }
 
@@ -44,12 +45,12 @@ export async function GET() {
         });
 
         // Recent events
-        const recentEvents = await Event.find(query)
+        const rawRecentEvents = await Event.find(query)
             .sort({ date: -1 })
             .limit(5)
-            .populate("homeTeam", "name")
-            .populate("awayTeam", "name")
             .lean();
+
+        const recentEvents = await populateTeamsForEvents(rawRecentEvents);
 
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);

@@ -66,25 +66,25 @@ export default function CreateAdmin() {
 
     return (
         <div className="flex items-center justify-center h-screen">
-            <Card className="w-full mx-4 md:mx-0 border-zinc-800 max-w-lg">
+            <Card className="w-full mx-4 md:mx-0 max-w-lg">
                 <CardHeader className="mb-10">
-                    <h1 className="md:text-3xl text-white text-2xl">Create Admin</h1>
+                    <h1 className="md:text-3xl text-foreground text-2xl">Create Admin</h1>
                     <p className="text-gray-400 md:text-normal text-sm">
                         Forge a new admin and bless them with rights
                     </p>
                     <CardAction>
-                        <Button className={'text-zinc-400'} variant="link" onClick={() => router.push('/auth/login')} >Login</Button>
+                        <Button className={'text-muted-foreground'} variant="link" onClick={() => router.push('/auth/login')} >Login</Button>
                     </CardAction>
                 </CardHeader>
                 <form onSubmit={onAdminCreate}>
                     <CardContent>
-                        <div className="flex flex-col gap-6 text-zinc-400">
+                        <div className="flex flex-col gap-6 text-muted-foreground">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">First Name</Label>
                                 <Input
                                     id="firstName"
                                     type="text"
-                                    className={'border-zinc-800'}
+                                    className={'border-border'}
                                     autoComplete="false"
                                     placeholder="John"
                                     value={firstName.value}
@@ -97,7 +97,7 @@ export default function CreateAdmin() {
                                 <Input
                                     id="firstName"
                                     type="text"
-                                    className={'border-zinc-800'}
+                                    className={'border-border'}
                                     placeholder="Doe"
                                     value={lastName.value}
                                     onChange={lastName.onChange}
@@ -108,7 +108,7 @@ export default function CreateAdmin() {
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
-                                    className={'border-zinc-800'}
+                                    className={'border-border'}
                                     type="email"
                                     placeholder="johndoe@example.com"
                                     value={email.value}
@@ -138,10 +138,10 @@ export default function CreateAdmin() {
                                     value={roleType}
                                     onValueChange={(value: 'bouncer' | 'admin' | 'organizer') => { setRoleType(value); }}
                                 >
-                                    <SelectTrigger className="w-full border-zinc-800">
+                                    <SelectTrigger className="w-full border-border">
                                         <SelectValue placeholder="Select Event Type" />
                                     </SelectTrigger>
-                                    <SelectContent className={'border-zinc-800'}>
+                                    <SelectContent className={'border-border'}>
                                         <SelectItem value="bouncer">Bouncer</SelectItem>
                                         <SelectItem value="organizer">Organizer</SelectItem>
                                         <SelectItem value="admin">Admin</SelectItem>

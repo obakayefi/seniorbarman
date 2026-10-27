@@ -32,6 +32,7 @@ export interface EventType {
   homeTeam?: string;
   awayTeam?: string;
   type: "event" | "sports";
+  requiresApplication?: boolean;
 }
 
 export interface IUser {

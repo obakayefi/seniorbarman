@@ -4,6 +4,7 @@ import Event from "@/models/Event";
 import Team from "@/models/Team";
 import { requireRole } from "@/lib/requireRole";
 import { ROLES } from "@/lib/roles";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +30,11 @@ export async function GET() {
         }
 
         // Fetch events created by this organizer or managed by team manager
-        const events = await Event.find(query)
-            .populate('homeTeam', 'name')
-            .populate('awayTeam', 'name')
+        const rawEvents = await Event.find(query)
             .sort({ date: -1 })
             .lean();
+
+        const events = await populateTeamsForEvents(rawEvents);
 
         return NextResponse.json({ success: true, events }, { status: 200 });
     } catch (error: any) {

@@ -127,7 +127,7 @@ export async function POST(req: Request, { params }: Params) {
         //     method: gateAction.method,
         // })
 
-        console.log('Before Emission', ticket.event)
+        // console.log('Before Emission', ticket.event)
 
         // eventBus.emit(`event_update:${ticket.event}`, {
         //     type: "ticket.check_in",
@@ -154,7 +154,7 @@ export async function POST(req: Request, { params }: Params) {
             );
             
             await Promise.race([publishPromise, timeoutPromise]);
-            console.log('After Emission', { payload })
+           // console.log('After Emission', { payload })
         } catch (pubErr: any) {
             // Prevent Upstash Network Drops from crashing the actual Ticket check-in!!
             console.error("Non-fatal: Failed to broadcast to Live Dashboard", pubErr)

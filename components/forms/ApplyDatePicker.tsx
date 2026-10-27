@@ -45,9 +45,13 @@ type Props = {
 export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, setEventDate, setMonth }: Props) {
   const [open, setOpen] = React.useState(false)
 
+  const currentYear = new Date().getFullYear()
+  const startMonth = new Date(currentYear, 0)
+  const endMonth = new Date(currentYear + 1, 11)
+
   return (
     <div className="flex flex-col gap-3">
-      <Label htmlFor="date" className="text-gray-400">
+      <Label htmlFor="date" className="text-muted-foreground text-xs font-black uppercase tracking-widest">
         Event Date
       </Label>
       <div className="relative flex gap-2">
@@ -56,7 +60,7 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
           value={formatDate(dateValue)}
           readOnly
           placeholder="Sun March 15 2026"
-          className="border-zinc-800 bg-black text-white pr-10 cursor-pointer"
+          className="border-border bg-card text-foreground pr-10 cursor-pointer rounded-sm"
           onClick={() => setOpen(true)}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown" || e.key === "Enter") {
@@ -70,7 +74,7 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
             <Button
               id="date-picker"
               variant="ghost"
-              className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-white hover:bg-transparent hover:text-white"
+              className="absolute top-1/2 right-2 size-6 -translate-y-1/2 text-muted-foreground hover:bg-transparent hover:text-foreground"
             >
               <CalendarIcon className="size-4" />
               <span className="sr-only">Select date</span>
@@ -87,6 +91,8 @@ export function ApplyDatePicker({ setDateValue, dateValue, eventDate, month, set
               selected={dateValue}
               captionLayout="dropdown"
               month={month}
+              startMonth={startMonth}
+              endMonth={endMonth}
               onMonthChange={setMonth}
               onSelect={(date) => {
                 // setDate(date)

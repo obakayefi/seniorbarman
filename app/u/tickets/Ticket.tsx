@@ -33,7 +33,7 @@ const Ticket = ({ ticket, toPrint, user }: { ticket: any, toPrint: boolean, user
                 <div>
                     <div className='bg-[#F5F5F5] text-zinc-600 flex justify-center items-center gap-1 px-4 py-2'>
                         <span><TicketStandIcon size={24} /></span>
-                        <span className={'text-sm'}>{ticket.stand}</span>
+                        <span className={'text-sm'}>{typeof ticket.ticketType === 'object' ? ticket.ticketType?.name : (ticket.ticketType || ticket.stand || "Regular")}</span>
                     </div>
                     <div className='text-slate-700 px-3 flex flex-col items-center gap-2 text-center mt-2 mb-2'>
                         <h2 className="text-sm">{ticket.event.homeTeam?.name ?? ticket.event.homeTeam}</h2>

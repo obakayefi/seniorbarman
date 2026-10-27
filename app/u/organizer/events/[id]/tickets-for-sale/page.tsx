@@ -273,7 +273,7 @@ export default function TicketsForSalePage() {
                             Tickets For Sale
                         </h1>
                         <p className="text-zinc-400 mt-2">
-                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam?.name || event?.homeTeam}</strong>.
+                            Manage and reprint bulk tickets for <strong className="text-white">{event?.type === 'sports' ? `${event?.homeTeam?.name || event?.homeTeam} vs ${event?.awayTeam?.name || event?.awayTeam}` : (event?.title || 'Event')}</strong>.
                         </p>
                     </div>
                 </div>

@@ -41,19 +41,19 @@ const AdminTicketSearch = () => {
                 {/* Search Bar */}
                 <form onSubmit={handleSearch} className="relative group">
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Search className="text-zinc-500 group-focus-within:text-orange-500 transition-colors" size={20} />
+                        <Search className="text-muted-foreground group-focus-within:text-orange-500 transition-colors" size={20} />
                     </div>
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search by Ticket ID, Token, or Number..."
-                        className="w-full bg-zinc-900/50 border border-white/5 group-hover:border-white/10 focus:border-orange-500/50 rounded-2xl py-4 pl-12 pr-4 text-white placeholder-zinc-500 outline-none transition-all duration-300"
+                        className="w-full bg-muted/50 border border-border group-hover:border-border focus:border-orange-500/50 rounded-sm py-4 pl-12 pr-4 text-foreground placeholder-zinc-500 outline-none transition-all duration-300"
                     />
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="absolute right-2 top-2 bottom-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white px-6 rounded-xl font-bold text-sm transition-all"
+                        className="absolute right-2 top-2 bottom-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-foreground px-6 rounded-sm font-bold text-sm transition-all"
                     >
                         {isLoading ? <Spinner /> : "Search"}
                     </button>
@@ -61,7 +61,7 @@ const AdminTicketSearch = () => {
 
                 {/* Error State */}
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-500">
+                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-sm flex items-center gap-3 text-red-500">
                         <AlertCircle size={20} />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
@@ -71,7 +71,7 @@ const AdminTicketSearch = () => {
                 {result && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between px-2">
-                            <h3 className="text-zinc-500 text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                            <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-widest flex items-center gap-2">
                                 <TicketIcon size={16} /> Result Found
                             </h3>
                             <span className="text-[10px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded border border-green-500/20 font-bold uppercase">
@@ -79,7 +79,7 @@ const AdminTicketSearch = () => {
                             </span>
                         </div>
 
-                        <div className="bg-zinc-900 border border-white/5 rounded-3xl p-2 sm:p-0 overflow-hidden">
+                        <div className="bg-mutedborder border-border rounded-sm p-2 sm:p-0 overflow-hidden">
                             <TicketCarousel
                                 tickets={[result.ticket]}
                                 eventInfo={result.event}
@@ -92,12 +92,12 @@ const AdminTicketSearch = () => {
                 {/* Empty State */}
                 {!result && !isLoading && !error && (
                     <div className="text-center py-20 space-y-4">
-                        <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mx-auto border border-white/5">
+                        <div className="w-20 h-20 bg-mutedrounded-full flex items-center justify-center mx-auto border border-border">
                             <SearchIcon className="text-zinc-700" size={32} />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-white font-bold">No search performed</h3>
-                            <p className="text-zinc-500 text-sm">Enter a ticket identifier above to audit details</p>
+                            <h3 className="text-foreground font-bold">No search performed</h3>
+                            <p className="text-muted-foreground text-sm">Enter a ticket identifier above to audit details</p>
                         </div>
                     </div>
                 )}

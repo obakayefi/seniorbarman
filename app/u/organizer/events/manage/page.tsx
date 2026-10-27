@@ -7,17 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { Loader2, Search, Edit, Eye, MapPin, Ticket } from "lucide-react"
+import { Loader2, Search, Edit, Eye, MapPin, Ticket, Share2, Wallet } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import { ShareEventModal } from '@/components/modals/share-event-modal'
 
 export default function OrganizerManageEventsPage() {
     const router = useRouter()
     const [events, setEvents] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
+    const [selectedShareEvent, setSelectedShareEvent] = useState<any>(null)
 
     const fetchEvents = async () => {
         try {
@@ -50,46 +52,46 @@ export default function OrganizerManageEventsPage() {
     })
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-10 min-h-screen bg-zinc-950 text-white">
+        <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto space-y-8 min-h-screen bg-background text-foreground pb-20">
             <PageHeader
                 title="My Events"
                 description="Manage the events you have created."
             />
 
-            <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader className="border-b border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <Card className="bg-card border-border dark:border-zinc-800 rounded-sm shadow-sm p-5 sm:p-6 gap-0">
+                <CardHeader className="border-b border-border dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 pt-0 px-0">
                     <div>
-                        <CardTitle className="text-white">Your Activities</CardTitle>
-                        <CardDescription className="text-zinc-400">View details and tickets for your events</CardDescription>
+                        <CardTitle className="text-foreground text-lg font-bold">Your Activities</CardTitle>
+                        <CardDescription className="text-muted-foreground text-xs mt-1">View details, tickets, and orders for your events</CardDescription>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search events..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-zinc-950 border-zinc-700 w-full sm:w-64"
+                                className="pl-9 bg-background border-border dark:border-zinc-800 text-foreground w-full sm:w-64 rounded-sm text-xs h-10"
                             />
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-auto">
+                <CardContent className="p-0 pt-4 overflow-auto">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-4">
+                        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
                             <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
                             <p className="font-medium">Fetching your events...</p>
                         </div>
                     ) : (
                         <Table>
-                            <TableHeader className="bg-zinc-950/50">
-                                <TableRow className="border-zinc-800">
-                                    <TableHead className="text-zinc-400">Activity</TableHead>
-                                    <TableHead className="text-zinc-400">Type</TableHead>
-                                    <TableHead className="text-zinc-400">Date & Time</TableHead>
-                                    <TableHead className="text-zinc-400">Venue</TableHead>
-                                    <TableHead className="text-zinc-400 text-right">Actions</TableHead>
+                            <TableHeader className="bg-muted/40 dark:bg-zinc-900/40 border-b border-border dark:border-zinc-800">
+                                <TableRow className="border-border dark:border-zinc-800">
+                                    <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold py-3.5 px-4">Activity</TableHead>
+                                    <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold py-3.5 px-4">Type</TableHead>
+                                    <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold py-3.5 px-4">Date & Time</TableHead>
+                                    <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold py-3.5 px-4">Venue</TableHead>
+                                    <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold text-right py-3.5 px-4">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -97,36 +99,41 @@ export default function OrganizerManageEventsPage() {
                                     <TableRow
                                         key={event._id}
                                         onClick={() => router.push(`/u/organizer/events/${event._id}`)}
-                                        className="border-zinc-800 hover:bg-zinc-900 transition-colors group cursor-pointer"
+                                        className="border-border/60 dark:border-zinc-800/60 hover:bg-muted/30 dark:hover:bg-zinc-850/50 transition-colors group cursor-pointer"
                                     >
-                                        <TableCell>
+                                        <TableCell className="py-3.5 px-4">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-white group-hover:text-orange-400 transition-colors">
+                                                <span className="font-bold text-foreground group-hover:text-orange-500 transition-colors">
                                                     {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                                                 </span>
-                                                <span className="text-[10px] text-zinc-500 font-mono uppercase">{event._id.slice(-8)}</span>
+                                                <span className="text-[10px] text-muted-foreground font-mono uppercase">{event._id.slice(-8)}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="capitalize border-purple-500/30 text-purple-400">
+                                        <TableCell className="py-3.5 px-4">
+                                            <Badge variant="outline" className="capitalize border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10 text-[10px] font-bold rounded-xs">
                                                 {event.type}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-3.5 px-4">
                                             <div className="flex flex-col">
-                                                <span className="text-zinc-300 text-sm">{format(new Date(event.date), 'MMM dd, yyyy')}</span>
-                                                <span className="text-zinc-500 text-xs">{format(new Date(event.date), 'HH:mm')}</span>
+                                                <span className="text-foreground text-sm font-medium">{format(new Date(event.date), 'MMM dd, yyyy')}</span>
+                                                <span className="text-muted-foreground text-xs">{format(new Date(event.date), 'HH:mm')}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1 text-zinc-500 text-sm">
-                                                <MapPin size={14} className="shrink-0" />
+                                        <TableCell className="py-3.5 px-4">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                                                <MapPin size={14} className="shrink-0 text-orange-500" />
                                                 <span className="truncate max-w-[150px]">{event.venue}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-right p-4">
+                                        <TableCell className="text-right py-3.5 px-4">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                                                <Button size="icon" variant="outline" asChild className="h-8 w-8 border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-orange-400">
+                                                <Button size="icon" variant="outline" asChild title="View Ticket Orders" className="h-8 w-8 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-sm shadow-xs">
+                                                    <Link href={`/u/organizer/events/${event._id}/orders`}>
+                                                        <Wallet size={14} />
+                                                    </Link>
+                                                </Button>
+                                                <Button size="icon" variant="outline" asChild title="View Event Details" className="h-8 w-8 border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground hover:text-orange-500 rounded-sm shadow-xs">
                                                     <Link href={`/u/organizer/events/${event._id}`}>
                                                         <Eye size={14} />
                                                     </Link>
@@ -137,7 +144,7 @@ export default function OrganizerManageEventsPage() {
                                 ))}
                                 {filteredEvents.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-20 text-zinc-600">
+                                        <TableCell colSpan={5} className="text-center py-20 text-muted-foreground italic text-sm">
                                             No events found matching your criteria.
                                         </TableCell>
                                     </TableRow>

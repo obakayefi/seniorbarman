@@ -29,12 +29,14 @@ export async function getUserFromCookie() {
     if (!token) return null
 
     try {
-        const user = verifyToken(token) as IUser
+        const user = verifyToken(token) as IUser & { isImpersonating?: boolean; impersonatorId?: string }
         return {
             email: user.email,
             role: user.role,
             id: user.id,
             name: user.name,
+            isImpersonating: Boolean(user.isImpersonating),
+            impersonatorId: user.impersonatorId || null
         }
     } catch (error: any) {
         return null

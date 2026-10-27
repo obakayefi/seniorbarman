@@ -1,8 +1,10 @@
 "use client"
-import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useRef, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Download, Printer, Share2, Mail, Trash2, AlertCircle, Loader2, ExternalLink, Ticket as TicketIcon, Copy, Check } from 'lucide-react';
 import { useQRCode } from "next-qrcode";
-import { extractTicketStatus, formattedDate, formatTime, formatEventTime, getBaseUrl } from "@/lib/utils";
+import { extractTicketStatus, formattedDate, formatTime, formatEventTime, getBaseUrl, giveLogo } from "@/lib/utils";
+import Image from 'next/image';
+import Link from 'next/link';
 import { MdStadium } from "react-icons/md";
 import { FaClock } from "react-icons/fa6";
 import { BsFillCalendarDateFill } from "react-icons/bs";
@@ -21,6 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { HunchoRoleChecker } from '@/lib/helpers';
 
+import ComboDeckView from './ComboDeckView';
+
 interface TicketCarouselProps {
     tickets: any[];
     eventInfo: any;
@@ -38,25 +42,96 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
     const [isDownloading, setIsDownloading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingBatch, setIsDeletingBatch] = useState(false);
+    const [copiedComboId, setCopiedComboId] = useState<string | null>(null);
+    const [activeComboIndex, setActiveComboIndex] = useState(0);
     const ticketRef = useRef<HTMLDivElement>(null);
     const { Image: QRImage } = useQRCode();
     const { user: currentUser } = useApp();
 
+    // Partition tickets into Single and Combo Groups
+    const { singleTickets, comboGroups } = useMemo(() => {
+        const singles: any[] = [];
+        const comboMap: Record<string, any[]> = {};
+
+        tickets.forEach(ticket => {
+            const standName = ticket.stand || (typeof ticket.ticketType === 'object' ? ticket.ticketType?.name : ticket.ticketType);
+            const matchedEventType = eventInfo?.ticketTypes?.find(
+                (t: any) => t.name?.trim().toLowerCase() === standName?.trim().toLowerCase()
+            );
+            const isEventCombo = Boolean(matchedEventType?.isCombo) && Number(matchedEventType?.comboSize || 0) >= 2;
+
+            const isComboTicket = (ticket.isCombo || isEventCombo) && ticket.comboGroupId;
+
+            if (isComboTicket) {
+                if (!comboMap[ticket.comboGroupId]) {
+                    comboMap[ticket.comboGroupId] = [];
+                }
+                comboMap[ticket.comboGroupId].push(ticket);
+            } else {
+                singles.push(ticket);
+            }
+        });
+
+        // Filter combo groups: a true combo group must have >= 2 passes
+        const validComboGroups: any[] = [];
+        Object.entries(comboMap).forEach(([groupId, groupTickets]) => {
+            if (groupTickets.length >= 2) {
+                validComboGroups.push({
+                    groupId,
+                    tickets: groupTickets,
+                    ticketType: groupTickets[0]?.stand || groupTickets[0]?.ticketType?.name || 'Combo Pass',
+                    price: groupTickets[0]?.price || 0,
+                    createdAt: groupTickets[0]?.createdAt
+                });
+            } else {
+                // If a combo group somehow has only 1 ticket, push it back to singles for standard viewing
+                singles.push(...groupTickets);
+            }
+        });
+
+        return {
+            singleTickets: singles,
+            comboGroups: validComboGroups
+        };
+    }, [tickets, eventInfo]);
+
+    const hasSingles = singleTickets.length > 0;
+    const hasCombos = comboGroups.length > 0;
+
+    // View mode: default to combo if user ONLY has combos, else single
+    const [viewMode, setViewMode] = useState<'single' | 'combo'>(!hasSingles && hasCombos ? 'combo' : 'single');
+
     if (!tickets || tickets.length === 0) return null;
 
-    // Group tickets by type
-    const ticketTypes = Array.from(new Set(tickets.map((t: any) => t.stand || t.ticketType || 'General')));
-    const filteredTickets = selectedType
-        ? tickets.filter((t: any) => (t.stand || t.ticketType || 'General') === selectedType)
-        : tickets;
+    const getTicketTypeName = (t: any) => {
+        if (typeof t.ticketType === 'object' && t.ticketType?.name) return t.ticketType.name;
+        if (typeof t.ticketType === 'string') return t.ticketType;
+        if (typeof t.stand === 'string') return t.stand;
+        return 'General';
+    };
 
-    const currentTicket = filteredTickets[currentIndex];
+    // Filter single tickets
+    const activeSinglesPool = singleTickets.length > 0 ? singleTickets : tickets;
+    const ticketTypes = Array.from(new Set(activeSinglesPool.map(getTicketTypeName)));
+    const filteredTickets = selectedType
+        ? activeSinglesPool.filter((t: any) => getTicketTypeName(t) === selectedType)
+        : activeSinglesPool;
+
+    const currentTicket = filteredTickets[currentIndex] || filteredTickets[0];
     const totalTickets = filteredTickets.length;
 
     // Reset index when changing type
     const handleTypeChange = (type: string | null) => {
         setSelectedType(type);
         setCurrentIndex(0);
+    };
+
+    const handleCopyComboLink = (groupId: string) => {
+        const url = `${getBaseUrl()}/u/tickets/${eventInfo._id}/combo/${groupId}`;
+        navigator.clipboard.writeText(url);
+        setCopiedComboId(groupId);
+        toast.success("Combo pack link copied!");
+        setTimeout(() => setCopiedComboId(null), 2500);
     };
 
     const handlePrevious = () => {
@@ -79,7 +154,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
         ? "bg-orange-500 text-white"
         : status_checkedOut
             ? "bg-red-500 text-white"
-            : "bg-zinc-700 text-zinc-300";
+            : "bg-muted text-muted-foreground";
 
     const formattedDate = (_date: Date) => {
         const date = new Date(_date);
@@ -234,106 +309,201 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
 
     return (
-        <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-4">
-            {/* Header with status badge */}
-            <div className="w-full flex flex-col sm:flex-row justify-center                                                                                                                                                                                      items-center gap-3 mb-4">
-                <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
-                    {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
-                </div>
-                {/* 
-                <button
-                    onClick={() => setShowEmailModal(true)}
-                    className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
-                    aria-label="Email ticket"
-                >
-                    <Mail size={20} className="text-zinc-400" />
-                </button> 
-                */}
-            </div>
-
-            {/* Breadcrumb */}
-            <div className="w-full text-center text-zinc-500 text-xs sm:text-sm mb-6 px-2">
-                <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-white">Pass {currentIndex + 1} of {totalTickets}</span>
-            </div>
-
-            {/* Ticket Type Filter */}
-            {ticketTypes.length > 1 && (
-                <div className="w-full mb-6">
-                    <p className="text-zinc-500 text-xs sm:text-sm mb-3 text-center">Filter by ticket type</p>
-                    <div className="flex gap-2 justify-center flex-wrap px-2">
+        <div className="flex flex-col items-center w-full max-w-3xl mx-auto px-4">
+            {/* Top-Level Single vs Combo View Mode Toggle (shown when user has both, or has combos) */}
+            {(hasCombos && hasSingles) && (
+                <div className="flex items-center justify-center mb-6">
+                    <div className="flex bg-muted/60 p-1 rounded-sm border border-border shadow-inner">
                         <button
-                            onClick={() => handleTypeChange(null)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${selectedType === null
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                                }`}
+                            type="button"
+                            onClick={() => setViewMode('single')}
+                            className={`flex items-center gap-2 px-5 py-2 text-xs font-black uppercase tracking-wider rounded-sm transition-all duration-200 ${
+                                viewMode === 'single'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
                         >
-                            All ({tickets.length})
+                            <TicketIcon size={14} /> Single Tickets ({singleTickets.length})
                         </button>
-                        {ticketTypes.map((type) => {
-                            const count = tickets.filter((t: any) => (t.stand || t.ticketType || 'General') === type).length;
-                            return (
-                                <button
-                                    key={type}
-                                    onClick={() => handleTypeChange(type)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${selectedType === type
-                                        ? 'bg-orange-500 text-white'
-                                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                                        }`}
-                                >
-                                    {type} ({count})
-                                </button>
-                            );
-                        })}
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('combo')}
+                            className={`flex items-center gap-2 px-5 py-2 text-xs font-black uppercase tracking-wider rounded-sm transition-all duration-200 ${
+                                viewMode === 'combo'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <span className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+                            Combo Packs ({comboGroups.length})
+                        </button>
                     </div>
                 </div>
             )}
 
+            {/* ── COMBO VIEW MODE ── */}
+            {viewMode === 'combo' && hasCombos ? (
+                <div className="w-full flex flex-col items-center gap-6">
+                    {/* Pack Switcher if user owns multiple combo packs */}
+                    {comboGroups.length > 1 && (
+                        <div className="w-full flex flex-col items-center gap-2 mb-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Combo Pack</span>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {comboGroups.map((group, idx) => (
+                                    <button
+                                        key={group.groupId}
+                                        onClick={() => setActiveComboIndex(idx)}
+                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-2 border ${
+                                            activeComboIndex === idx
+                                                ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                                                : "bg-card text-muted-foreground border-border hover:border-orange-500/40"
+                                        }`}
+                                    >
+                                        <span>Pack #{idx + 1}</span>
+                                        <span className="text-[10px] opacity-80">({group.tickets.length} Passes)</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Integrated Interactive Combo Deck */}
+                    {comboGroups[activeComboIndex] && (
+                        <ComboDeckView
+                            key={comboGroups[activeComboIndex].groupId}
+                            comboGroup={comboGroups[activeComboIndex]}
+                            eventInfo={eventInfo}
+                            user={user}
+                            packIndex={activeComboIndex}
+                            totalPacks={comboGroups.length}
+                        />
+                    )}
+                </div>
+            ) : (
+                /* ── SINGLE TICKETS CAROUSEL VIEW MODE ── */
+                <>
+                    {/* Header with status badge */}
+                    <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-3 mb-4">
+                        <div className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold uppercase ${statusBgColor}`}>
+                            {status_checkedIn ? "● Active Pass" : status_notCheckedIn ? "● Not Used" : "● Used"}
+                        </div>
+                    </div>
+
+                    {/* Breadcrumb */}
+                    <div className="w-full text-center text-muted-foreground text-xs sm:text-sm mb-6 px-2">
+                        <span className="hidden sm:inline">My Tickets › {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title} › </span><span className="text-foreground">Pass {currentIndex + 1} of {totalTickets}</span>
+                    </div>
+
+                    {/* Ticket Type Filter (shown for single tickets) */}
+                    {ticketTypes.length > 1 && (
+                        <div className="w-full mb-6">
+                            <p className="text-muted-foreground text-xs sm:text-sm mb-3 text-center">Filter by ticket type</p>
+                            <div className="flex gap-2 justify-center flex-wrap px-2">
+                                <button
+                                    onClick={() => handleTypeChange(null)}
+                                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === null
+                                        ? 'bg-orange-500 text-white font-bold'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                                        }`}
+                                >
+                                    All ({activeSinglesPool.length})
+                                </button>
+                                {ticketTypes.map((type) => {
+                                    const count = activeSinglesPool.filter((t: any) => (t.stand || t.ticketType || 'General') === type).length;
+                                    return (
+                                        <button
+                                            key={type}
+                                            onClick={() => handleTypeChange(type)}
+                                            className={`px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 ${selectedType === type
+                                                ? 'bg-orange-500 text-white font-bold'
+                                                : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                                                }`}
+                                        >
+                                            {type} ({count})
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
             {/* Main Ticket Card */}
-            <div ref={ticketRef} className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 mb-6 shadow-2xl">
+            <div ref={ticketRef} className="w-full bg-card border border-border rounded-sm p-4 sm:p-6 mb-6 shadow-sm">
                 {/* Event Header */}
                 <div className="mb-4 sm:mb-6">
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-orange-400 text-[10px] sm:text-sm font-bold uppercase tracking-widest">
+                        <p className="text-orange-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest">
                             {eventInfo?.type === 'sports' ? 'Matchday Pass' : 'Event Pass'}
                         </p>
-                        <div className="bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded text-[10px] text-orange-400 font-bold uppercase"> Official </div>
+                        <div className="bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-sm text-[10px] text-orange-500 font-bold uppercase"> Official </div>
                     </div>
 
-                    <h1 className="text-lg sm:text-2xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight">
-                    {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs. ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title}
-                    </h1>
+                    {eventInfo?.homeTeam ? (
+                        <div className="flex items-center justify-center gap-4 sm:gap-8 my-4 sm:my-6">
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <Image
+                                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                                    src={eventInfo.homeTeam?.logo || giveLogo(eventInfo.homeTeam)}
+                                    alt={eventInfo.homeTeam?.name || eventInfo.homeTeam}
+                                    height={64}
+                                    width={64}
+                                />
+                                <h2 className="text-xs sm:text-sm font-bold text-foreground text-center leading-tight">
+                                    {eventInfo.homeTeam?.name || eventInfo.homeTeam}
+                                </h2>
+                            </div>
+                            <span className="text-xs sm:text-sm text-orange-500 bg-muted px-2.5 py-1 rounded-sm font-bold shrink-0">
+                                vs
+                            </span>
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <Image
+                                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                                    src={eventInfo.awayTeam?.logo || giveLogo(eventInfo.awayTeam)}
+                                    alt={eventInfo.awayTeam?.name || eventInfo.awayTeam}
+                                    height={64}
+                                    width={64}
+                                />
+                                <h2 className="text-xs sm:text-sm font-bold text-foreground text-center leading-tight">
+                                    {eventInfo.awayTeam?.name || eventInfo.awayTeam}
+                                </h2>
+                            </div>
+                        </div>
+                    ) : (
+                        <h1 className="text-lg sm:text-2xl font-black text-foreground mb-4 sm:mb-6 leading-tight tracking-tight">
+                            {eventInfo?.title}
+                        </h1>
+                    )}
 
                     {/* Variant/Ticket Number */}
-                    <div className="flex flex-col gap-6 bg-zinc-800/50 p-4 sm:p-6 -mx-4 sm:-mx-6 border-y border-zinc-700/30">
+                    <div className="flex flex-col gap-6 bg-muted/30 p-4 sm:p-6 -mx-4 sm:-mx-6 border-y border-border">
                         <div className="grid grid-cols-2 gap-4 w-full">
                             <div className="flex flex-col gap-1 items-center text-center">
-                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Date</p>
-                                <p className="text-white font-bold text-sm sm:text-lg">
+                                <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Date</p>
+                                <p className="text-foreground font-bold text-sm sm:text-lg">
                                     {eventInfo?.date ? new Date(eventInfo.date).toLocaleDateString('en-GB') : 'N/A'}
                                 </p>
                             </div>
                             <div className="flex flex-col gap-1 items-center text-center">
-                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Kickoff</p>
-                                <p className="text-white font-bold text-sm sm:text-lg">{formatEventTime(eventInfo?.date)}</p>
+                                <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Kickoff</p>
+                                <p className="text-foreground font-bold text-sm sm:text-lg">{formatEventTime(eventInfo?.date)}</p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-1 items-center text-center w-full pt-4 border-t border-zinc-700/30">
-                            <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Venue</p>
-                            <p className="text-orange-400 font-black text-base sm:text-xl tracking-tight">{eventInfo?.venue}</p>
+                        <div className="flex flex-col gap-1 items-center text-center w-full pt-4 border-t border-border">
+                            <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Venue</p>
+                            <p className="text-orange-500 font-black text-base sm:text-xl tracking-tight">{eventInfo?.venue}</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-zinc-700/30">
+                        <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-border">
                             <div className="text-center">
-                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Gate/Type</p>
-                                <p className="text-white font-bold text-sm sm:text-base">{currentTicket.stand || currentTicket.ticketType || 'General'}</p>
+                                <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Gate/Type</p>
+                                <p className="text-foreground font-bold text-sm sm:text-base">{getTicketTypeName(currentTicket)}</p>
                             </div>
                             <div className="text-center">
-                                <p className="text-zinc-500 uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Variant</p>
-                                <p className="text-orange-400 font-black text-lg sm:text-xl">
+                                <p className="text-muted-foreground uppercase text-[9px] sm:text-[10px] font-black tracking-widest mb-1">Variant</p>
+                                <p className="text-orange-500 font-black text-lg sm:text-xl">
                                     {String(currentIndex + 1).padStart(2, '0')}
-                                    <span className="text-zinc-600 font-normal px-1">/</span>
+                                    <span className="text-muted-foreground/60 font-normal px-1">/</span>
                                     {String(totalTickets).padStart(2, '0')}
                                 </p>
                             </div>
@@ -364,10 +534,10 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
                 {/* Scans Remaining */}
                 <div className="text-center mb-6">
-                    <p className="text-orange-400 font-semibold text-lg">
+                    <p className="text-orange-500 font-semibold text-lg">
                         {status_notCheckedIn ? `Ready to Scan` : status_checkedIn ? 'Scanned' : 'Expired'}
                     </p>
-                    <p className="text-zinc-500 text-sm uppercase">Single Entry Pass</p>
+                    <p className="text-muted-foreground text-sm uppercase">Single Entry Pass</p>
                 </div>
 
                 {/* Ticket Details */}
@@ -387,11 +557,11 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                 </div> */}
 
                 {/* Present at Gate Button */}
-                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 sm:py-4 rounded-lg mt-4 sm:mt-6 flex items-center justify-center gap-2 transition-colors text-sm sm:text-base">
+                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 sm:py-4 rounded-sm mt-4 sm:mt-6 flex items-center justify-center gap-2 transition-colors text-sm sm:text-base">
                     <MdStadium size={20} />
                     PRESENT AT GATE
                 </button>
-                <p className="text-center text-zinc-600 text-xs mt-2">Do not share this code. Expires after final scan.</p>
+                <p className="text-center text-muted-foreground text-xs mt-2">Do not share this code. Expires after final scan.</p>
             </div>
 
             {/* Navigation Controls */}
@@ -400,10 +570,10 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     <div className="flex items-center gap-2 mb-4">
                         <button
                             onClick={handlePrevious}
-                            className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
+                            className="p-2 hover:bg-muted rounded-full transition-colors"
                             aria-label="Previous ticket"
                         >
-                            <ChevronLeft size={20} className="text-zinc-400" />
+                            <ChevronLeft size={20} className="text-muted-foreground" />
                         </button>
 
                         {/* Page Indicators */}
@@ -414,7 +584,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                                     onClick={() => goToTicket(index)}
                                     className={`w-10 h-10 rounded-full transition-all ${index === currentIndex
                                         ? 'bg-orange-500 text-white'
-                                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/70'
                                         }`}
                                 >
                                     {index + 1}
@@ -424,14 +594,14 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
                         <button
                             onClick={handleNext}
-                            className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
+                            className="p-2 hover:bg-muted rounded-full transition-colors"
                             aria-label="Next ticket"
                         >
-                            <ChevronRight size={20} className="text-zinc-400" />
+                            <ChevronRight size={20} className="text-muted-foreground" />
                         </button>
                     </div>
 
-                    <p className="text-zinc-500 text-sm mb-6">Switch between tickets in your batch</p>
+                    <p className="text-muted-foreground text-sm mb-6">Switch between tickets in your batch</p>
                 </>
             )}
 
@@ -440,7 +610,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                 <button
                     onClick={downloadPDF}
                     disabled={isDownloading}
-                    className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-sm transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Download size={18} />
                     {isDownloading ? 'Downloading...' : 'Download PDF'}
@@ -450,7 +620,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     <button
                         onClick={handleDeleteTicket}
                         disabled={isDeleting}
-                        className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600/10 border border-red-600/20 hover:bg-red-600/20 text-red-500 rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
+                        className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600/10 border border-red-600/20 hover:bg-red-600/20 text-red-500 rounded-sm transition-colors text-sm sm:text-base disabled:opacity-50"
                     >
                         {isDeleting ? 'Deleting...' : 'Delete Ticket'}
                     </button>
@@ -460,7 +630,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                     <DialogTrigger asChild>
                         <button
                             disabled={isDeletingBatch}
-                            className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base disabled:opacity-50"
+                            className="flex flex-1 items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-sm transition-colors text-sm sm:text-base disabled:opacity-50"
                         >
                             {isDeletingBatch ? (
                                 <>
@@ -475,27 +645,29 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
                             )}
                         </button>
                     </DialogTrigger>
-                    <DialogContent className="bg-zinc-950 border-zinc-900">
+                    <DialogContent className="bg-card border-border">
                         <DialogHeader>
-                            <DialogTitle className="text-white flex items-center gap-2">
+                            <DialogTitle className="text-foreground flex items-center gap-2">
                                 <AlertCircle className="text-red-500" size={20} />
                                 Confirm Batch Deletion
                             </DialogTitle>
-                            <DialogDescription className="text-zinc-500">
-                                This will permanently delete all <span className="text-white font-bold">{tickets.length}</span> tickets for this event. This action cannot be undone.
+                            <DialogDescription className="text-muted-foreground">
+                                This will permanently delete all <span className="text-foreground font-bold">{tickets.length}</span> tickets for this event. This action cannot be undone.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter className="gap-2 sm:gap-0">
-                            <Button variant="outline" onClick={() => setShowDeleteAllModal(false)} className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800">
+                            <Button variant="outline" onClick={() => setShowDeleteAllModal(false)} className="bg-muted border-border text-foreground hover:bg-muted/80 rounded-sm">
                                 Cancel
                             </Button>
-                            <Button variant="destructive" onClick={handleDeleteAllTickets} disabled={isDeletingBatch} className="bg-red-600 hover:bg-red-700 text-white">
+                            <Button variant="destructive" onClick={handleDeleteAllTickets} disabled={isDeletingBatch} className="bg-red-600 hover:bg-red-700 text-white rounded-sm">
                                 {isDeletingBatch ? "Deleting..." : "Delete All Tickets"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
+                </>
+            )}
 
         </div>
     );

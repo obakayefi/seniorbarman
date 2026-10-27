@@ -95,9 +95,9 @@ export default function PublicTicketView() {
                             <div className="flex items-center justify-center gap-6 sm:gap-12 w-full">
                                 <div className="flex flex-col items-center gap-4 flex-1">
                                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
-                                        <Image src={giveLogo(event.homeTeam)} alt="home" height={100} width={100} className="w-16 h-16 sm:w-24 sm:h-24 object-contain group-hover:scale-110 transition-transform duration-500" />
+                                        <Image src={(event.homeTeam as any)?.logo || giveLogo(event.homeTeam)} alt="home" height={100} width={100} className="w-16 h-16 sm:w-24 sm:h-24 object-contain group-hover:scale-110 transition-transform duration-500" />
                                     </div>
-                                    <p className="text-white font-black text-sm sm:text-lg text-center leading-tight uppercase tracking-tighter">{event.homeTeam}</p>
+                                    <p className="text-white font-black text-sm sm:text-lg text-center leading-tight uppercase tracking-tighter">{(event.homeTeam as any)?.name ?? event.homeTeam}</p>
                                 </div>
 
                                 <div className="flex flex-col items-center">
@@ -107,9 +107,9 @@ export default function PublicTicketView() {
 
                                 <div className="flex flex-col items-center gap-4 flex-1">
                                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-orange-500/30 transition-all duration-500">
-                                        <Image src={giveLogo(event.awayTeam)} alt="away" height={100} width={100} className="w-16 h-16 sm:w-24 sm:h-24 object-contain group-hover:scale-110 transition-transform duration-500" />
+                                        <Image src={(event.awayTeam as any)?.logo || giveLogo(event.awayTeam)} alt="away" height={100} width={100} className="w-16 h-16 sm:w-24 sm:h-24 object-contain group-hover:scale-110 transition-transform duration-500" />
                                     </div>
-                                    <p className="text-white font-black text-sm sm:text-lg text-center leading-tight uppercase tracking-tighter">{event.awayTeam}</p>
+                                    <p className="text-white font-black text-sm sm:text-lg text-center leading-tight uppercase tracking-tighter">{(event.awayTeam as any)?.name ?? event.awayTeam}</p>
                                 </div>
                             </div>
 
@@ -139,7 +139,9 @@ export default function PublicTicketView() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                             <div className="relative z-10 p-8 sm:p-12 flex flex-col items-center text-center space-y-4">
-                                <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tighter uppercase italic">{event.title}</h1>
+                                <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tighter uppercase italic">
+                                    {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
+                                </h1>
 
                                 <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
                                     <div className="flex items-center gap-2">

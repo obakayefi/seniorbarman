@@ -3,13 +3,14 @@ import { connectDB } from "@/lib/mongodb";
 import Team from "@/models/Team";
 import { requireRole } from "@/lib/requireRole";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const authResult = await requireRole(["admin", "dev"]);
     if (authResult instanceof NextResponse) return authResult;
     try {
+        const { id } = await params;
         const body = await req.json();
         await connectDB();
-        const updated = await Team.findByIdAndUpdate(params.id, body, { new: true });
+        const updated = await Team.findByIdAndUpdate(id, body, { new: true }).populate("managers", "firstName lastName email role");
         if (!updated) return NextResponse.json({ error: "Team not found" }, { status: 404 });
         return NextResponse.json({ success: true, team: updated });
     } catch (error: any) {
@@ -17,10 +18,29 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    return PATCH(req, { params });
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const authResult = await requireRole(["admin", "dev"]);
+    if (authResult instanceof NextResponse) return authResult;
     try {
+        const { id } = await params;
         await connectDB();
-        const team = await Team.findById(params.id).populate("managers", "firstName lastName email");
+        const deleted = await Team.findByIdAndDelete(id);
+        if (!deleted) return NextResponse.json({ error: "Team not found" }, { status: 404 });
+        return NextResponse.json({ success: true, message: "Team deleted successfully" });
+    } catch (error: any) {
+        return NextResponse.json({ error: "Failed to delete team", details: error.message }, { status: 500 });
+    }
+}
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        await connectDB();
+        const team = await Team.findById(id).populate("managers", "firstName lastName email role");
         if (!team) return NextResponse.json({ error: "Team not found" }, { status: 404 });
         return NextResponse.json({ success: true, team });
     } catch (error: any) {

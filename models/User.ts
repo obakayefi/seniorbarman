@@ -29,10 +29,19 @@ const userSchema = new Schema(
       default: ROLES.USER
     },
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    favoriteTeam: {
+      type: Schema.Types.ObjectId,
+      ref: "Team",
+    },
   },
   { timestamps: true }
 );
 
-const User = models.User || mongoose.model("User", userSchema);
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+const User = mongoose.model("User", userSchema);
 export default User;
+

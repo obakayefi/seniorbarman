@@ -5,10 +5,14 @@ import Ticket from '@/models/Ticket'
 import { connectDB } from '@/lib/mongodb'
 import EventApplication from '@/models/EventApplication'
 import User from '@/models/User'
+import EventModel from '@/models/Event'
+import Team from '@/models/Team'
 import mongoose from 'mongoose'
 
 export async function POST(req: Request) {
     await connectDB();
+    Team.init();
+    EventModel.init();
 
     const secret = process.env.PAYSTACK_API_KEY || ""
     const rawBody = await req.text()
@@ -43,7 +47,13 @@ export async function POST(req: Request) {
                         status: "pending_form",
                     },
                     { new: true }
-                ).populate('event user');
+                ).populate({
+                    path: 'event',
+                    populate: [
+                        { path: 'homeTeam', select: 'name logo' },
+                        { path: 'awayTeam', select: 'name logo' }
+                    ]
+                }).populate('user');
 
                 if (application) {
                     const event = application.event as any;
@@ -56,7 +66,7 @@ export async function POST(req: Request) {
                             organizerEmail: organizer.email,
                             organizerName: organizer.firstName || organizer.username,
                             organizerId: organizer._id.toString(),
-                            eventTitle: event.title || 'Event',
+                            eventTitle: event.title || `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` || 'Event',
                             applicantName: `${applicant.firstName} ${applicant.lastName}`,
                             amount: verified.amount / 100
                         });

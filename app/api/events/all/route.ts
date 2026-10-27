@@ -31,7 +31,8 @@ export async function GET(req: Request) {
             {
                 type: eventType,
                 date: { $gte: today },
-                isArchived: { $ne: true }
+                isArchived: { $ne: true },
+                isEnded: { $ne: true }
             },
             {
                 page,

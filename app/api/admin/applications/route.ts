@@ -4,12 +4,15 @@ import { getUserFromCookie } from "@/lib/auth";
 import EventApplication from "@/models/EventApplication";
 import Event from "@/models/Event";
 import User from "@/models/User";
+import Team from "@/models/Team";
+import { populateTeamsForApplications } from "@/lib/populateEventTeams";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
     try {
         await connectDB();
+        Team.init();
         const user = await getUserFromCookie();
 
         if (!user) {
@@ -31,7 +34,7 @@ export async function GET(req: Request) {
             query = { event: { $in: eventIds } };
         }
 
-        const applications = await EventApplication.find(query)
+        const rawApplications = await EventApplication.find(query)
             .populate({
                 path: "event",
                 model: Event,
@@ -44,6 +47,8 @@ export async function GET(req: Request) {
             })
             .sort({ createdAt: -1 })
             .lean();
+
+        const applications = await populateTeamsForApplications(rawApplications);
 
         return NextResponse.json({ success: true, applications }, { status: 200 });
     } catch (error: any) {

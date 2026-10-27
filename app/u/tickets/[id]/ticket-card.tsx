@@ -43,9 +43,9 @@ export default function TicketCard() {
         link.click()
     }
 
-    useEffect(() => {
-        console.log({ tickets })
-    }, [tickets]);
+    // useEffect(() => {
+    //     console.log({ tickets })
+    // }, [tickets]);
 
     return (
         <>

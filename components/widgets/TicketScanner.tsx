@@ -13,6 +13,7 @@ import { TicketOperationStatus } from "@/components/ui/ticket-operation-status";
 
 import { TicketSummary } from "@/types/data";
 import { ScanError } from "@/types/scan-error";
+import { Button } from "@/components/ui/button";
 
 type Props = {
     canScan: boolean;
@@ -349,7 +350,7 @@ export default function TicketScanner({
                                         )}
 
                                         {/* Action Buttons */}
-                                        <div className="pt-4">
+                                        {/* <div className="pt-4">
                                             {!isTeamManager && (
                                                 ticketOperation === 'check-in' ? (
                                                     <PreCheckInActions
@@ -367,7 +368,7 @@ export default function TicketScanner({
                                                     />
                                                 )
                                             )}
-                                        </div>
+                                        </div> */}
                                     </div>
                                 )}
 

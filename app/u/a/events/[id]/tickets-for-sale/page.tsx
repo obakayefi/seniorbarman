@@ -214,7 +214,7 @@ export default function TicketsForSalePage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-zinc-950">
+            <div className="flex justify-center items-center min-h-screen bg-card">
                 <Loader2 className="animate-spin text-orange-500 h-8 w-8" />
             </div>
         )
@@ -227,32 +227,32 @@ export default function TicketsForSalePage() {
     }, {})
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-zinc-950 text-white pb-20">
+        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-card text-foreground pb-20">
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="flex flex-col space-y-4">
-                    <Link href={`/u/a/events/${id}`} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm w-fit group">
+                    <Link href={`/u/a/events/${id}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm w-fit group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                         Back to Event
                     </Link>
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
+                        <h1 className="text-3xl md:text-4xl font-black text-foreground leading-tight">
                             Tickets For Sale
                         </h1>
-                        <p className="text-zinc-400 mt-2">
-                            Manage and reprint bulk tickets for <strong className="text-white">{event?.title || event?.homeTeam}</strong>.
+                        <p className="text-muted-foreground mt-2">
+                            Manage and reprint bulk tickets for <strong className="text-foreground">{event?.title || event?.homeTeam}</strong>.
                         </p>
                     </div>
                 </div>
 
                 {!allTickets.length ? (
-                    <Card className="bg-zinc-900 border-zinc-800 shadow-xl text-white">
+                    <Card className=" text-foreground">
                         <CardContent className="pt-20 pb-20 flex flex-col items-center text-center space-y-6">
-                            <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center">
-                                <Ticket className="w-10 h-10 text-zinc-600" />
+                            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
+                                <Ticket className="w-10 h-10 text-muted-foreground/70" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-black text-white">No Tickets Found</h2>
-                                <p className="text-zinc-500 max-w-sm mx-auto">
+                                <h2 className="text-2xl font-black text-foreground">No Tickets Found</h2>
+                                <p className="text-muted-foreground max-w-sm mx-auto">
                                     We couldn't find any tickets generated via the wizard for this event. 
                                     Try generating some first!
                                 </p>
@@ -267,25 +267,25 @@ export default function TicketsForSalePage() {
                 ) : (
                     <>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="md:col-span-2 bg-zinc-900 border-zinc-800 shadow-xl text-white">
-                            <CardHeader className="border-b border-zinc-800">
+                        <Card className="md:col-span-2 text-foreground">
+                            <CardHeader className="-b ">
                                 <CardTitle className="text-xl font-black flex items-center gap-2">
                                     <Ticket className="text-orange-500" /> Export Summary
                                 </CardTitle>
-                                <CardDescription className="text-zinc-400">Total tickets available for bulk printing.</CardDescription>
+                                <CardDescription className="text-muted-foreground">Total tickets available for bulk printing.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-6">
                                 <div className="space-y-4">
-                                    <Label className="text-lg font-bold text-white">Batches Found</Label>
+                                    <Label className="text-lg font-bold text-foreground">Batches Found</Label>
                                     <div className="space-y-3">
                                         {Object.entries(standSummary).map(([stand, count]: [any, any]) => (
-                                            <div key={stand} className="flex justify-between items-center bg-zinc-950/50 p-4 rounded-xl border border-zinc-800/80">
+                                            <div key={stand} className="flex justify-between items-center bg-card/50 p-4 rounded-sm border border-border/80">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs text-zinc-500 uppercase font-black tracking-widest">Stand / Type</span>
-                                                    <span className="text-lg font-bold text-white">{stand}</span>
+                                                    <span className="text-xs text-muted-foreground uppercase font-black tracking-widest">Stand / Type</span>
+                                                    <span className="text-lg font-bold text-foreground">{stand}</span>
                                                 </div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-xs text-zinc-500 uppercase font-black tracking-widest">Quantity</span>
+                                                    <span className="text-xs text-muted-foreground uppercase font-black tracking-widest">Quantity</span>
                                                     <span className="text-xl font-black text-orange-500">{count}</span>
                                                 </div>
                                             </div>
@@ -293,19 +293,19 @@ export default function TicketsForSalePage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 pt-4 border-t border-zinc-800">
-                                    <Label className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Download Format</Label>
+                                <div className="space-y-3 pt-4 border-t border-border">
+                                    <Label className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Download Format</Label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <button 
                                             onClick={() => setDownloadMode('individual')}
-                                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${downloadMode === 'individual' ? 'border-orange-500 bg-orange-500/10 text-white' : 'border-zinc-800 bg-zinc-900/50 text-zinc-500 hover:border-zinc-700'}`}
+                                            className={`p-4 rounded-sm border-2 transition-all flex flex-col items-center gap-2 ${downloadMode === 'individual' ? 'border-orange-500 bg-orange-500/10 text-foreground' : 'border-border bg-muted/50 text-muted-foreground hover:border-border'}`}
                                         >
                                             <Ticket className="w-6 h-6" />
                                             <span className="font-bold">Individual PNGs</span>
                                         </button>
                                         <button 
                                             onClick={() => setDownloadMode('a4')}
-                                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${downloadMode === 'a4' ? 'border-orange-500 bg-orange-500/10 text-white' : 'border-zinc-800 bg-zinc-900/50 text-zinc-500 hover:border-zinc-700'}`}
+                                            className={`p-4 rounded-sm border-2 transition-all flex flex-col items-center gap-2 ${downloadMode === 'a4' ? 'border-orange-500 bg-orange-500/10 text-foreground' : 'border-border bg-muted/50 text-muted-foreground hover:border-border'}`}
                                         >
                                             <div className="w-6 h-7 border-2 border-current rounded-sm flex flex-col gap-0.5 p-0.5">
                                                 <div className="w-full h-0.5 bg-current opacity-30" />
@@ -316,10 +316,10 @@ export default function TicketsForSalePage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-zinc-800 space-y-4">
-                                    <div className="flex justify-between items-center bg-zinc-950 p-4 rounded-lg">
-                                        <span className="text-zinc-400 font-medium">Total Tickets:</span>
-                                        <span className="text-2xl font-black text-white">{allTickets.length}</span>
+                                <div className="pt-4 border-t border-border space-y-4">
+                                    <div className="flex justify-between items-center bg-card p-4 rounded-sm">
+                                        <span className="text-muted-foreground font-medium">Total Tickets:</span>
+                                        <span className="text-2xl font-black text-foreground">{allTickets.length}</span>
                                     </div>
                                     <Button 
                                         onClick={generateZipFiles}
@@ -336,27 +336,27 @@ export default function TicketsForSalePage() {
 
                                 {isGenerating && (
                                     <div className="space-y-2">
-                                        <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                             <div className="h-full bg-orange-500 transition-all duration-300" style={{ width: `${zipProgress}%` }} />
                                         </div>
-                                        <p className="text-center text-xs text-zinc-500">{zipProgress}% Complete</p>
+                                        <p className="text-center text-xs text-muted-foreground">{zipProgress}% Complete</p>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-zinc-900 border-zinc-800 shadow-xl text-white h-fit">
+                        <Card className=" text-foreground h-fit">
                             <CardHeader>
                                 <CardTitle className="text-lg font-black italic">Printing Guide</CardTitle>
                             </CardHeader>
-                            <CardContent className="text-sm text-zinc-400 space-y-4">
+                            <CardContent className="text-sm text-muted-foreground space-y-4">
                                 <p>For the best results with <strong>A4 Sheets</strong>:</p>
                                 <ul className="list-disc pl-4 space-y-2">
                                     <li>Set scaling to <b>100%</b> (No margin scaling) to preserve the exact ticket dimensions.</li>
                                     <li>Light crop marks are provided to guide manual cutting.</li>
                                     <li>Recommended paper: <b>250gsm - 300gsm Cardboard</b>.</li>
                                 </ul>
-                                <div className="pt-4 border-t border-zinc-800">
+                                <div className="pt-4 border-t border-border">
                                     <p className="text-xs italic">Tickets here include all batches generated via the wizard for this event.</p>
                                 </div>
                             </CardContent>
@@ -365,11 +365,11 @@ export default function TicketsForSalePage() {
                     
                     {/* Live Print Preview */}
                     <div className="mt-12 space-y-4">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
                            Live A4 Preview
                         </h2>
-                        <p className="text-sm text-zinc-400">See exactly how your tickets translate to physical paper (First 8 tickets).</p>
-                        <div className="bg-zinc-950 rounded-2xl border-2 border-dashed border-zinc-800 flex justify-center shadow-inner overflow-hidden h-[600px] relative">
+                        <p className="text-sm text-muted-foreground">See exactly how your tickets translate to physical paper (First 8 tickets).</p>
+                        <div className="bg-card rounded-sm border-2 border-dashed border-border flex justify-center shadow-inner overflow-hidden h-[600px] relative">
                             <div className="scale-[0.50] origin-top absolute top-6 bg-white w-[210mm] h-[297mm] shadow-[0_0_50px_rgba(0,0,0,0.5)] shrink-0">
                                 <div className="absolute top-[18.5mm] left-[5mm] right-[5mm] grid grid-cols-2">
                                     {allTickets.slice(0, 8).map(ticket => (

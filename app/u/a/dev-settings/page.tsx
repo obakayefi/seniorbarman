@@ -54,7 +54,7 @@ export default function DevSettingsPage() {
     }
 
     return (
-        <div className="p-6 md:p-10 w-full space-y-12 bg-[#020202] text-white min-h-screen">
+        <div className="p-6 md:p-10 w-full space-y-12 bg-background text-foreground min-h-screen">
             <PageHeader title="Global Guard Matrix">
                 <div />
             </PageHeader>
@@ -66,7 +66,7 @@ export default function DevSettingsPage() {
                             <Earth className="text-orange-500 w-10 h-10" />
                             UNIVERSAL APP ROUTING
                         </h2>
-                        <p className="text-zinc-500 text-sm mt-3 max-w-2xl leading-relaxed">
+                        <p className="text-muted-foreground text-sm mt-3 max-w-2xl leading-relaxed">
                             These strict switches are monitored deeply across the entire Next.js ecosystem tree via `GlobalPageGuard`. If you sever a node, ANY incoming traffic resolving to that strict `/pathname` will instantly trigger a maximum-z-index network blackout shield directly across the DOM synchronously.
                         </p>
                     </div>
@@ -82,9 +82,9 @@ export default function DevSettingsPage() {
                                 const isActive = globalSettings[`page_active_${pageConf.path}`] !== false;
                                 
                                 return (
-                                    <div key={pageConf.path} className={`bg-zinc-900/50 border p-6 rounded-[2rem] flex flex-col justify-between transition-all duration-500 shadow-xl group ${isActive ? 'border-zinc-800 hover:bg-zinc-900 hover:border-orange-500/30' : 'border-red-500/30 bg-red-500/5'}`}>
+                                    <div key={pageConf.path} className={`bg-muted/50 border p-6 rounded-sm flex flex-col justify-between transition-all duration-500 shadow-xl group ${isActive ? 'border-border hover:bg-mutedhover:border-orange-500/30' : 'border-red-500/30 bg-red-500/5'}`}>
                                         <div className="flex justify-between items-start mb-8">
-                                            <div className={`p-4 rounded-2xl group-hover:scale-110 transition-transform duration-500 ${isActive ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/20 text-red-500'}`}>
+                                            <div className={`p-4 rounded-sm group-hover:scale-110 transition-transform duration-500 ${isActive ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/20 text-red-500'}`}>
                                                 <LayoutTemplate />
                                             </div>
                                             <Switch 
@@ -95,11 +95,11 @@ export default function DevSettingsPage() {
                                         </div>
                                         <div>
                                             <div className="flex flex-col gap-2 mb-3">
-                                                <h3 className="text-xl font-black text-white tracking-tight">{pageConf.name}</h3>
+                                                <h3 className="text-xl font-black text-foreground tracking-tight">{pageConf.name}</h3>
                                                 {!isActive && <span className="text-[10px] w-fit bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Intercept Active</span>}
                                             </div>
-                                            <p className={`text-xs font-mono mb-3 p-1.5 rounded-lg max-w-fit ${isActive ? 'text-zinc-400 bg-black/40' : 'text-red-400 bg-red-500/10'}`}>{pageConf.path}</p>
-                                            <p className="text-xs text-zinc-500 font-medium leading-relaxed">{pageConf.desc}</p>
+                                            <p className={`text-xs font-mono mb-3 p-1.5 rounded-sm max-w-fit ${isActive ? 'text-muted-foreground bg-background/40' : 'text-red-400 bg-red-500/10'}`}>{pageConf.path}</p>
+                                            <p className="text-xs text-muted-foreground font-medium leading-relaxed">{pageConf.desc}</p>
                                         </div>
                                     </div>
                                 )

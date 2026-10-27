@@ -1,10 +1,10 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { PageHeader } from '@/components/ui/page-header'
+import { DashboardLayoutWrapper } from '@/components/layout/DashboardLayoutWrapper'
 import { useApp } from '@/context/AppContext'
 import { sitemap } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, Bug, Settings2 } from 'lucide-react'
+import { CalendarPlus, Users, ScanQrCode, ShieldCheck, ArrowRight, BarChart3, Search, Tickets, UsersRound, History, Sparkles, CalendarDays, CalendarClock, Mic2, Bug, Settings2 } from 'lucide-react'
 import api from '@/lib/axios'
 import { Spinner } from '@/components/ui/spinner'
 import EnvViewer from '@/components/features/admin/EnvViewer'
@@ -12,20 +12,16 @@ import EnvViewer from '@/components/features/admin/EnvViewer'
 const AdminDashboard = () => {
     const { user } = useApp()
     const router = useRouter()
-    const [stats, setStats] = useState({ totalEvents: 0, totalUsers: 0 })
+    const [stats, setStats] = useState({ totalEvents: 0, totalUsers: 0, upcomingEvents: 0, totalAuditions: 0 })
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchAdminStats = async () => {
             try {
-                const [eventsRes, usersRes] = await Promise.all([
-                    api.get('/events'),
-                    api.get('/users')
-                ])
-                setStats({
-                    totalEvents: eventsRes.data.events?.length || 0,
-                    totalUsers: usersRes.data.users?.length || 0
-                })
+                const res = await api.get('/admin/stats')
+                if (res.data.success) {
+                    setStats(res.data.stats)
+                }
             } catch (error) {
                 console.error("Error fetching admin stats", error)
             } finally {
@@ -81,7 +77,7 @@ const AdminDashboard = () => {
             description: "Track all system activity",
             icon: History,
             url: sitemap.admin.auditLogs,
-            color: "text-zinc-500",
+            color: "text-muted-foreground",
             bg: "bg-zinc-500/10"
         },
         {
@@ -101,7 +97,7 @@ const AdminDashboard = () => {
             bg: "bg-indigo-500/10"
         },
         {
-            title: "Manage Activities",
+            title: "Manage Events",
             description: "Edit or delete any past or future event",
             icon: CalendarDays,
             url: "/u/a/events/manage",
@@ -134,31 +130,50 @@ const AdminDashboard = () => {
     });
 
     return (
-        <div className='md:p-10 p-6 w-full space-y-10'>
-            <PageHeader title={user?.role === 'organizer' ? "Organizer Hub" : "Admin Oversight"}>
-                <EnvViewer />
-            </PageHeader>
-
+        <DashboardLayoutWrapper
+            title={user?.role === 'organizer' ? "Organizer Hub" : "Admin Oversight"}
+            headerAction={<EnvViewer />}
+        >
             {/* Admin Stats Grid - Only show for full admins */}
             {user?.role !== 'organizer' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-                        <div className="p-4 bg-orange-500/10 rounded-xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-orange-500/10 rounded-sm">
                             <BarChart3 className="text-orange-500" size={32} />
                         </div>
                         <div>
-                            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Events</p>
-                            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalEvents}</h3>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Total Events</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.totalEvents}</h3>
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl shadow-xl flex items-center gap-6">
-                        <div className="p-4 bg-blue-500/10 rounded-xl">
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-blue-500/10 rounded-sm">
                             <Users className="text-blue-500" size={32} />
                         </div>
                         <div>
-                            <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest">Total Accounts</p>
-                            <h3 className="text-3xl font-black text-white">{isLoading ? <Spinner /> : stats.totalUsers}</h3>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Total Accounts</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.totalUsers}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-emerald-500/10 rounded-sm">
+                            <CalendarClock className="text-emerald-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Upcoming</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.upcomingEvents}</h3>
+                        </div>
+                    </div>
+
+                    <div className="bg-card text-card-foreground border border-border p-6 rounded-sm shadow-sm flex items-center gap-6">
+                        <div className="p-4 bg-violet-500/10 rounded-sm">
+                            <Mic2 className="text-violet-500" size={32} />
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Auditions</p>
+                            <h3 className="text-3xl font-black text-foreground">{isLoading ? <Spinner /> : stats.totalAuditions}</h3>
                         </div>
                     </div>
                 </div>
@@ -166,7 +181,7 @@ const AdminDashboard = () => {
 
             {/* Quick Actions Section */}
             <div className="space-y-6">
-                <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-xl font-black text-foreground uppercase tracking-widest flex items-center gap-2">
                     {user?.role === 'organizer' ? "Quick Actions" : "Management Tools"}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -174,23 +189,23 @@ const AdminDashboard = () => {
                         <button
                             key={action.title}
                             onClick={() => router.push(action.url)}
-                            className="bg-zinc-900/50 hover:bg-zinc-900 border border-white/5 hover:border-orange-500/30 p-6 rounded-2xl text-left transition-all duration-300 group flex items-center justify-between"
+                            className="bg-card hover:bg-muted/50 text-card-foreground border border-border hover:border-orange-500/40 p-6 rounded-sm text-left transition-all duration-300 group flex items-center justify-between shadow-sm cursor-pointer"
                         >
                             <div className="flex items-center gap-6">
-                                <div className={`p-4 ${action.bg} rounded-xl group-hover:scale-110 transition-transform duration-500`}>
+                                <div className={`p-4 ${action.bg} rounded-sm group-hover:scale-110 transition-transform duration-500`}>
                                     <action.icon className={action.color} size={28} />
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-black text-lg">{action.title}</h4>
-                                    <p className="text-zinc-500 text-sm">{action.description}</p>
+                                    <h4 className="text-foreground font-black text-lg">{action.title}</h4>
+                                    <p className="text-muted-foreground text-sm">{action.description}</p>
                                 </div>
                             </div>
-                            <ArrowRight className="text-zinc-700 group-hover:text-orange-500 group-hover:translate-x-2 transition-all duration-300" />
+                            <ArrowRight className="text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-2 transition-all duration-300" />
                         </button>
                     ))}
                 </div>
             </div>
-        </div>
+        </DashboardLayoutWrapper>
     )
 }
 

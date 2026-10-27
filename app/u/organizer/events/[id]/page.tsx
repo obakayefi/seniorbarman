@@ -10,12 +10,15 @@ import { toast } from "sonner"
 import {
     Loader2, Ticket, Users, TrendingUp, CheckCircle,
     ArrowLeft, Edit, Printer, Calendar, MapPin, Search, Plus, Download, Trash,
-    ExternalLink
+    ExternalLink, Share2, Wallet, ClipboardList, Layers, FileSpreadsheet, CheckCircle2
 } from "lucide-react"
 import api from "@/lib/axios"
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ShareEventModal } from '@/components/modals/share-event-modal'
+import { ThreeDLightSwitch } from '@/components/ui/3d-light-switch'
+import { DownloadEventQR } from '@/components/features/download-event-qr'
 
 export default function EventDetailPage() {
     const params = useParams()
@@ -26,6 +29,10 @@ export default function EventDetailPage() {
     const [attendeeSearch, setAttendeeSearch] = useState('')
     const [applicants, setApplicants] = useState<any[]>([])
     const [selectedAppForView, setSelectedAppForView] = useState<any>(null)
+    const [shareModalOpen, setShareModalOpen] = useState(false)
+    const [payoutRequests, setPayoutRequests] = useState<any[]>([])
+    const [payoutDetails, setPayoutDetails] = useState('')
+    const [submittingPayout, setSubmittingPayout] = useState(false)
     const router = useRouter()
 
     const handleDelete = async () => {
@@ -48,6 +55,9 @@ export default function EventDetailPage() {
             if (res.data.success) {
                 setData(res.data)
 
+                const payoutRes = await api.get(`/organizer/events/${id}/payout-request`).catch(() => null)
+                setPayoutRequests(payoutRes?.data?.requests || [])
+
                 // Fetch applicants if required
                 if (res.data.event.requiresApplication) {
                     const appRes = await api.get(`/events/${id}/applicants`)
@@ -62,9 +72,40 @@ export default function EventDetailPage() {
         }
     }
 
+    const refreshFinancials = async () => {
+        try {
+            const response = await api.get(`/organizer/events/${id}/financials`)
+            setData((current: any) => current ? { ...current, financials: response.data.financials } : current)
+        } catch (error) {
+            console.error('Could not refresh event payout estimate:', error)
+        }
+    }
+
     useEffect(() => {
-        if (id) fetchData()
+        if (!id) return
+        fetchData()
+        const refreshTimer = window.setInterval(refreshFinancials, 60_000)
+        return () => window.clearInterval(refreshTimer)
     }, [id])
+
+    const submitPayoutRequest = async () => {
+        if (!payoutDetails.trim()) {
+            toast.error('Add your preferred payout/contact details first')
+            return
+        }
+        setSubmittingPayout(true)
+        try {
+            const result = await api.post(`/organizer/events/${id}/payout-request`, { payoutDetails })
+            setPayoutRequests((current) => [result.data.request, ...current])
+            setPayoutDetails('')
+            toast.success(result.data.emailSent ? 'Payout request sent to the admin' : 'Request saved; admin email notification could not be delivered')
+            await fetchData()
+        } catch (error: any) {
+            toast.error(error?.response?.data?.error || 'Could not submit payout request')
+        } finally {
+            setSubmittingPayout(false)
+        }
+    }
 
     const handleUpdateApplicant = async (appId: string, status: string, reason?: string) => {
         try {
@@ -81,9 +122,46 @@ export default function EventDetailPage() {
     const [rejectionModal, setRejectionModal] = useState<{ appId: string } | null>(null)
     const [rejectionReason, setRejectionReason] = useState('')
 
+    const exportApplicantsToCSV = () => {
+        if (applicants.length === 0) return;
+
+        const headers = ["Name", "Email", "Status", "Submitted At"];
+        const sampleApp = applicants.find(a => a.formAnswers && a.formAnswers.length > 0);
+        const formHeaders = sampleApp ? sampleApp.formAnswers.map((a: any) => a.fieldLabel) : [];
+        const allHeaders = [...headers, ...formHeaders];
+
+        const rows = applicants.map(app => {
+            const baseData = [
+                `${app.user?.firstName || ''} ${app.user?.lastName || ''}`,
+                app.user?.email || '',
+                app.status || '',
+                app.submittedAt ? format(new Date(app.submittedAt), 'yyyy-MM-dd') : 'N/A'
+            ];
+
+            const formData = formHeaders.map((header: string) => {
+                const answerObj = app.formAnswers?.find((a: any) => a.fieldLabel === header);
+                if (!answerObj) return "";
+                return Array.isArray(answerObj.answer) ? answerObj.answer.join("; ") : answerObj.answer;
+            });
+
+            return [...baseData, ...formData].map(val => `"${val}"`).join(",");
+        });
+
+        const csvContent = [allHeaders.join(","), ...rows].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `applicants_${event?.title || 'audition'}_${format(new Date(), 'yyyyMMdd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
                 <p className="text-lg font-medium">Analyzing event data...</p>
             </div>
@@ -92,7 +170,7 @@ export default function EventDetailPage() {
 
     if (!data?.event) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-500 gap-4">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background text-muted-foreground gap-4">
                 <p className="text-xl">Event not found</p>
                 <Button asChild variant="outline">
                     <Link href="/u/organizer/events/manage">Back to Management</Link>
@@ -101,7 +179,8 @@ export default function EventDetailPage() {
         )
     }
 
-    const { event, stats, tickets } = data
+    const { event, stats, tickets, appStats, financials } = data
+    const totalCombinedRevenue = (stats?.totalRevenue || 0) + (appStats?.applicationRevenue || 0)
     const filteredTickets = tickets.filter((t: any) =>
         (t.holderName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
         (t.createdBy?.firstName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
@@ -111,270 +190,488 @@ export default function EventDetailPage() {
     )
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-zinc-950 text-white pb-20">
+        <div className="md:p-10 p-4 sm:p-6 w-full space-y-8 min-h-screen bg-background text-foreground pb-20">
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-4">
-                        <Link href="/u/organizer/events/manage" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm group">
-                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                            Back to Management
-                        </Link>
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <Badge variant="outline" className="text-[10px] uppercase tracking-widest bg-orange-500/10 border-orange-500/30 text-orange-400">
+                {/* Header: Title and Meta Information */}
+                <div className="space-y-4">
+                    <Link href="/u/organizer/events/manage" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-xs font-semibold uppercase tracking-wider group">
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Management
+                    </Link>
+
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-2">
+                        {/* Title and Meta Information */}
+                        <div className="space-y-3 max-w-3xl">
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                <Badge variant="outline" className="text-[10px] uppercase tracking-widest bg-orange-500/10 border-orange-500/30 text-orange-500 dark:text-orange-400 font-bold px-2 py-0.5 rounded-xs">
                                     Organizer Report
                                 </Badge>
-                                <span className="text-zinc-500 text-xs font-mono uppercase">ID: {event._id.slice(-8)}</span>
+                                <span className="text-muted-foreground text-xs font-mono">ID: {event._id.slice(-8)}</span>
+                                {event.createdBy && (
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                        • Hosted by <strong className="text-foreground">{typeof event.createdBy === 'object' ? `${event.createdBy.firstName || ''} ${event.createdBy.lastName || ''}`.trim() || event.createdBy.name : 'Organizer'}</strong>
+                                    </span>
+                                )}
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-black text-white leading-tight">
+
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight leading-tight">
                                 {event.type === 'sports' ? `${event.homeTeam?.name || event.homeTeam} vs ${event.awayTeam?.name || event.awayTeam}` : event.title}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-4 mt-4 text-zinc-400 text-sm">
-                                <div className="flex items-center gap-1.5">
-                                    <Calendar size={14} className="text-orange-500" />
-                                    {format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}
+
+                            <div className="flex flex-wrap items-center gap-y-2 gap-x-5 text-muted-foreground text-sm pt-1">
+                                <div className="flex items-center gap-2 font-medium">
+                                    <Calendar size={16} className="text-orange-500 shrink-0" />
+                                    <span>{format(new Date(event.date), 'EEEE, MMMM dd, yyyy')}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    <MapPin size={14} className="text-orange-500" />
-                                    {event.venue}
+                                <div className="flex items-center gap-2 font-medium">
+                                    <MapPin size={16} className="text-orange-500 shrink-0" />
+                                    <span>{event.venue}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sales Control Switch */}
+                        <div className="shrink-0 w-full sm:w-auto">
+                            <ThreeDLightSwitch
+                                eventId={event._id}
+                                isEnded={event.isEnded || false}
+                                eventDate={event.date}
+                                onToggleSuccess={(newIsEnded) => {
+                                    setData((prev: any) => ({
+                                        ...prev,
+                                        event: {
+                                            ...prev.event,
+                                            isEnded: newIsEnded
+                                        }
+                                    }));
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Action Bar / Controls Panel */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-1 border-y border-border/60 dark:border-zinc-800/80">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button 
+                                onClick={() => setShareModalOpen(true)}
+                                className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs flex items-center gap-1.5"
+                            >
+                                <Share2 size={14} /> Share Link
+                            </Button>
+                            <DownloadEventQR event={event} className="h-9" />
+                            <Button asChild variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                <Link href={`/u/organizer/events/${id}/orders`}>
+                                    <Wallet className="mr-1.5 h-3.5 w-3.5 text-emerald-500" /> Ticket Orders
+                                </Link>
+                            </Button>
+                            {!event.allowNoTickets && (
+                                <>
+                                    <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                        <Link href={`/u/organizer/events/${id}/generate-wizard`}>
+                                            <Plus size={14} className="mr-1.5" /> Generate Tickets
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400 bg-orange-500/5 hover:bg-orange-500/10 font-bold rounded-sm shadow-sm h-9 uppercase tracking-wider text-xs">
+                                        <Link href={`/u/organizer/events/${id}/tickets-for-sale`}>
+                                            <Download size={14} className="mr-1.5" /> Print Tickets
+                                        </Link>
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                            <Button asChild variant="outline" className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-semibold rounded-sm shadow-sm h-9 text-xs">
+                                <Link href={`/u/organizer/events/${id}/edit`}>
+                                    <Edit size={14} className="mr-1.5" /> Edit
+                                </Link>
+                            </Button>
+                            <Button onClick={handleDelete} variant="destructive" className="font-bold rounded-sm shadow-sm h-9 text-xs">
+                                <Trash size={14} className="mr-1.5" /> Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <ShareEventModal
+                    isOpen={shareModalOpen}
+                    onClose={() => setShareModalOpen(false)}
+                    event={event}
+                />
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-orange-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                Total Tickets Sold
+                            </span>
+                            <div className="w-8 h-8 rounded-xs bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                <Ticket className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <div className="mt-3">
+                            <div className="text-3xl text-foreground font-black tracking-tight">{stats.successfulSoldCount ?? stats.totalTickets}</div>
+                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">
+                                {stats.totalGeneratedTickets && stats.totalGeneratedTickets !== (stats.successfulSoldCount ?? stats.totalTickets)
+                                    ? `Successful Sales (${stats.totalGeneratedTickets} Pre-Generated)`
+                                    : "Successful Sales"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-emerald-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                {event.requiresApplication ? "Ticket Revenue" : "Total Revenue"}
+                            </span>
+                            <div className="w-8 h-8 rounded-xs bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                <TrendingUp className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <div className="mt-3">
+                            <div className="text-3xl text-foreground font-black tracking-tight">₦{stats.totalRevenue.toLocaleString()}</div>
+                            <div className="flex items-center justify-between mt-1">
+                                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">From ticket sales</p>
+                                <Link href={`/u/organizer/events/${id}/orders`} className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    View Orders &rarr;
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-blue-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                Checked In
+                            </span>
+                            <div className="w-8 h-8 rounded-xs bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                <CheckCircle className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <div className="mt-3">
+                            <div className="text-3xl text-foreground font-black tracking-tight">{stats.checkedInCount}</div>
+                            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Attendees At Venue</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 hover:border-purple-500/40 dark:hover:border-zinc-700 transition-all duration-200 group">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                Check-in Rate
+                            </span>
+                            <div className="w-8 h-8 rounded-xs bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+                                <Users className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <div className="mt-3">
+                            <div className="text-3xl text-foreground font-black tracking-tight">{stats.checkInRate.toFixed(1)}%</div>
+                            <div className="w-full bg-muted dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                                <div
+                                    className="bg-purple-500 h-full rounded-full transition-all duration-1000"
+                                    style={{ width: `${stats.checkInRate}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {financials && (
+                    <Card className="border-orange-500/30 bg-card rounded-sm">
+                        <CardHeader>
+                            <CardTitle className="text-base">Organizer payout estimate</CardTitle>
+                            <CardDescription>Based on successful ticket and application payments recorded for this event. Refreshes every minute and continues updating as payments are confirmed, including after the event concludes.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-5">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div><p className="text-xs text-muted-foreground">Gross collected</p><p className="text-lg font-bold">₦{financials.grossRevenue.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Platform commission (20%)</p><p className="text-lg font-bold">₦{financials.commission.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Organizer share (80%)</p><p className="text-lg font-bold">₦{financials.organizerShare.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Outstanding to you</p><p className="text-lg font-bold text-emerald-600">₦{financials.outstanding.toLocaleString('en-NG')}</p></div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Paid out so far: ₦{financials.paidOut.toLocaleString('en-NG')}. Amounts are calculated from successful payment records; pending or failed payments are excluded.</p>
+                            {payoutRequests.some((request) => request.status === 'pending') ? (
+                                <p className="text-sm font-medium">Your payout request is awaiting admin review.</p>
+                            ) : financials.outstanding > 0 ? (
+                                <div className="space-y-3 border-t border-border pt-4">
+                                    <label htmlFor="payout-details" className="text-sm font-semibold">Payout/contact details</label>
+                                    <textarea id="payout-details" value={payoutDetails} onChange={(event) => setPayoutDetails(event.target.value)} maxLength={2000} rows={3} placeholder="Add the details the admin should use to arrange your payout." className="w-full rounded-sm border border-border bg-background p-3 text-sm" />
+                                    <Button onClick={submitPayoutRequest} disabled={submittingPayout} className="bg-orange-500 hover:bg-orange-600 text-white">{submittingPayout ? 'Sending request…' : 'Request payout'}</Button>
+                                </div>
+                            ) : <p className="text-sm text-muted-foreground">There is no outstanding payout balance right now.</p>}
+                            {payoutRequests.length > 0 && (
+                                <div className="border-t border-border pt-4 space-y-2">
+                                    <p className="text-xs font-bold uppercase tracking-wider">Payout request history</p>
+                                    {payoutRequests.map((request) => <div key={request._id} className="flex justify-between gap-3 text-sm"><span>{format(new Date(request.createdAt), 'MMM d, yyyy')} · ₦{Number(request.requestedAmount).toLocaleString('en-NG')}</span><span className="capitalize">{request.status}{request.adminNote ? ` · ${request.adminNote}` : ''}</span></div>)}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* ── Audition & Application Revenue Analytics (for audition events) ── */}
+                {event.requiresApplication && (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-black text-foreground uppercase tracking-wider flex items-center gap-2">
+                                    <ClipboardList className="w-5 h-5 text-orange-500" />
+                                    Audition & Application Analytics
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">Performance metrics and income generated from participant registrations</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {/* Application Fee Revenue */}
+                            <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Application Revenue
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                                        <Wallet className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-amber-600 dark:text-amber-400 font-black tracking-tight">
+                                        ₦{(appStats?.applicationRevenue || 0).toLocaleString()}
+                                    </div>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-2">
+                                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+                                            {appStats?.paidCount || 0} paid · {event.applicationFee ? `₦${Number(event.applicationFee).toLocaleString()} fee` : 'Free'}
+                                        </span>
+                                        {(appStats?.freeCount || 0) > 0 && (
+                                            <span className="text-[11px] text-muted-foreground/80 uppercase tracking-wider">{appStats?.freeCount} free</span>
+                                        )}
+                                        {(appStats?.unpaidCount || 0) > 0 && (
+                                            <span className="text-[11px] text-red-500 font-medium uppercase tracking-wider">{appStats?.unpaidCount} unpaid</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Applications Registered */}
+                            <div className="bg-card border border-border dark:border-zinc-800 rounded-sm p-5 shadow-sm dark:shadow-black/40 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-blue-500/0 via-blue-500 to-blue-500/0" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Registered Applicants
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                        <ClipboardList className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-foreground font-black tracking-tight">
+                                        {applicants.length}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                                        <span className="text-emerald-500 font-bold">{applicants.filter(a => a.status === 'approved').length} Approved</span>
+                                        <span>·</span>
+                                        <span className="text-blue-500 font-bold">{applicants.filter(a => a.status === 'completed').length} Submitted</span>
+                                        <span>·</span>
+                                        <span className="text-red-500 font-bold">{applicants.filter(a => a.status === 'rejected').length} Rejected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Combined Revenue */}
+                            <div className="bg-card border border-orange-500/30 rounded-sm p-5 shadow-md shadow-orange-500/5 relative overflow-hidden group">
+                                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-500 to-red-500" />
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                                        Total Combined Revenue
+                                    </span>
+                                    <div className="w-8 h-8 rounded-xs bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                        <Layers className="h-4 w-4" />
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-3xl text-foreground font-black tracking-tight">₦{totalCombinedRevenue.toLocaleString()}</div>
+                                    <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-wider">Tickets + Audition Registrations</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-3 flex-wrap justify-end">
-                        {!event.allowNoTickets && (
-                            <>
-                                <Button asChild className="bg-orange-500 hover:bg-white text-white hover:text-black font-black w-full md:w-auto uppercase tracking-tighter transition-all duration-300 shadow-[0_10px_20px_rgba(249,115,22,0.2)]">
-                                    <Link href={`/u/organizer/events/${id}/generate-wizard`}>
-                                        <Plus size={16} className="mr-2" /> Generate Tickets for Sale
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="border-orange-500/50 text-orange-400 hover:bg-orange-500 hover:text-white font-black w-full md:w-auto transition-all duration-300">
-                                    <Link href={`/u/organizer/events/${id}/tickets-for-sale`}>
-                                        <Download size={16} className="mr-2" /> Print Tickets For Sale
-                                    </Link>
-                                </Button>
-                            </>
-                        )}
-                        <Button asChild className="bg-zinc-100 hover:bg-white text-black font-black w-full md:w-auto transition-all duration-300 shadow-lg">
-                            <Link href={`/u/organizer/events/${id}/edit`}>
-                                <Edit size={16} className="mr-2" /> Edit
-                            </Link>
-                        </Button>
-                        <Button onClick={handleDelete} variant="destructive" className="font-black w-full md:w-auto hover:bg-red-500 transition-all duration-300 shadow-md">
-                            <Trash size={16} className="mr-2" /> Delete
-                        </Button>
-                    </div>
-                </div>
+                )}
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group">
-                        <CardHeader className="p-4 pb-2 space-y-0">
-                            <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
-                                Total Tickets
-                                <Ticket className="h-4 w-4 text-orange-500 group-hover:scale-110 transition-transform" />
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <div className="text-3xl text-zinc-100 font-black">{stats.totalTickets}</div>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Units Sold</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group">
-                        <CardHeader className="p-4 pb-2 space-y-0">
-                            <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
-                                Total Revenue
-                                <TrendingUp className="h-4 w-4 text-green-500 group-hover:scale-110 transition-transform" />
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <div className="text-3xl text-zinc-100 font-black">₦{stats.totalRevenue.toLocaleString()}</div>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Gross Potential</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group">
-                        <CardHeader className="p-4 pb-2 space-y-0">
-                            <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
-                                Checked In
-                                <CheckCircle className="h-4 w-4 text-blue-500 group-hover:scale-110 transition-transform" />
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <div className="text-3xl text-zinc-100 font-black">{stats.checkedInCount}</div>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase tracking-tighter">Attendees At Venue</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-zinc-900 border-zinc-800 overflow-hidden group">
-                        <CardHeader className="p-4 pb-2 space-y-0">
-                            <CardTitle className="text-zinc-500 text-xs font-black uppercase tracking-widest flex items-center justify-between">
-                                Check-in Rate
-                                <Users className="h-4 w-4 text-purple-500 group-hover:scale-110 transition-transform" />
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0">
-                            <div className="text-3xl text-zinc-100 font-black">{stats.checkInRate.toFixed(1)}%</div>
-                            <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                                <div
-                                    className="bg-purple-500 h-full transition-all duration-1000"
-                                    style={{ width: `${stats.checkInRate}%` }}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Category Breakdown */}
-                    <Card className="bg-zinc-900 border-zinc-800 lg:col-span-1">
-                        <CardHeader>
-                            <CardTitle className="text-white text-lg">Sales Breakdown</CardTitle>
-                            <CardDescription className="text-zinc-500 text-xs">Per ticket category</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-6">
-                                {stats.categoryBreakdown.map((cat: any) => (
-                                    <div key={cat.name} className="space-y-2">
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="text-zinc-300 font-bold">{cat.name}</span>
-                                            <span className="text-white font-black">{cat.count} <span className="text-zinc-500 font-normal">pts</span></span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-zinc-500">
-                                            <span>Revenue</span>
-                                            <span>₦{cat.revenue.toLocaleString()}</span>
-                                        </div>
-                                        <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
-                                            <div
-                                                className="bg-orange-500 h-full"
-                                                style={{ width: `${(cat.count / stats.totalTickets) * 100}%` }}
-                                            />
-                                        </div>
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-sm dark:shadow-black/40 overflow-hidden lg:col-span-1 flex flex-col">
+                        <div className="p-5 border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40">
+                            <h3 className="text-foreground text-base font-bold">Sales Breakdown</h3>
+                            <p className="text-muted-foreground text-xs mt-0.5">Per ticket category</p>
+                        </div>
+                        <div className="p-5 space-y-6 flex-1">
+                            {stats.categoryBreakdown.map((cat: any) => (
+                                <div key={cat.name} className="space-y-2">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-foreground font-bold">{cat.name}</span>
+                                        <span className="text-foreground font-black">{cat.count} <span className="text-muted-foreground font-normal text-xs">tickets</span></span>
                                     </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    <div className="flex justify-between items-center text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                                        <span>Revenue</span>
+                                        <span className="font-bold text-foreground">₦{cat.revenue.toLocaleString()}</span>
+                                    </div>
+                                    <div className="w-full bg-muted dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                        <div
+                                            className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                                            style={{ width: `${stats.totalTickets > 0 ? (cat.count / stats.totalTickets) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                            {stats.categoryBreakdown.length === 0 && (
+                                <div className="text-center py-10 text-muted-foreground text-xs italic">
+                                    No sales breakdown data available.
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Attendee List */}
-                    <Card className="bg-zinc-900 border-zinc-800 lg:col-span-2">
-                        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/50 pb-6">
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-sm dark:shadow-black/40 overflow-hidden lg:col-span-2 flex flex-col">
+                        <div className="p-5 border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <CardTitle className="text-white text-lg">Attendee List</CardTitle>
-                                <CardDescription className="text-zinc-500 text-xs">Manage individual ticket holders</CardDescription>
+                                <h3 className="text-foreground text-base font-bold">Attendee List</h3>
+                                <p className="text-muted-foreground text-xs mt-0.5">Manage individual ticket holders</p>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Search by name, email or ID..."
+                                    placeholder="Search attendees..."
                                     value={attendeeSearch}
                                     onChange={(e) => setAttendeeSearch(e.target.value)}
-                                    className="pl-10 pr-4 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm transition-all focus:border-orange-500 ring-0 outline-none w-full md:w-64"
+                                    className="pl-9 pr-3 py-1.5 bg-background border border-border dark:border-zinc-800 rounded-sm text-sm text-foreground placeholder:text-muted-foreground transition-all focus:border-orange-500 focus:ring-1 focus:ring-orange-500/25 outline-none w-full"
                                 />
                             </div>
-                        </CardHeader>
-                        <CardContent className="p-0 max-h-[600px] overflow-auto">
+                        </div>
+                        <div className="p-0 max-h-[500px] overflow-auto flex-1">
                             <Table>
-                                <TableHeader className="bg-zinc-950/30 sticky top-0 z-10">
-                                    <TableRow className="border-zinc-800">
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Holder</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Category</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Status</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest text-right">Reference</TableHead>
+                                <TableHeader className="bg-muted/40 dark:bg-zinc-800/40 sticky top-0 z-10 border-b border-border dark:border-zinc-800">
+                                    <TableRow className="border-border dark:border-zinc-800">
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Holder</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Category</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Status</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold text-right">Reference</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredTickets.map((ticket: any) => (
-                                        <TableRow key={ticket._id} className="border-zinc-800 hover:bg-white/[0.02] transition-colors">
+                                        <TableRow key={ticket._id} className="border-border/60 dark:border-zinc-800/60 hover:bg-muted/30 dark:hover:bg-zinc-800/40 transition-colors">
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="text-white font-bold text-sm">
+                                                    <span className="text-foreground font-bold text-sm">
                                                         {ticket.holderName !== 'Guest' ? ticket.holderName : (
                                                             ticket.createdBy ? `${ticket.createdBy.firstName} ${ticket.createdBy.lastName}` : 'Guest'
                                                         )}
                                                     </span>
-                                                    <span className="text-[10px] text-zinc-500 lowercase">{ticket.createdBy?.email || 'Walk-in Customer'}</span>
+                                                    <span className="text-[11px] text-muted-foreground">{ticket.createdBy?.email || 'Walk-in Customer'}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="secondary" className="bg-zinc-800 text-zinc-400 border-none font-bold text-[9px] uppercase tracking-tighter">
+                                                <Badge variant="secondary" className="bg-muted dark:bg-zinc-800 text-foreground border border-border dark:border-zinc-700 font-bold text-[10px] uppercase tracking-wider rounded-xs">
                                                     {ticket.stand || "Regular"}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 {ticket.isInside ? (
-                                                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20 text-[9px] uppercase tracking-widest font-black">
+                                                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] uppercase tracking-wider font-bold rounded-xs">
                                                         Checked In
                                                     </Badge>
                                                 ) : (
-                                                    <Badge variant="outline" className="text-zinc-600 border-zinc-800 text-[9px] uppercase tracking-widest font-black">
+                                                    <Badge variant="outline" className="text-muted-foreground border-border dark:border-zinc-700 text-[10px] uppercase tracking-wider font-semibold rounded-xs">
                                                         Pending
                                                     </Badge>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="text-right font-mono text-[10px] text-zinc-500">
+                                            <TableCell className="text-right font-mono text-xs text-muted-foreground">
                                                 {ticket.ticketNumber.slice(-8)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                     {filteredTickets.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-20 text-zinc-600 italic">
+                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground text-sm italic">
                                                 No attendees found matching your search.
                                             </TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Applicants List */}
                 {event.requiresApplication && (
-                    <Card className="bg-zinc-900 border-zinc-800">
-                        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/50 pb-6">
+                    <div className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-sm dark:shadow-black/40 overflow-hidden flex flex-col">
+                        <div className="p-5 border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <CardTitle className="text-white text-lg">Applicants List</CardTitle>
-                                <CardDescription className="text-zinc-500 text-xs">Review and approve applications</CardDescription>
+                                <h3 className="text-foreground text-base font-bold">Applicants List</h3>
+                                <p className="text-muted-foreground text-xs mt-0.5">Review, verify payments, and manage audition registrations</p>
                             </div>
-                        </CardHeader>
-                        <CardContent className="p-0 max-h-[600px] overflow-auto">
+                            <Button
+                                onClick={exportApplicantsToCSV}
+                                variant="outline"
+                                size="sm"
+                                className="border-border dark:border-zinc-800 bg-card hover:bg-muted text-foreground font-bold rounded-sm shadow-sm text-xs"
+                            >
+                                <Download size={14} className="mr-2" /> Export Applicants CSV
+                            </Button>
+                        </div>
+                        <div className="p-0 max-h-[500px] overflow-auto flex-1">
                             <Table>
-                                <TableHeader className="bg-zinc-950/30 sticky top-0 z-10">
-                                    <TableRow className="border-zinc-800">
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Applicant</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Submitted</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest">Status</TableHead>
-                                        <TableHead className="text-zinc-400 text-[10px] uppercase tracking-widest text-right">Actions</TableHead>
+                                <TableHeader className="bg-muted/40 dark:bg-zinc-800/40 sticky top-0 z-10 border-b border-border dark:border-zinc-800">
+                                    <TableRow className="border-border dark:border-zinc-800">
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Applicant</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Submitted</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Fee Status</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Review Status</TableHead>
+                                        <TableHead className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {applicants.map((app: any) => (
-                                        <TableRow key={app._id} className="border-zinc-800 hover:bg-white/[0.02] transition-colors">
+                                        <TableRow key={app._id} className="border-border/60 dark:border-zinc-800/60 hover:bg-muted/30 dark:hover:bg-zinc-800/40 transition-colors">
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="text-white font-bold text-sm">
+                                                    <span className="text-foreground font-bold text-sm">
                                                         {app.user?.firstName} {app.user?.lastName}
                                                     </span>
-                                                    <span className="text-[10px] text-zinc-500 lowercase">{app.user?.email}</span>
+                                                    <span className="text-[11px] text-muted-foreground">{app.user?.email}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-xs text-zinc-400">
+                                                <span className="text-xs text-muted-foreground font-medium">
                                                     {app.submittedAt ? format(new Date(app.submittedAt), 'MMM dd, yyyy') : 'Not submitted'}
                                                 </span>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline" className={`text-[9px] uppercase tracking-widest font-black border-none ${app.status === 'approved' ? 'bg-green-500/10 text-green-500' :
-                                                    app.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                                                        app.status === 'completed' ? 'bg-blue-500/10 text-blue-500' :
-                                                            'bg-zinc-800 text-zinc-400'
-                                                    }`}>
+                                                {app.paymentStatus === 'paid' ? (
+                                                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Paid (₦{(app.amountPaid || event.applicationFee || 0).toLocaleString()})
+                                                    </Badge>
+                                                ) : app.paymentStatus === 'free' ? (
+                                                    <Badge variant="outline" className="text-muted-foreground text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Free
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold rounded-xs uppercase tracking-wider">
+                                                        Unpaid
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={`text-[10px] uppercase tracking-wider font-bold rounded-xs ${
+                                                    app.status === 'approved' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' :
+                                                    app.status === 'rejected' ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30' :
+                                                    app.status === 'completed' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30' :
+                                                    'bg-muted text-muted-foreground border-border dark:border-zinc-700'
+                                                }`}>
                                                     {app.status.replace('_', ' ')}
                                                 </Badge>
                                             </TableCell>
@@ -383,7 +680,7 @@ export default function EventDetailPage() {
                                                     asChild
                                                     size="sm"
                                                     variant="outline"
-                                                    className="h-8 px-4 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300"
+                                                    className="h-8 px-3.5 border-border dark:border-zinc-700 text-foreground hover:bg-muted text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all shadow-sm"
                                                 >
                                                     <Link href={`/u/applications/${app._id}`}>
                                                         Review Submission
@@ -394,15 +691,15 @@ export default function EventDetailPage() {
                                     ))}
                                     {applicants.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-20 text-zinc-600 italic">
+                                            <TableCell colSpan={5} className="text-center py-16 text-muted-foreground text-sm italic">
                                                 No applicants found yet.
                                             </TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

@@ -76,7 +76,7 @@ function RequestCard({ request, onAction }: { request: ProviderRequest; onAction
     }
 
     return (
-        <Card className="bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden hover:bg-white/[0.07] transition-all duration-300 relative group">
+        <Card className="/80 overflow-hidden hover: transition-all duration-300 relative group">
             {/* Left role accent bar */}
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${request.role === 'team_manager' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
 
@@ -84,17 +84,17 @@ function RequestCard({ request, onAction }: { request: ProviderRequest; onAction
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
                     {/* Applicant info */}
                     <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                            <User className="w-6 h-6 text-zinc-400" />
+                        <div className="w-12 h-12 rounded-sm bg-muted border border-border flex items-center justify-center shrink-0">
+                            <User className="w-6 h-6 text-muted-foreground" />
                         </div>
                         <div className="space-y-1.5">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-white font-black text-lg leading-none">
+                                <p className="text-foreground font-black text-lg leading-none">
                                     {request.userId.firstName} {request.userId.lastName}
                                 </p>
                                 <RoleChip role={request.role} />
                             </div>
-                            <p className="text-zinc-500 text-sm font-mono">{request.email}</p>
+                            <p className="text-muted-foreground text-sm font-mono">{request.email}</p>
                             {request.role === "team_manager" && request.teamId && (
                                 <div className="flex items-center gap-1.5 text-xs text-emerald-400">
                                     <Trophy size={11} />
@@ -107,7 +107,7 @@ function RequestCard({ request, onAction }: { request: ProviderRequest; onAction
                                     <span className="font-semibold">{request.organizationName}</span>
                                 </div>
                             )}
-                            <p className="text-zinc-600 text-xs flex items-center gap-1">
+                            <p className="text-muted-foreground/60 text-xs flex items-center gap-1">
                                 <Clock size={10} />
                                 Applied {new Date(request.createdAt).toLocaleDateString('en-GB', {
                                     day: 'numeric', month: 'short', year: 'numeric'
@@ -122,7 +122,7 @@ function RequestCard({ request, onAction }: { request: ProviderRequest; onAction
                         <Button
                             onClick={handleApprove}
                             disabled={acting}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white border-0 gap-2 shadow-lg hover:shadow-emerald-500/20 transition-all duration-300"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-foreground border-0 gap-2 shadow-lg hover:shadow-emerald-500/20 transition-all duration-300"
                         >
                             {acting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                             Approve
@@ -139,20 +139,20 @@ function RequestCard({ request, onAction }: { request: ProviderRequest; onAction
                                     <XCircle className="w-4 h-4" /> Reject
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-zinc-950 border border-zinc-800 text-white">
+                            <AlertDialogContent className="bg-card border border-border text-foreground">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle className="flex items-center gap-2 text-red-400">
                                         <AlertTriangle className="w-5 h-5" /> Reject Provider Request
                                     </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-zinc-400">
-                                        This will permanently reject the application from <strong className="text-white">{request.userId.firstName} {request.userId.lastName}</strong> and add <strong className="text-white">{request.email}</strong> to the platform blacklist. Their account will be deleted and they will not be able to register or log in again.
+                                    <AlertDialogDescription className="text-muted-foreground">
+                                        This will permanently reject the application from <strong className="text-foreground">{request.userId.firstName} {request.userId.lastName}</strong> and add <strong className="text-foreground">{request.email}</strong> to the platform blacklist. Their account will be deleted and they will not be able to register or log in again.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800">Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel className="bg-card border-border text-foreground hover:bg-muted">Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={handleReject}
-                                        className="bg-red-600 hover:bg-red-700 text-white border-0"
+                                        className="bg-red-600 hover:bg-red-700 text-foreground border-0"
                                     >
                                         Confirm Rejection
                                     </AlertDialogAction>
@@ -188,14 +188,14 @@ export default function ProviderRequestsPage() {
     const pendingCount = requests.filter(r => r.status === "pending").length
 
     return (
-        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-[#020202] to-[#020202]">
+        <div className="md:p-10 p-6 w-full space-y-8 min-h-screen bg-background">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                    <h1 className="text-3xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
                         <ClipboardList className="text-orange-500" /> Provider Requests
                     </h1>
-                    <p className="text-zinc-500 mt-1">
+                    <p className="text-muted-foreground mt-1">
                         Review applications from Organizers and Team Managers
                         {statusFilter === "pending" && pendingCount > 0 && (
                             <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold">
@@ -207,10 +207,10 @@ export default function ProviderRequestsPage() {
 
                 {/* Status filter */}
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white w-40 rounded-xl">
+                    <SelectTrigger className="bg-card border-border text-foreground w-40 rounded-sm">
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+                    <SelectContent className="bg-card border-border text-foreground">
                         <SelectItem value="pending">
                             <span className="flex items-center gap-2"><Clock size={13} className="text-orange-400" /> Pending</span>
                         </SelectItem>
@@ -228,16 +228,16 @@ export default function ProviderRequestsPage() {
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-4">
                     <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                    <p className="text-zinc-500 font-medium animate-pulse">Loading requests...</p>
+                    <p className="text-muted-foreground font-medium animate-pulse">Loading requests...</p>
                 </div>
             ) : requests.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-5">
-                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10">
+                    <div className="p-6 rounded-sm bg-muted border border-border">
                         <ClipboardList className="w-12 h-12 text-zinc-700" />
                     </div>
                     <div className="text-center">
-                        <p className="text-white font-bold text-xl">No {statusFilter} requests</p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-foreground font-bold text-xl">No {statusFilter} requests</p>
+                        <p className="text-muted-foreground text-sm mt-1">
                             {statusFilter === "pending"
                                 ? "All clear! No pending provider applications at this time."
                                 : `No ${statusFilter} provider requests found.`}

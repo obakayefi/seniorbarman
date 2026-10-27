@@ -7,6 +7,7 @@ import { canCreateEvent } from "@/lib/policies";
 import cloudinary from "@/lib/cloudinary";
 import upcomingEvents from "@/components/ui/upcoming-events";
 import { paginateArray } from "@/lib/pagination";
+import { populateTeamsForEvents } from "@/lib/populateEventTeams";
 
 import Team from "@/models/Team";
 
@@ -17,20 +18,32 @@ export async function GET(req: Request) {
     const eventType = searchParams.get("type");
     const forScanner = searchParams.get("forScanner") === "true";
     const page = searchParams.get("page");
-    const limit = searchParams.get("limit") || "5";
+    const limit = searchParams.get("limit") || "16";
+
+    const dateFilter = searchParams.get("dateFilter");
 
     try {
         await connectDB()
         const user = await getUserFromCookie();
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        
-        // 2 hours ago date
-        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+
+        let dateCondition: any = { $gte: forScanner ? twoHoursAgo : today };
+
+        if (dateFilter === "this-week") {
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+            endOfWeek.setHours(23, 59, 59, 999);
+            dateCondition = { $gte: today, $lte: endOfWeek };
+        } else if (dateFilter === "this-month") {
+            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+            dateCondition = { $gte: today, $lte: endOfMonth };
+        }
 
         const query: any = {
-            type: eventType,
-            date: { $gte: forScanner ? twoHoursAgo : today },
+            type: eventType || "event",
+            date: dateCondition,
             isArchived: { $ne: true }
         };
 
@@ -49,18 +62,23 @@ export async function GET(req: Request) {
             }
         }
 
-        const upcomingActivities = await Event.find(query)
-            .sort({ date: -1 })
-            .populate("homeTeam", "name logo")
-            .populate("awayTeam", "name logo")
-            .lean()
+        const rawUpcomingActivities = await Event.find(query)
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const upcomingActivities = await populateTeamsForEvents(rawUpcomingActivities);
 
         const watTime = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
         const nowInWat = new Date(watTime);
 
-        console.log({ upcomingActivities })
+        //console.log({ upcomingActivities })
 
         const filteredEvents = upcomingActivities.filter((event: any) => {
+            // Automatically hide manually ended / suspended events from homepage and public listing
+            if (!forScanner && event.isEnded) {
+                return false;
+            }
+
             const eventDate = new Date(event.date)
             // Normalize event date for midnight comparison
             const eventMidnight = new Date(eventDate)
@@ -98,9 +116,9 @@ export async function GET(req: Request) {
         const paginated = paginateArray(filteredEvents, { page, limit });
 
         return NextResponse.json(
-            { 
+            {
                 events: paginated.data,
-                pagination: paginated.pagination 
+                pagination: paginated.pagination
             },
             { status: 200 }
         )
@@ -148,6 +166,7 @@ export async function POST(req: Request) {
             );
         }
         const imageFile = formData.get("imageFile") as File;
+        const ctaText = (formData.get("ctaText") as string) || "Book Ticket";
         const ticketTypesStr = formData.get("ticketTypes") as string;
         const requiresApplication = formData.get("requiresApplication") === "true";
         const applicationFee = Number(formData.get("applicationFee") || 0);
@@ -210,13 +229,17 @@ export async function POST(req: Request) {
             );
         }
 
+        const descriptionRaw = formData.get("description") as string;
+        const description = descriptionRaw !== null && descriptionRaw !== undefined ? descriptionRaw.trim() : "";
+
         let newEvent = type === "sports" ? {
             homeTeam,
             awayTeam,
             venue,
             type,
             date: finalDate,
-            description: "Join us for an exciting match!",
+            description: description || "Join us for an exciting match!",
+            ctaText: ctaText.trim() || "Book Ticket",
             ticketTypes: ticketTypes,
             image: imageUrl,
             createdBy: authResult.id
@@ -225,7 +248,8 @@ export async function POST(req: Request) {
             date: finalDate,
             type,
             venue,
-            description: "Join us for an exciting event!",
+            description: description || (formData.get("isAudition") === "true" ? "Open call audition. Apply now to showcase your talent." : "Join us for an exciting event!"),
+            ctaText: ctaText.trim() || "Book Ticket",
             ticketTypes: ticketTypes,
             image: imageUrl,
             requiresApplication,

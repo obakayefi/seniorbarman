@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useQRCode } from 'next-qrcode'
 import { Switch } from "@/components/ui/switch"
-import { MdSecurity, MdStadium } from "react-icons/md";
+import { MdReport, MdSecurity, MdStadium } from "react-icons/md";
 import NButton from '@/components/native/NButton';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,18 +10,24 @@ import { fetchEventStats, getUpcomingEvents } from "@/services/actions";
 import { Spinner } from "@/components/ui/spinner";
 import api from '@/lib/axios';
 import { IEventStats, TicketSummary } from "@/types/data";
-import { extractTicketStatus } from "@/lib/utils";
-import TicketScanner from "@/components/widgets/TicketScanner";
-import { Delete, Power, QrCode, ShieldCheck, ShieldCheckIcon, User2Icon, UserIcon, Ticket, Users, History, UserCheck, UserMinus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { TbSoccerField } from "react-icons/tb";
-import { toast } from 'sonner';
-import { RiVerifiedBadgeFill } from "react-icons/ri";
-import { MdReport } from "react-icons/md";
-import { STATUS_TEXT } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { ROLES } from '@/lib/roles';
+import { Delete, History, Power, QrCode, ShieldCheck, ShieldCheckIcon, Ticket, UserCheck, UserMinus, Users } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { TbSoccerField } from 'react-icons/tb';
+import { toast } from 'sonner';
+import { extractTicketStatus } from '@/lib/utils';
+
+const TicketScanner = dynamic(() => import('@/components/widgets/TicketScanner'), {
+    ssr: false,
+    loading: () => (
+        <div className="flex flex-col items-center justify-center p-8 bg-zinc-900 rounded-lg text-zinc-400">
+            <Spinner className="text-orange-500 mb-2" />
+            <p className="text-xs">Loading Scanner Module...</p>
+        </div>
+    )
+});
 
 // ... (PreCheckInActions, PostCheckInActions etc)
 
@@ -43,7 +49,6 @@ export const PreCheckInActions = ({ loading, handleCheckingUserIn, eventMismatch
                 onClick={handleCheckingUserIn}
                 icon={<ShieldCheckIcon />}
                 className='cursor-pointer font-light active:translate-x-2 border-2 border-transparent duration-50 bg-orange-500 flex-1'>
-                Check In
             </NButton>
 
             <NButton
@@ -203,7 +208,7 @@ const AdminTicketScanner = () => {
         try {
             const { data } = await api.post(operationUrl, { eventId: selectedEvent })
             const ticket = data.result.ticket
-            
+
             // Map application fields to match ticket structure for UI if it's an audition
             if (isAudition) {
                 ticket.createdBy = ticket.user; // Application uses 'user' instead of 'createdBy'
@@ -212,7 +217,7 @@ const AdminTicketScanner = () => {
 
             setCurrentTicket(ticket)
             setTicketStatus(ticket.status)
-            setComputedStatus(extractTicketStatus(ticket.checkInLogs))
+            setComputedStatus(extractTicketStatus(ticket?.checkInLogs))
 
             if (data.result.eventTicketStats) {
                 setEventStats(data.result.eventTicketStats);
@@ -226,7 +231,7 @@ const AdminTicketScanner = () => {
                 status: ticketOperation === 'check-in' ? "IN" : "OUT",
                 success: true
             }, ...prev].slice(0, 10))
-            
+
             setOpenApprovalModal(true);
         } catch (error: any) {
             console.error("Scan error:", error);
@@ -275,8 +280,8 @@ const AdminTicketScanner = () => {
                 const data = JSON.parse(event.data);
                 if (data.type === "connected") {
                     console.log("SSE connected for event:", data.eventId);
-                } 
-                
+                }
+
                 if (data.eventTicketStats) {
                     setEventStats(data.eventTicketStats);
                 }
@@ -302,7 +307,7 @@ const AdminTicketScanner = () => {
     const handleCheckingUserOut = async () => {
         setIsCheckingUserOut(true)
         const isAudition = selectedEventData?.isAudition;
-        const url = isAudition 
+        const url = isAudition
             ? `/api/applications/${targetHash}/check-out`
             : `/tickets/${targetHash}/check-ticket-out`;
 
@@ -327,13 +332,13 @@ const AdminTicketScanner = () => {
     const handleBlockingTicket = async () => {
         setIsBlockingTicket(true)
         const isAudition = selectedEventData?.isAudition;
-        
+
         try {
             if (isAudition) {
                 // Reject application at the gate
-                await api.patch(`/events/${selectedEvent}/applicants/${targetHash}`, { 
-                    status: 'rejected', 
-                    reason: 'Rejected at gate scanner' 
+                await api.patch(`/events/${selectedEvent}/applicants/${targetHash}`, {
+                    status: 'rejected',
+                    reason: 'Rejected at gate scanner'
                 });
                 toast.success("Application revoked successfully");
             } else {
@@ -352,7 +357,7 @@ const AdminTicketScanner = () => {
     const handleCheckingUserIn = async () => {
         setLoading(true)
         const isAudition = selectedEventData?.isAudition;
-        const url = isAudition 
+        const url = isAudition
             ? `/api/applications/${targetHash}/check-in`
             : `/tickets/${targetHash}/check-ticket-in`;
 
@@ -530,7 +535,7 @@ const AdminTicketScanner = () => {
                                 DETAILED OCCUPANCY
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {Object.entries(eventStats.standBreakdown).map(([name, data]: [string, any], idx) => (
+                                {Object.entries(eventStats?.standBreakdown).map(([name, data]: [string, any], idx) => (
                                     <div key={idx} className="bg-zinc-900/40 border border-white/5 p-6 rounded-3xl shadow-xl hover:bg-zinc-900/60 transition-colors">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-2">

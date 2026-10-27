@@ -10,6 +10,7 @@ import { Loader2, Search, Users, ChevronLeft, ChevronRight, Trophy } from "lucid
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { hasSecureOchEnv } from "@/app/actions/getSecureEnv"
+import { useApp } from "@/context/AppContext"
 
 // Inline component that handles the team_manager team-selection flow per row
 function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUpdated: (id: string, role: string) => void; canEscalateDev: boolean }) {
@@ -82,7 +83,7 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
       case 'bouncer': return 'bg-orange-500/10 text-orange-500 border-orange-500/20'
       case 'organizer': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
       case 'team_manager': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-      default: return 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+      default: return 'bg-zinc-500/10 text-muted-foreground border-zinc-500/20'
     }
   }
 
@@ -97,10 +98,10 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
           onValueChange={handleRoleSelect}
           defaultValue={user.role}
         >
-          <SelectTrigger className="w-36 bg-zinc-900 border-zinc-800 text-xs h-8 text-white">
+          <SelectTrigger className="w-36 bg-card border-border text-xs h-8 text-foreground">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+          <SelectContent className="bg-card border-border text-foreground">
             <SelectItem value="user">User</SelectItem>
             <SelectItem value="team_manager">Team Manager</SelectItem>
             <SelectItem value="organizer">Organizer</SelectItem>
@@ -114,20 +115,20 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
 
       {/* Team assignment panel — slides in when team_manager is selected */}
       {pendingRole === "team_manager" && (
-        <div className="flex flex-col gap-2 w-full max-w-xs bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 animate-in slide-in-from-top-2 duration-200">
+        <div className="flex flex-col gap-2 w-full max-w-xs bg-emerald-500/5 border border-emerald-500/20 rounded-sm p-3 animate-in slide-in-from-top-2 duration-200">
           <p className="text-emerald-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
             <Trophy size={11} /> Assign to Team (required)
           </p>
           {loadingTeams ? (
-            <div className="flex items-center gap-2 text-zinc-500 text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
               <Loader2 className="w-3 h-3 animate-spin" /> Loading teams...
             </div>
           ) : (
             <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-              <SelectTrigger className="bg-zinc-900 border-zinc-800 text-xs h-8 text-white w-full">
+              <SelectTrigger className="bg-card border-border text-xs h-8 text-foreground w-full">
                 <SelectValue placeholder="Select a team..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
+              <SelectContent className="bg-card border-border text-foreground">
                 {teams.map(t => (
                   <SelectItem key={t._id} value={t._id}>
                     {t.name}
@@ -141,7 +142,7 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
               size="sm"
               onClick={handleSaveTeamManager}
               disabled={saving || !selectedTeam}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-7"
             >
               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirm"}
             </Button>
@@ -149,7 +150,7 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
               size="sm"
               variant="ghost"
               onClick={handleCancel}
-              className="text-zinc-500 hover:text-white text-xs h-7"
+              className="text-muted-foreground hover:text-foreground text-xs h-7"
             >
               Cancel
             </Button>
@@ -161,11 +162,13 @@ function RoleCell({ user, onRoleUpdated, canEscalateDev }: { user: any; onRoleUp
 }
 
 const Accounts = () => {
+  const { user: currentUser } = useApp()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [canEscalateDev, setCanEscalateDev] = useState(false)
+  const isDev = currentUser?.role === 'dev'
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -202,21 +205,21 @@ const Accounts = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-black min-h-screen text-white">
+    <div className="p-6 space-y-6 bg-background min-h-screen text-foreground">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           <Users className="text-orange-500" /> User Management
         </h1>
-        <p className="text-zinc-500">View and manage administrative roles and user accounts</p>
+        <p className="text-muted-foreground">View and manage administrative roles and user accounts</p>
       </header>
 
-      <Card className="bg-zinc-950 border-zinc-800">
-        <CardHeader className="border-b border-zinc-900 pb-4">
+      <Card className="">
+        <CardHeader className="-b pb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search users by name or email..."
-              className="bg-zinc-900 border-zinc-800 pl-10 h-11 text-white focus:border-orange-500 transition-colors"
+              className="bg-muted border-border pl-10 h-11 text-foreground focus:border-orange-500 transition-colors"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -224,43 +227,70 @@ const Accounts = () => {
         </CardHeader>
         <CardContent className="p-0 flex flex-col">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-zinc-500">
+            <div className="flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground">
               <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
               <p className="font-medium animate-pulse">Fetching user database...</p>
             </div>
           ) : (
             <>
               <Table>
-                <TableHeader className="bg-zinc-900/50">
-                  <TableRow className="border-zinc-800 hover:bg-transparent">
-                    <TableHead className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest">User</TableHead>
-                    <TableHead className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest">Email</TableHead>
-                    <TableHead className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest">Joined</TableHead>
-                    <TableHead className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest text-right">Administrative Role</TableHead>
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">User</TableHead>
+                    <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Email</TableHead>
+                    <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Joined</TableHead>
+                    <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest text-right">Administrative Role</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-10 text-zinc-600 italic">
+                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground italic">
                         No users found matching your search
                       </TableCell>
                     </TableRow>
                   ) : users.map((user) => (
-                    <TableRow key={user._id} className="border-zinc-800 hover:bg-zinc-900/30 transition-colors align-top">
-                      <TableCell className="font-bold text-white pt-4">
-                        {user.firstName} {user.lastName}
-                      </TableCell>
-                      <TableCell className="text-zinc-400 font-mono text-xs pt-4">{user.email}</TableCell>
-                      <TableCell className="text-zinc-500 text-xs pt-4">
+                    <TableRow key={user._id} className="border-border hover:bg-muted/30 transition-colors align-top">
+                      <TableCell className="font-bold text-foreground pt-4">{user.firstName} {user.lastName}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs pt-4">{user.email}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs pt-4">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right pt-3 pb-3">
-                        <RoleCell
-                          user={user}
-                          onRoleUpdated={handleRoleUpdated}
-                          canEscalateDev={canEscalateDev}
-                        />
+                        <div className="flex items-center justify-end gap-3">
+                          <RoleCell
+                            user={user}
+                            onRoleUpdated={handleRoleUpdated}
+                            canEscalateDev={canEscalateDev}
+                          />
+                          {isDev && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/admin/impersonate", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ userId: user._id })
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  toast.success(`Switched session to ${user.firstName} ${user.lastName}`);
+                                  window.location.href = "/u/dashboard";
+                                } else {
+                                  toast.error(data.error || "Impersonation failed");
+                                }
+                              } catch (err) {
+                                toast.error("Error starting impersonation session");
+                              }
+                            }}
+                            className="h-8 text-xs font-semibold text-amber-600 border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md"
+                          >
+                            Impersonate
+                          </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -269,25 +299,25 @@ const Accounts = () => {
 
               {/* Pagination Controls */}
               {paginationData && paginationData.totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-900 bg-zinc-950/50">
-                  <p className="text-xs text-zinc-500">
-                    Showing <span className="font-medium text-white">{(page - 1) * limit + 1}</span> to <span className="font-medium text-white">{Math.min(page * limit, paginationData.total)}</span> of <span className="font-medium text-white">{paginationData.total}</span> users
+                <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30">
+                  <p className="text-xs text-muted-foreground">
+                    Showing <span className="font-medium text-foreground">{(page - 1) * limit + 1}</span> to <span className="font-medium text-foreground">{Math.min(page * limit, paginationData.total)}</span> of <span className="font-medium text-foreground">{paginationData.total}</span> users
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={!paginationData.hasPrevPage}
-                      className="p-2 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-sm border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <div className="flex items-center px-3 text-sm text-zinc-400">
+                    <div className="flex items-center px-3 text-sm text-muted-foreground">
                       Page {page} of {paginationData.totalPages}
                     </div>
                     <button
                       onClick={() => setPage(p => Math.min(paginationData.totalPages, p + 1))}
                       disabled={!paginationData.hasNextPage}
-                      className="p-2 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-sm border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

@@ -3,20 +3,23 @@ import { connectDB } from "@/lib/mongodb";
 import { getUserFromCookie } from "@/lib/auth";
 import EventApplication from "@/models/EventApplication";
 import Event from "@/models/Event";
+import Team from "@/models/Team";
+import { populateTeamsForApplications } from "@/lib/populateEventTeams";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
     try {
         await connectDB();
+        Team.init();
         const user = await getUserFromCookie();
 
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Fetch applications for the logged-in user, populating the event details
-        const applications = await EventApplication.find({ user: user.id })
+        // Fetch applications for the logged-in user, populating the event details and teams
+        const rawApplications = await EventApplication.find({ user: user.id })
             .populate({
                 path: "event",
                 model: Event,
@@ -24,6 +27,8 @@ export async function GET(req: Request) {
             })
             .sort({ createdAt: -1 })
             .lean();
+
+        const applications = await populateTeamsForApplications(rawApplications);
 
         return NextResponse.json({ applications }, { status: 200 });
     } catch (error: any) {

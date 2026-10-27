@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { getUserFromCookie } from "@/lib/auth";
 import EventApplication from "@/models/EventApplication";
 import Event from "@/models/Event";
+import Team from "@/models/Team";
 
 export const dynamic = "force-dynamic";
 
@@ -71,11 +72,19 @@ export async function PATCH(
             };
         }
 
+        Team.init();
+        Event.init();
         const application = await EventApplication.findByIdAndUpdate(
             appId,
             updateData,
             { new: true }
-        ).populate('event user');
+        ).populate({
+            path: 'event',
+            populate: [
+                { path: 'homeTeam', select: 'name logo' },
+                { path: 'awayTeam', select: 'name logo' }
+            ]
+        }).populate('user');
 
         if (!application) {
             return NextResponse.json({ error: "Application not found" }, { status: 404 });

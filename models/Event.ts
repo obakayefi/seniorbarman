@@ -27,14 +27,14 @@ const EventSchema = new mongoose.Schema(
             default: 0
         },
         homeTeam: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             ref: "Team",
             required: function () {
                 return this.type === "sports";
             },
         },
         awayTeam: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             ref: "Team",
             required: function () {
                 return this.type === "sports";
@@ -59,11 +59,18 @@ const EventSchema = new mongoose.Schema(
             type: String,
             required: false
         },
+        ctaText: {
+            type: String,
+            default: "Book Ticket",
+            trim: true,
+        },
         ticketTypes: [
             {
                 name: { type: String, required: true },
                 price: { type: Number, required: true, default: 0 },
-                max: { type: Number, default: 0 } // Optional max capacity per type
+                max: { type: Number, default: 0 }, // Optional max capacity per type
+                isCombo: { type: Boolean, default: false },
+                comboSize: { type: Number, default: 1, min: 1, max: 15 }
             }
         ],
         // --- Application / Registration Feature ---
@@ -105,6 +112,10 @@ const EventSchema = new mongoose.Schema(
             default: false,
         },
         isArchived: {
+            type: Boolean,
+            default: false,
+        },
+        isEnded: {
             type: Boolean,
             default: false,
         },
