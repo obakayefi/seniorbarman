@@ -86,7 +86,7 @@ const TicketsPageView = () => {
                     <div className='flex flex-col lg:grid grid-cols-2 gap-6 mt-10'>
                         {filteredTickets.map((event: any) => (
                             // <Ticket ticket={ticket} key={ticket._id} />
-                            <EventTicket summary={ticketSummary} key={event.id} event={event} />
+                            <EventTicket summary={ticketSummary} key={event._id} event={event} />
                         ))}
                     </div>
                 )}

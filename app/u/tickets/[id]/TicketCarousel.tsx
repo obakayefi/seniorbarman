@@ -23,6 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { HunchoRoleChecker } from '@/lib/helpers';
 
+import ComboDeckView from './ComboDeckView';
+
 interface TicketCarouselProps {
     tickets: any[];
     eventInfo: any;
@@ -41,6 +43,7 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingBatch, setIsDeletingBatch] = useState(false);
     const [copiedComboId, setCopiedComboId] = useState<string | null>(null);
+    const [activeComboIndex, setActiveComboIndex] = useState(0);
     const ticketRef = useRef<HTMLDivElement>(null);
     const { Image: QRImage } = useQRCode();
     const { user: currentUser } = useApp();
@@ -51,7 +54,15 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
         const comboMap: Record<string, any[]> = {};
 
         tickets.forEach(ticket => {
-            if (ticket.isCombo && ticket.comboGroupId) {
+            const standName = ticket.stand || (typeof ticket.ticketType === 'object' ? ticket.ticketType?.name : ticket.ticketType);
+            const matchedEventType = eventInfo?.ticketTypes?.find(
+                (t: any) => t.name?.trim().toLowerCase() === standName?.trim().toLowerCase()
+            );
+            const isEventCombo = Boolean(matchedEventType?.isCombo) && Number(matchedEventType?.comboSize || 0) >= 2;
+
+            const isComboTicket = (ticket.isCombo || isEventCombo) && ticket.comboGroupId;
+
+            if (isComboTicket) {
                 if (!comboMap[ticket.comboGroupId]) {
                     comboMap[ticket.comboGroupId] = [];
                 }
@@ -61,17 +72,28 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
             }
         });
 
+        // Filter combo groups: a true combo group must have >= 2 passes
+        const validComboGroups: any[] = [];
+        Object.entries(comboMap).forEach(([groupId, groupTickets]) => {
+            if (groupTickets.length >= 2) {
+                validComboGroups.push({
+                    groupId,
+                    tickets: groupTickets,
+                    ticketType: groupTickets[0]?.stand || groupTickets[0]?.ticketType?.name || 'Combo Pass',
+                    price: groupTickets[0]?.price || 0,
+                    createdAt: groupTickets[0]?.createdAt
+                });
+            } else {
+                // If a combo group somehow has only 1 ticket, push it back to singles for standard viewing
+                singles.push(...groupTickets);
+            }
+        });
+
         return {
             singleTickets: singles,
-            comboGroups: Object.entries(comboMap).map(([groupId, groupTickets]) => ({
-                groupId,
-                tickets: groupTickets,
-                ticketType: groupTickets[0]?.stand || groupTickets[0]?.ticketType?.name || 'Combo Pass',
-                price: groupTickets[0]?.price || 0,
-                createdAt: groupTickets[0]?.createdAt
-            }))
+            comboGroups: validComboGroups
         };
-    }, [tickets]);
+    }, [tickets, eventInfo]);
 
     const hasSingles = singleTickets.length > 0;
     const hasCombos = comboGroups.length > 0;
@@ -321,81 +343,41 @@ export default function TicketCarousel({ tickets, eventInfo, user }: TicketCarou
 
             {/* ── COMBO VIEW MODE ── */}
             {viewMode === 'combo' && hasCombos ? (
-                <div className="w-full flex flex-col gap-6">
-                    <div className="text-center space-y-1 mb-2">
-                        <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
-                            Combo Packs Purchased
-                        </p>
-                        <h2 className="text-xl sm:text-2xl font-black text-foreground">
-                            {eventInfo?.homeTeam ? `${eventInfo.homeTeam?.name || eventInfo.homeTeam} vs ${eventInfo.awayTeam?.name || eventInfo.awayTeam}` : eventInfo?.title}
-                        </h2>
-                        <p className="text-xs text-muted-foreground">
-                            Each combo pack contains multiple individual passes. You can view or share any pack below.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                        {comboGroups.map((group, idx) => (
-                            <div 
-                                key={group.groupId} 
-                                className="bg-card border border-border rounded-sm p-5 shadow-sm flex flex-col justify-between hover:border-orange-500/50 transition-colors"
-                            >
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-widest bg-orange-500 text-white rounded-sm">
-                                            Combo #{idx + 1}
-                                        </span>
-                                        <span className="text-xs font-bold text-foreground">
-                                            {group.tickets.length} Tickets
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-base font-extrabold text-foreground uppercase tracking-wide">
-                                            {group.ticketType}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                                            Pack ID: {group.groupId.slice(0, 8)}...
-                                        </p>
-                                    </div>
-
-                                    <div className="bg-muted/30 border border-border rounded-sm p-3 text-xs space-y-1.5">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Price per Pass:</span>
-                                            <span className="font-bold text-foreground">₦{(group.price || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Status:</span>
-                                            <span className="font-semibold text-emerald-500">Active</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mt-5 pt-3 border-t border-border">
-                                    <Link 
-                                        href={`/u/tickets/${eventInfo._id}/combo/${group.groupId}`}
-                                        className="flex-1"
+                <div className="w-full flex flex-col items-center gap-6">
+                    {/* Pack Switcher if user owns multiple combo packs */}
+                    {comboGroups.length > 1 && (
+                        <div className="w-full flex flex-col items-center gap-2 mb-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Combo Pack</span>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {comboGroups.map((group, idx) => (
+                                    <button
+                                        key={group.groupId}
+                                        onClick={() => setActiveComboIndex(idx)}
+                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-2 border ${
+                                            activeComboIndex === idx
+                                                ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                                                : "bg-card text-muted-foreground border-border hover:border-orange-500/40"
+                                        }`}
                                     >
-                                        <Button
-                                            size="sm"
-                                            className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-sm gap-1.5"
-                                        >
-                                            <ExternalLink size={13} /> View Passes
-                                        </Button>
-                                    </Link>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleCopyComboLink(group.groupId)}
-                                        className="rounded-sm border-border bg-card text-foreground hover:bg-muted text-xs font-bold gap-1.5 shrink-0"
-                                    >
-                                        {copiedComboId === group.groupId ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
-                                        {copiedComboId === group.groupId ? "Copied" : "Share"}
-                                    </Button>
-                                </div>
+                                        <span>Pack #{idx + 1}</span>
+                                        <span className="text-[10px] opacity-80">({group.tickets.length} Passes)</span>
+                                    </button>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    )}
+
+                    {/* Integrated Interactive Combo Deck */}
+                    {comboGroups[activeComboIndex] && (
+                        <ComboDeckView
+                            key={comboGroups[activeComboIndex].groupId}
+                            comboGroup={comboGroups[activeComboIndex]}
+                            eventInfo={eventInfo}
+                            user={user}
+                            packIndex={activeComboIndex}
+                            totalPacks={comboGroups.length}
+                        />
+                    )}
                 </div>
             ) : (
                 /* ── SINGLE TICKETS CAROUSEL VIEW MODE ── */

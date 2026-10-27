@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Calendar, ClipboardList, MapPin, Shield } from "lucide-react";
+import { Calendar, ClipboardList, MapPin, Shield, Ticket } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { BookRegularEventModal } from "@/components/modals/book-regular-event";
@@ -33,6 +33,8 @@ interface LandingEventCardProps {
         ticketTypes?: TicketType[];
         description?: string;
         requiresApplication?: boolean;
+        isAudition?: boolean;
+        applicationFee?: number;
         ctaText?: string;
     };
 }
@@ -79,13 +81,16 @@ export default function LandingEventCard({ event }: LandingEventCardProps) {
     const [buyOpen, setBuyOpen] = useState(false);
 
     const hasTickets = event.ticketTypes && event.ticketTypes.length > 0;
+    const applicationOnly = !hasTickets && Boolean(event.isAudition || event.requiresApplication);
 
     const minPrice = event.ticketTypes && event.ticketTypes.length > 0
         ? Math.min(...event.ticketTypes.map((t) => t.price))
         : null;
 
-    const priceLabel =
-        minPrice === null ? "FREE" : minPrice === 0 ? "FREE" : `₦${minPrice.toLocaleString("en-NG")}`;
+    const priceLabel = minPrice === null ? "FREE" : minPrice === 0 ? "FREE" : `₦${minPrice.toLocaleString("en-NG")}`;
+    const applicationPriceLabel = Number(event.applicationFee || 0) > 0
+        ? `₦${Number(event.applicationFee).toLocaleString("en-NG")}`
+        : "Free application";
 
     const formattedDate = new Date(event.date).toLocaleDateString("en-US", {
         weekday: "short",
@@ -96,6 +101,15 @@ export default function LandingEventCard({ event }: LandingEventCardProps) {
     });
 
     const href = `/events/${event._id}`;
+
+    const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest("a, button")) return;
+        router.push(href);
+    };
+
+    const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Enter" && e.target === e.currentTarget) router.push(href);
+    };
 
     // Determine primary CTA logic:
     // If the event has tickets → always offer booking regardless of requiresApplication
@@ -131,7 +145,7 @@ export default function LandingEventCard({ event }: LandingEventCardProps) {
     const awayLogo = awayTeamObj?.logo || null;
 
     return (
-        <div className="group bg-card border border-border rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col hover:-translate-y-0.5">
+        <div role="link" tabIndex={0} aria-label={`View event details: ${event.title}`} onClick={handleCardClick} onKeyDown={handleCardKeyDown} className="group bg-card border border-border rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col hover:-translate-y-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
             {/* Header Banner Section */}
             <div className="relative h-44 w-full overflow-hidden flex-shrink-0 bg-muted/40">
                 {isSports ? (
@@ -211,11 +225,12 @@ export default function LandingEventCard({ event }: LandingEventCardProps) {
                 )}
 
                 {/* Price badge (bottom-left) */}
-                <div className="absolute bottom-3 left-3 z-20">
-                    <span className="text-xs font-bold bg-background/90 backdrop-blur-sm text-foreground rounded-sm px-2.5 py-1 border border-border shadow-sm">
-                        <span className="text-orange-500 font-black uppercase">{priceLabel}</span>
+                {(hasTickets || applicationOnly) && <div className="absolute bottom-3 left-3 z-20">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-background/90 backdrop-blur-sm text-foreground rounded-sm px-2.5 py-1 border border-border shadow-sm">
+                        {applicationOnly ? <ClipboardList className="h-3.5 w-3.5 text-orange-500" /> : <Ticket className="h-3.5 w-3.5 text-orange-500" />}
+                        <span className="text-orange-500 font-black">{applicationOnly ? applicationPriceLabel : priceLabel}</span>
                     </span>
-                </div>
+                </div>}
             </div>
 
             {/* Body */}
@@ -226,10 +241,10 @@ export default function LandingEventCard({ event }: LandingEventCardProps) {
                         ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                         : "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/20"
                         }`}>
-                        {isSports ? "Sports Match" : "Event"}
+                        {isSports ? "Sports Match" : event.isAudition ? "Audition" : "Event"}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-muted text-muted-foreground border border-border">
-                        Regular
+                        {event.isAudition ? "Application" : "Regular"}
                     </span>
                 </div>
 

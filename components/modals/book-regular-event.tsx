@@ -28,16 +28,20 @@ export function BookRegularEventModal({ event }: { event: any }) {
     const [maxTickets, setMaxTickets] = useState(400)
 
     // Construct ticket types dynamically
-    const ticketTypes = event.ticketTypes?.map((t: any, idx: number) => ({
-        id: idx + 1,
-        name: t.name,
-        price: Number(t.price || 0),
-        icon: idx === 1 ? Crown : Ticket,
-        color: idx === 0 ? "text-blue-500" : idx === 1 ? "text-yellow-500" : "text-orange-500",
-        max: 500,
-        isCombo: Boolean(t.isCombo),
-        comboSize: t.comboSize || (t.isCombo ? 3 : 1)
-    })) || []
+    const ticketTypes = event.ticketTypes?.map((t: any, idx: number) => {
+        const isCombo = Boolean(t.isCombo) && Number(t.comboSize || 0) >= 2;
+        const comboSize = isCombo ? Math.max(2, Number(t.comboSize) || 3) : 1;
+        return {
+            id: idx + 1,
+            name: t.name,
+            price: Number(t.price || 0),
+            icon: idx === 1 ? Crown : Ticket,
+            color: idx === 0 ? "text-blue-500" : idx === 1 ? "text-yellow-500" : "text-orange-500",
+            max: 500,
+            isCombo,
+            comboSize
+        };
+    }) || []
 
     const [payNowLoading, setPayNowLoading] = useState(false)
     const { user } = useApp()

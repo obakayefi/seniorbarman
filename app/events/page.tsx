@@ -81,6 +81,8 @@ export default function EventsPage() {
                                         homeTeam: event.homeTeam,
                                         awayTeam: event.awayTeam,
                                         requiresApplication: event.requiresApplication,
+                                        isAudition: event.isAudition,
+                                        applicationFee: event.applicationFee,
                                         ticketTypes: event.ticketTypes,
                                         description: event.description,
                                         ctaText: event.ctaText,

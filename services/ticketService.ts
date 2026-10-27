@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
 import Ticket from "@/models/Ticket";
+import Event from "@/models/Event";
 import { connectDB } from "@/lib/mongodb";
 
 export interface TicketBatchInput {
@@ -33,6 +34,8 @@ export interface GenerateTicketsResult {
 /**
  * Centralized, reusable ticket generation service method.
  * Handles ticket document creation, unique token generation, combo expansion, and DB insertion.
+ * Authoritatively hydrates combo metadata from the Event document so client-side payload discrepancies
+ * never lead to under-generated combo passes.
  */
 export async function generateTickets(params: GenerateTicketsParams): Promise<GenerateTicketsResult> {
     await connectDB();
@@ -52,6 +55,9 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
         throw new Error("Missing required parameters for ticket generation");
     }
 
+    // Authoritative lookup: fetch the Event definition to get official ticketTypes & combo settings
+    const eventDoc = await Event.findById(eventId).lean() as any;
+
     const batchId = inputBatchId || crypto.randomUUID();
     const createdTicketsPayload: any[] = [];
     let totalGenerated = 0;
@@ -64,8 +70,18 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
 
         const standName = batch.stand || batch.name || "Regular";
         const ticketPrice = Number(batch.price) || 0;
-        const isCombo = Boolean(batch.isCombo);
-        const comboSize = isCombo ? Math.max(1, Math.min(15, Number(batch.comboSize) || 1)) : 1;
+
+        // Match against official event ticket types for authoritative combo validation
+        const matchedEventTicket = eventDoc?.ticketTypes?.find(
+            (t: any) => t.name?.trim().toLowerCase() === standName.trim().toLowerCase()
+        );
+
+        const isComboDeclared = Boolean(batch.isCombo ?? matchedEventTicket?.isCombo);
+        const rawComboSize = Number(batch.comboSize ?? matchedEventTicket?.comboSize ?? 1);
+
+        // Strict Rule: A combo pass MUST have isCombo: true AND comboSize >= 2
+        const isCombo = isComboDeclared && rawComboSize >= 2;
+        const comboSize = isCombo ? Math.min(15, rawComboSize) : 1;
 
         // Outer loop: each purchased unit (single ticket or combo pack)
         for (let q = 0; q < quantity; q++) {
