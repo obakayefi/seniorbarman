@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save, Upload, X, RefreshCw, Shield, Trophy, Search, Archive, Megaphone, Sparkles, Plus, Trash2 } from "lucide-react"
+import { Loader2, Save, Upload, X, RefreshCw, Shield, Trophy, Search, Archive, Megaphone, Sparkles, Plus, Trash2, Mail } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { CLUBS } from "@/lib/utils"
@@ -206,6 +206,8 @@ export default function ConfigurationsPage() {
     const [ctaText, setCtaText] = useState("")
     const [ctaLabel, setCtaLabel] = useState("")
     const [announcements, setAnnouncements] = useState<string[]>([""])
+    const [providerRequestEmails, setProviderRequestEmails] = useState("")
+    const [payoutRequestEmails, setPayoutRequestEmails] = useState("")
 
     useEffect(() => {
         const fetchData = async () => {
@@ -225,6 +227,8 @@ export default function ConfigurationsPage() {
                 setHeroSubheading(loadedSettings.root_hero_subheading || "")
                 setCtaText(loadedSettings.root_hero_cta_text || "")
                 setCtaLabel(loadedSettings.root_hero_cta_label || "")
+                setProviderRequestEmails(loadedSettings.notification_email_provider_requests || "")
+                setPayoutRequestEmails(loadedSettings.notification_email_payout_requests || "")
                 // Parse announcements
                 if (loadedSettings.banner_announcements) {
                     try {
@@ -287,6 +291,21 @@ export default function ConfigurationsPage() {
             return
         }
         handleSaveConfig([{ key: 'banner_announcements', value: filtered }])
+    }
+
+    const handleSaveNotificationEmails = () => {
+        const emailPattern = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/
+        for (const value of [providerRequestEmails, payoutRequestEmails]) {
+            const invalid = value.split(/[;,\n]/).map(email => email.trim()).filter(Boolean).find(email => !emailPattern.test(email))
+            if (invalid) {
+                toast.error(`Please check this email address: ${invalid}`)
+                return
+            }
+        }
+        handleSaveConfig([
+            { key: 'notification_email_provider_requests', value: providerRequestEmails.trim() },
+            { key: 'notification_email_payout_requests', value: payoutRequestEmails.trim() }
+        ])
     }
 
     const updateAnnouncement = (index: number, value: string) => {
@@ -357,8 +376,22 @@ export default function ConfigurationsPage() {
                 {/* ── General Settings Tab ────────────────────────────── */}
                 <TabsContent value="general">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 overflow-hidden relative group lg:col-span-2">
+                            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400/20 via-cyan-400 to-violet-500/20" />
+                            <CardHeader className="border-b border-white/10 bg-gradient-to-r from-cyan-500/[0.06] to-violet-500/[0.06] p-5">
+                                <CardTitle className="text-foreground text-base font-bold tracking-tight flex items-center gap-2"><Mail size={16} className="text-cyan-400" /> Admin email notifications</CardTitle>
+                                <CardDescription className="text-muted-foreground text-xs">Choose recipients per notification category. Separate multiple addresses with commas. Blank fields use the ADMIN_EMAIL environment fallback.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-5 sm:p-6 grid sm:grid-cols-2 gap-5">
+                                <div className="space-y-2"><Label className="text-foreground text-xs font-bold">Provider requests</Label><Input placeholder="providers@example.com, ops@example.com" value={providerRequestEmails} onChange={e => setProviderRequestEmails(e.target.value)} className="bg-background/60 border-white/10 text-foreground rounded-xl h-11 text-sm focus:border-cyan-400" /></div>
+                                <div className="space-y-2"><Label className="text-foreground text-xs font-bold">Payout requests</Label><Input placeholder="finance@example.com" value={payoutRequestEmails} onChange={e => setPayoutRequestEmails(e.target.value)} className="bg-background/60 border-white/10 text-foreground rounded-xl h-11 text-sm focus:border-violet-400" /></div>
+                                <Button onClick={handleSaveNotificationEmails} disabled={saving} className="sm:col-span-2 w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-bold rounded-xl h-10 uppercase tracking-wider text-xs shadow-md shadow-violet-500/10 transition-all">
+                                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />} Save Notification Emails
+                                </Button>
+                            </CardContent>
+                        </Card>
                         {/* Global SEO */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden relative group">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-blue-500/20 via-blue-500 to-blue-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight">Global SEO Settings</CardTitle>
@@ -395,7 +428,7 @@ export default function ConfigurationsPage() {
                         </Card>
 
                         {/* Hero Text */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-300 overflow-hidden relative group">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-teal-500/20 via-teal-500 to-teal-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight">Root Page Hero Text</CardTitle>
@@ -432,7 +465,7 @@ export default function ConfigurationsPage() {
                         </Card>
 
                         {/* Root Page Event Card */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden relative group">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-orange-500/20 via-orange-500 to-orange-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight">Root Page Event Card</CardTitle>
@@ -486,7 +519,7 @@ export default function ConfigurationsPage() {
                         </Card>
 
                         {/* Events Page Banner */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden relative group">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-purple-500/20 via-purple-500 to-purple-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight">Events Page Banner</CardTitle>
@@ -535,7 +568,7 @@ export default function ConfigurationsPage() {
                         </Card>
 
                         {/* Landing Page CTA Banner */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 overflow-hidden relative group">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500/20 via-amber-500 to-amber-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight flex items-center gap-2">
@@ -574,7 +607,7 @@ export default function ConfigurationsPage() {
                         </Card>
 
                         {/* Announcement Marquee */}
-                        <Card className="bg-card border border-border dark:border-zinc-800 rounded-sm shadow-md dark:shadow-black/40 hover:shadow-lg transition-all duration-300 overflow-hidden relative group lg:col-span-2">
+                        <Card className="bg-card/70 backdrop-blur-xl border border-white/10 dark:border-white/10 rounded-2xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 overflow-hidden relative group lg:col-span-2">
                             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20" />
                             <CardHeader className="border-b border-border/80 dark:border-zinc-800 bg-muted/20 dark:bg-zinc-900/40 p-5">
                                 <CardTitle className="text-foreground text-base font-bold tracking-tight flex items-center gap-2">

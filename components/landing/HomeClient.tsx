@@ -38,6 +38,8 @@ export default function HomeClient({ initialEvents, ctaText, ctaLabel, announcem
                     image: e.image || null,
                     description: e.description || "",
                     requiresApplication: Boolean(e.requiresApplication),
+                    isAudition: Boolean(e.isAudition),
+                    applicationFee: Number(e.applicationFee) || 0,
                     ctaText: e.ctaText || "Book Ticket",
                     ticketTypes: (e.ticketTypes || []).map((t: any) => ({
                         name: t.name,

@@ -51,7 +51,7 @@ const BuyTicket = ({
             </DialogHeader>
 
             <div className="flex flex-col gap-2.5 sm:gap-3 mb-6">
-                {ticketTypes.map(({ name, icon: Icon, color, price, max, id }, index) => {
+                {ticketTypes.map(({ name, icon: Icon, color, price, max, id, isCombo, comboSize }, index) => {
                     const selected = ticketsToPurchase.find(t => t.id === id)
                     const quantity = selected?.quantity || 0
                     const isSelected = quantity > 0
@@ -70,14 +70,26 @@ const BuyTicket = ({
                                     <Icon size={22} />
                                 </div>
                                 <div className="min-w-0 truncate">
-                                    <h4 className={`font-bold uppercase tracking-wider text-xs sm:text-sm truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
-                                        {name}
-                                    </h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className={`font-bold uppercase tracking-wider text-xs sm:text-sm truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
+                                            {name}
+                                        </h4>
+                                        {isCombo && (
+                                            <span className="px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider bg-orange-500 text-white rounded-sm shrink-0">
+                                                {comboSize || 3} in 1 Combo
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className={`text-lg sm:text-xl font-extrabold mt-0.5 ${isSelected ? 'text-orange-500' : 'text-foreground'
                                         }`}>
                                         {price <= 0 ? "FREE" : `₦${price.toLocaleString()}`}
                                     </p>
+                                    {isCombo && (
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Includes {comboSize || 3} individual passes
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

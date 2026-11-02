@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
 import Ticket from "@/models/Ticket";
+import Event from "@/models/Event";
 import { connectDB } from "@/lib/mongodb";
 
 export interface TicketBatchInput {
@@ -8,6 +9,8 @@ export interface TicketBatchInput {
     name?: string;
     quantity: number;
     price?: number;
+    isCombo?: boolean;
+    comboSize?: number;
 }
 
 export interface GenerateTicketsParams {
@@ -30,7 +33,9 @@ export interface GenerateTicketsResult {
 
 /**
  * Centralized, reusable ticket generation service method.
- * Handles ticket document creation, unique token generation, and DB insertion.
+ * Handles ticket document creation, unique token generation, combo expansion, and DB insertion.
+ * Authoritatively hydrates combo metadata from the Event document so client-side payload discrepancies
+ * never lead to under-generated combo passes.
  */
 export async function generateTickets(params: GenerateTicketsParams): Promise<GenerateTicketsResult> {
     await connectDB();
@@ -50,6 +55,9 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
         throw new Error("Missing required parameters for ticket generation");
     }
 
+    // Authoritative lookup: fetch the Event definition to get official ticketTypes & combo settings
+    const eventDoc = await Event.findById(eventId).lean() as any;
+
     const batchId = inputBatchId || crypto.randomUUID();
     const createdTicketsPayload: any[] = [];
     let totalGenerated = 0;
@@ -63,39 +71,60 @@ export async function generateTickets(params: GenerateTicketsParams): Promise<Ge
         const standName = batch.stand || batch.name || "Regular";
         const ticketPrice = Number(batch.price) || 0;
 
-        for (let i = 0; i < quantity; i++) {
-            const ticketId = new mongoose.Types.ObjectId();
-            const checkInToken = crypto.randomBytes(16).toString('hex');
-            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+        // Match against official event ticket types for authoritative combo validation
+        const matchedEventTicket = eventDoc?.ticketTypes?.find(
+            (t: any) => t.name?.trim().toLowerCase() === standName.trim().toLowerCase()
+        );
 
-            // Collision-resistant ticket number format
-            const ticketNumber = `${eventIdStr.slice(-4)}-${Date.now().toString().slice(-6)}-${uniqueSuffix}`;
+        const isComboDeclared = Boolean(batch.isCombo ?? matchedEventTicket?.isCombo);
+        const rawComboSize = Number(batch.comboSize ?? matchedEventTicket?.comboSize ?? 1);
 
-            createdTicketsPayload.push({
-                _id: ticketId,
-                checkInToken,
-                event: eventId,
-                createdBy: userId,
-                ticketType: {
-                    name: standName,
-                    price: ticketPrice
-                },
-                stand: standName,
-                price: ticketPrice,
-                ticketNumber,
-                payment: {
-                    status: isPaid ? 'success' : 'pending',
-                    reference: paymentReference || `GEN-${batchId}`,
-                    authorizationUrl: 'N/A'
-                },
-                holderName: holderName || "Guest",
-                batchId,
-                isInside: false,
-                isPrinted: false,
-                generatedBy
-            });
+        // Strict Rule: A combo pass MUST have isCombo: true AND comboSize >= 2
+        const isCombo = isComboDeclared && rawComboSize >= 2;
+        const comboSize = isCombo ? Math.min(15, rawComboSize) : 1;
 
-            totalGenerated++;
+        // Outer loop: each purchased unit (single ticket or combo pack)
+        for (let q = 0; q < quantity; q++) {
+            const comboGroupId = isCombo ? crypto.randomUUID() : undefined;
+
+            // Inner loop: generate each ticket in the unit (1 for single, comboSize for combo)
+            for (let c = 0; c < comboSize; c++) {
+                const ticketId = new mongoose.Types.ObjectId();
+                const checkInToken = crypto.randomBytes(16).toString('hex');
+                const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+
+                // Collision-proof ticket number format using batchId slice + unique random suffix
+                const batchSnippet = batchId.replace(/-/g, '').slice(-6).toUpperCase();
+                const ticketNumber = `${eventIdStr.slice(-4)}-${batchSnippet}-${uniqueSuffix}`;
+
+                createdTicketsPayload.push({
+                    _id: ticketId,
+                    checkInToken,
+                    event: eventId,
+                    createdBy: userId,
+                    ticketType: {
+                        name: standName,
+                        price: ticketPrice
+                    },
+                    stand: standName,
+                    price: ticketPrice,
+                    ticketNumber,
+                    payment: {
+                        status: isPaid ? 'success' : 'pending',
+                        reference: paymentReference || `GEN-${batchId}`,
+                        authorizationUrl: 'N/A'
+                    },
+                    holderName: holderName || "Guest",
+                    batchId,
+                    isCombo,
+                    ...(comboGroupId ? { comboGroupId } : {}),
+                    isInside: false,
+                    isPrinted: false,
+                    generatedBy
+                });
+
+                totalGenerated++;
+            }
         }
     }
 

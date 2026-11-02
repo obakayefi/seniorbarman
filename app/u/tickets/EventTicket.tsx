@@ -191,12 +191,12 @@ const EventTicket = ({ event, summary }: { event: any, summary: any }) => {
 
                             <div className="flex flex-col gap-6 p-6 pb-0">
                                 {event?.transformedSummary?.length > 0 ? (
-                                    <section className={'flex items-center gap-2 justify-center'}>
+                                    <section className="grid w-full grid-cols-2 gap-2">
                                         {event?.transformedSummary.map((t: any) => {
                                             return (
-                                                <div key={t.name} className='text-center bg-zinc-950/60 backdrop-blur-xl border border-white/10 flex-1 p-3 rounded-sm shadow-xl'>
-                                                    <h4 className='text-zinc-500 text-[8px] font-black uppercase tracking-widest mb-1'>{t.name}</h4>
-                                                    <span className='text-xl font-black text-white'>{t.value}</span>
+                                                <div key={t.name} className='text-center bg-zinc-950/60 backdrop-blur-xl border border-white/10 p-3 rounded-sm shadow-xl min-w-0'>
+                                                    <h4 className='text-zinc-300 text-[9px] font-black uppercase tracking-widest mb-1 truncate'>{t.name}</h4>
+                                                    <span className='text-xl font-black text-white'>{t.value} <span className="text-[9px] font-semibold text-zinc-400">owned</span></span>
                                                 </div>
                                             )
                                         })}

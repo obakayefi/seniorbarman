@@ -5,6 +5,8 @@ import Ticket from "@/models/Ticket";
 import TicketOrder from "@/models/TicketOrder";
 import EventApplication from "@/models/EventApplication";
 import User from "@/models/User";
+import PayoutRequest from "@/models/PayoutRequest";
+import { getEventRevenue } from "@/lib/eventRevenue";
 import { getUserFromCookie } from "@/lib/auth";
 import { ROLES, ROLE_GROUPS } from "@/lib/roles";
 import { hasManagerAccessToTeams } from "@/services/teamService";
@@ -164,12 +166,28 @@ export async function GET(
             };
         }
 
+        const financials = await getEventRevenue(id);
+        const [paidOutRows, pendingPayoutRequest] = await Promise.all([
+            PayoutRequest.aggregate([
+                { $match: { event: rawEvent._id, status: 'paid' } },
+                { $group: { _id: null, total: { $sum: '$requestedAmount' } } },
+            ]),
+            PayoutRequest.findOne({ event: rawEvent._id, status: 'pending' }).select('_id requestedAmount createdAt'),
+        ]);
+        const paidOut = paidOutRows[0]?.total || 0;
+
         return NextResponse.json({
             success: true,
             event,
             tickets,
             stats,
             appStats,
+            financials: {
+                ...financials,
+                paidOut,
+                outstanding: Math.max(0, financials.organizerShare - paidOut),
+                pendingPayoutRequest,
+            },
         }, { status: 200 });
 
     } catch (error: any) {

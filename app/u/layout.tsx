@@ -56,6 +56,7 @@ const UserLayout = async ({ children }: { children: React.ReactNode }) => {
                     { title: "Teams Management", url: sitemap.admin.teams, icon: "TbSoccerField" },
                     { title: "Create Admin", url: sitemap.admin.createAdmin, icon: "ShieldUser" },
                     { title: "Provider Requests", url: "/u/a/provider-requests", icon: "UserPlus" },
+                    { title: "Payout Requests", url: "/u/a/payout-requests", icon: "Wallet" },
                     { title: "Configurations", url: "/u/a/configurations", icon: "Settings2" },
                     { title: "Role Permissions", url: "/u/a/roles", icon: "ShieldUser" },
                     ...(role === ROLES.DEV ? [

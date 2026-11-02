@@ -45,6 +45,8 @@ export default async function Home() {
             image: e.image || null,
             description: e.description || "",
             requiresApplication: Boolean(e.requiresApplication),
+            isAudition: Boolean(e.isAudition),
+            applicationFee: Number(e.applicationFee) || 0,
             ctaText: e.ctaText?.trim() || "Book Ticket",
             ticketTypes: (e.ticketTypes || []).map((t: any) => ({
                 name: t.name,

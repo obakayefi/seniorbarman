@@ -1,5 +1,5 @@
 "use client"
-import { Calendar, CalendarDays, Home, Inbox, PowerIcon, ScanQrCode, Search, Settings, Tickets, FolderClock } from "lucide-react"
+import { Calendar, CalendarDays, Home, Inbox, PowerIcon, ScanQrCode, Search, Settings, Tickets, FolderClock, Wallet } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -56,6 +56,7 @@ const IconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ClipboardList,
   UserPlus,
   FolderClock,
+  Wallet,
 }
 
 import { toast } from "sonner"

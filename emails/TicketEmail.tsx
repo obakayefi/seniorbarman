@@ -222,7 +222,7 @@ export const TicketEmail = ({
                 {/* Footer */}
                 <div className="footer">
                     <p className="footer-text">
-                        Having trouble with your ticket? <a href="mailto:support@seniorbarman.com" style={{ color: '#f97316' }}>Contact us</a>
+                        Having trouble with your ticket? <a href="mailto:admin@seniorbarman.com" style={{ color: '#f97316' }}>Contact us</a>
                     </p>
                     <p className="footer-text">
                         Best,<br />
