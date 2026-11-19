@@ -30,6 +30,9 @@ export default function EventDetailPage() {
     const [applicants, setApplicants] = useState<any[]>([])
     const [selectedAppForView, setSelectedAppForView] = useState<any>(null)
     const [shareModalOpen, setShareModalOpen] = useState(false)
+    const [payoutRequests, setPayoutRequests] = useState<any[]>([])
+    const [payoutDetails, setPayoutDetails] = useState('')
+    const [submittingPayout, setSubmittingPayout] = useState(false)
     const router = useRouter()
 
     const handleDelete = async () => {
@@ -52,6 +55,9 @@ export default function EventDetailPage() {
             if (res.data.success) {
                 setData(res.data)
 
+                const payoutRes = await api.get(`/organizer/events/${id}/payout-request`).catch(() => null)
+                setPayoutRequests(payoutRes?.data?.requests || [])
+
                 // Fetch applicants if required
                 if (res.data.event.requiresApplication) {
                     const appRes = await api.get(`/events/${id}/applicants`)
@@ -66,9 +72,40 @@ export default function EventDetailPage() {
         }
     }
 
+    const refreshFinancials = async () => {
+        try {
+            const response = await api.get(`/organizer/events/${id}/financials`)
+            setData((current: any) => current ? { ...current, financials: response.data.financials } : current)
+        } catch (error) {
+            console.error('Could not refresh event payout estimate:', error)
+        }
+    }
+
     useEffect(() => {
-        if (id) fetchData()
+        if (!id) return
+        fetchData()
+        const refreshTimer = window.setInterval(refreshFinancials, 60_000)
+        return () => window.clearInterval(refreshTimer)
     }, [id])
+
+    const submitPayoutRequest = async () => {
+        if (!payoutDetails.trim()) {
+            toast.error('Add your preferred payout/contact details first')
+            return
+        }
+        setSubmittingPayout(true)
+        try {
+            const result = await api.post(`/organizer/events/${id}/payout-request`, { payoutDetails })
+            setPayoutRequests((current) => [result.data.request, ...current])
+            setPayoutDetails('')
+            toast.success(result.data.emailSent ? 'Payout request sent to the admin' : 'Request saved; admin email notification could not be delivered')
+            await fetchData()
+        } catch (error: any) {
+            toast.error(error?.response?.data?.error || 'Could not submit payout request')
+        } finally {
+            setSubmittingPayout(false)
+        }
+    }
 
     const handleUpdateApplicant = async (appId: string, status: string, reason?: string) => {
         try {
@@ -142,7 +179,7 @@ export default function EventDetailPage() {
         )
     }
 
-    const { event, stats, tickets, appStats } = data
+    const { event, stats, tickets, appStats, financials } = data
     const totalCombinedRevenue = (stats?.totalRevenue || 0) + (appStats?.applicationRevenue || 0)
     const filteredTickets = tickets.filter((t: any) =>
         (t.holderName?.toLowerCase().includes(attendeeSearch.toLowerCase())) ||
@@ -338,6 +375,39 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                 </div>
+
+                {financials && (
+                    <Card className="border-orange-500/30 bg-card rounded-sm">
+                        <CardHeader>
+                            <CardTitle className="text-base">Organizer payout estimate</CardTitle>
+                            <CardDescription>Based on successful ticket and application payments recorded for this event. Refreshes every minute and continues updating as payments are confirmed, including after the event concludes.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-5">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div><p className="text-xs text-muted-foreground">Gross collected</p><p className="text-lg font-bold">₦{financials.grossRevenue.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Platform commission (20%)</p><p className="text-lg font-bold">₦{financials.commission.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Organizer share (80%)</p><p className="text-lg font-bold">₦{financials.organizerShare.toLocaleString('en-NG')}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Outstanding to you</p><p className="text-lg font-bold text-emerald-600">₦{financials.outstanding.toLocaleString('en-NG')}</p></div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Paid out so far: ₦{financials.paidOut.toLocaleString('en-NG')}. Amounts are calculated from successful payment records; pending or failed payments are excluded.</p>
+                            {payoutRequests.some((request) => request.status === 'pending') ? (
+                                <p className="text-sm font-medium">Your payout request is awaiting admin review.</p>
+                            ) : financials.outstanding > 0 ? (
+                                <div className="space-y-3 border-t border-border pt-4">
+                                    <label htmlFor="payout-details" className="text-sm font-semibold">Payout/contact details</label>
+                                    <textarea id="payout-details" value={payoutDetails} onChange={(event) => setPayoutDetails(event.target.value)} maxLength={2000} rows={3} placeholder="Add the details the admin should use to arrange your payout." className="w-full rounded-sm border border-border bg-background p-3 text-sm" />
+                                    <Button onClick={submitPayoutRequest} disabled={submittingPayout} className="bg-orange-500 hover:bg-orange-600 text-white">{submittingPayout ? 'Sending request…' : 'Request payout'}</Button>
+                                </div>
+                            ) : <p className="text-sm text-muted-foreground">There is no outstanding payout balance right now.</p>}
+                            {payoutRequests.length > 0 && (
+                                <div className="border-t border-border pt-4 space-y-2">
+                                    <p className="text-xs font-bold uppercase tracking-wider">Payout request history</p>
+                                    {payoutRequests.map((request) => <div key={request._id} className="flex justify-between gap-3 text-sm"><span>{format(new Date(request.createdAt), 'MMM d, yyyy')} · ₦{Number(request.requestedAmount).toLocaleString('en-NG')}</span><span className="capitalize">{request.status}{request.adminNote ? ` · ${request.adminNote}` : ''}</span></div>)}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* ── Audition & Application Revenue Analytics (for audition events) ── */}
                 {event.requiresApplication && (

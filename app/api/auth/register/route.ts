@@ -5,6 +5,7 @@ import User from "@/models/User";
 import BlacklistedUser from "@/models/BlacklistedUser";
 import ProviderAccountRequest from "@/models/ProviderAccountRequest";
 import { signToken } from "@/lib/jwt";
+import Team from "@/models/Team";
 
 export async function POST(req: Request) {
     try {
@@ -50,6 +51,27 @@ export async function POST(req: Request) {
                 organizationName: organizationName || undefined,
                 status: "pending",
             })
+            let teamName: string | undefined;
+            if (teamId) {
+                try {
+                    const team = await Team.findById(teamId).select('name').lean() as { name?: string } | null;
+                    teamName = team?.name;
+                } catch (error) {
+                    console.error('Could not resolve team name for provider request email:', error);
+                }
+            }
+            try {
+                const { notifyAdminOfProviderRequest } = await import('@/lib/notifications');
+                await notifyAdminOfProviderRequest({
+                    name: `${firstName || ''} ${lastName || ''}`.trim() || email,
+                    email: newUser.email,
+                    role: intendedRole,
+                    organizationName,
+                    teamName,
+                });
+            } catch (error) {
+                console.error('Provider request was saved, but its email notification could not be sent:', error);
+            }
         }
 
         const token = signToken({ id: newUser._id, email: newUser.email, firstName: newUser.firstName })

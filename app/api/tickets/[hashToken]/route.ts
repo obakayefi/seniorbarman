@@ -142,10 +142,86 @@ export async function GET(req: Request, { params }: Params) {
             value
         }));
 
-        const matchedTickets = tickets.filter(ticket => {
+        let matchedTickets = tickets.filter(ticket => {
             const ticketEventId = ticket.event?._id?.toString() || ticket.event?.toString();
             return ticketEventId === eventId;
         });
+
+        // ───────────────────────────────────────────────────────────
+        // Self-Healing: Check if any tickets belong to a combo tier
+        // where sibling tickets were not generated (e.g. isCombo was false
+        // or comboGroupId was missing). Auto-expand them now.
+        // ───────────────────────────────────────────────────────────
+        if (event?.ticketTypes && matchedTickets.length > 0) {
+            let healedAny = false;
+
+            for (const ticket of [...matchedTickets]) {
+                const standName = ticket.stand || ticket.ticketType?.name || "Regular";
+                const matchedType = event.ticketTypes.find(
+                    (t: any) => t.name?.trim().toLowerCase() === standName.trim().toLowerCase()
+                );
+
+                const isTierCombo = Boolean(matchedType?.isCombo) && Number(matchedType?.comboSize || 0) >= 2;
+                const tierSize = isTierCombo ? Math.min(15, Number(matchedType.comboSize)) : 1;
+
+                // Check if this ticket is supposed to be a combo but is missing comboGroupId or sibling passes
+                if (isTierCombo && (!ticket.isCombo || !ticket.comboGroupId)) {
+                    const crypto = await import("crypto");
+                    const mongoose = (await import("mongoose")).default;
+
+                    const comboGroupId = crypto.randomUUID();
+                    const batchSnippet = (ticket.batchId || crypto.randomUUID()).replace(/-/g, '').slice(-6).toUpperCase();
+
+                    // Update the existing ticket to become ticket #1 of this combo pack
+                    await Ticket.findByIdAndUpdate(ticket._id, {
+                        $set: {
+                            isCombo: true,
+                            comboGroupId
+                        }
+                    });
+                    ticket.isCombo = true;
+                    ticket.comboGroupId = comboGroupId;
+
+                    // Generate the remaining (tierSize - 1) sibling passes
+                    const siblingTicketsPayload = [];
+                    for (let c = 1; c < tierSize; c++) {
+                        const ticketId = new mongoose.Types.ObjectId();
+                        const checkInToken = crypto.randomBytes(16).toString('hex');
+                        const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+                        const ticketNumber = `${eventId.slice(-4)}-${batchSnippet}-${uniqueSuffix}`;
+
+                        siblingTicketsPayload.push({
+                            _id: ticketId,
+                            checkInToken,
+                            event: eventId,
+                            createdBy: userId,
+                            ticketType: ticket.ticketType || { name: standName, price: ticket.price },
+                            stand: standName,
+                            price: ticket.price,
+                            ticketNumber,
+                            payment: ticket.payment,
+                            holderName: ticket.holderName || "Guest",
+                            batchId: ticket.batchId,
+                            isCombo: true,
+                            comboGroupId,
+                            isInside: false,
+                            isPrinted: false,
+                            generatedBy: ticket.generatedBy || 'online-sale'
+                        });
+                    }
+
+                    if (siblingTicketsPayload.length > 0) {
+                        const createdSiblings = await Ticket.insertMany(siblingTicketsPayload);
+                        matchedTickets.push(...createdSiblings.map(doc => doc.toObject ? doc.toObject() : doc));
+                        healedAny = true;
+                    }
+                }
+            }
+
+            if (healedAny) {
+                await redis.del(cacheKey);
+            }
+        }
 
         if (matchedTickets.length === 0 && pendingOrders.length === 0 && !event) {
             return NextResponse.json(

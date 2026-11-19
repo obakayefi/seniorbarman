@@ -9,6 +9,17 @@ import { toast } from "sonner";
 import { useApp } from "@/context/AppContext";
 import { HunchoRoleChecker } from "@/lib/helpers";
 import LandingEventCard from "@/components/landing/LandingEventCard";
+import { DownloadTeamQR } from "@/components/features/download-team-qr";
+
+type Match = {
+    _id: string;
+    date: string | Date;
+    homeTeam?: string | { _id?: string } | null;
+    awayTeam?: string | { _id?: string } | null;
+};
+
+type TeamManagerRef = string | { _id?: string };
+const getTeamId = (team?: string | { _id?: string } | null) => typeof team === 'string' ? team : team?._id;
 
 export default function TeamHubPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -36,13 +47,13 @@ export default function TeamHubPage({ params }: { params: Promise<{ id: string }
 
                 // Fetch sports events
                 try {
-                    const eventsRes = await api.get("/events?type=sports");
+                    const eventsRes = await api.get("/events?type=sports&limit=100");
                     if (eventsRes.data?.events) {
-                        const teamMatches = eventsRes.data.events.filter(
-                            (e: any) =>
-                                String(e.homeTeam?._id || e.homeTeam) === id ||
-                                String(e.awayTeam?._id || e.awayTeam) === id
-                        );
+                        const teamMatches = (eventsRes.data.events as Match[]).filter(
+                            (e) =>
+                                String(getTeamId(e.homeTeam)) === id ||
+                                String(getTeamId(e.awayTeam)) === id
+                        ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
                         setEvents(teamMatches);
                     }
                 } catch (e) {
@@ -103,6 +114,11 @@ export default function TeamHubPage({ params }: { params: Promise<{ id: string }
             setSavingFav(false);
         }
     };
+
+    const canShareTeam = HunchoRoleChecker(user?.role) || Boolean(
+        user?.role === 'team_manager' &&
+        team?.managers?.some((manager: TeamManagerRef) => String(typeof manager === 'string' ? manager : manager?._id) === user.id)
+    );
 
     if (loading) {
         return (
@@ -184,18 +200,21 @@ export default function TeamHubPage({ params }: { params: Promise<{ id: string }
                         </div>
 
                         {/* Favorite Button */}
-                        <button
-                            onClick={toggleFavorite}
-                            disabled={savingFav}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-bold transition-all shadow-sm ${
-                                isFav
-                                    ? "bg-orange-500 text-white shadow-orange-500/25"
-                                    : "bg-muted text-foreground hover:bg-muted/80 border border-border"
-                            }`}
-                        >
-                            <Heart className={`w-4 h-4 ${isFav ? "fill-white" : ""}`} />
-                            <span>{isFav ? "Favorite Team" : "Set as Favorite Team"}</span>
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {canShareTeam && <DownloadTeamQR team={team} />}
+                            <button
+                                onClick={toggleFavorite}
+                                disabled={savingFav}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-bold transition-all shadow-sm ${
+                                    isFav
+                                        ? "bg-orange-500 text-white shadow-orange-500/25"
+                                        : "bg-muted text-foreground hover:bg-muted/80 border border-border"
+                                }`}
+                            >
+                                <Heart className={`w-4 h-4 ${isFav ? "fill-white" : ""}`} />
+                                <span>{isFav ? "Favorite Team" : "Set as Favorite Team"}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -234,6 +253,8 @@ export default function TeamHubPage({ params }: { params: Promise<{ id: string }
                                         homeTeam: event.homeTeam,
                                         awayTeam: event.awayTeam,
                                         requiresApplication: event.requiresApplication,
+                                        isAudition: event.isAudition,
+                                        applicationFee: event.applicationFee,
                                         ticketTypes: event.ticketTypes,
                                     }}
                                 />

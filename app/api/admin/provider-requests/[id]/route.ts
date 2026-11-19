@@ -6,6 +6,7 @@ import User from "@/models/User";
 import Team from "@/models/Team";
 import { requireRole } from "@/lib/requireRole";
 import { recordAuditLog } from "@/lib/audit";
+import { notifyUserOfProviderRequestApproval } from "@/lib/notifications";
 
 export async function PATCH(
     req: Request,
@@ -63,6 +64,12 @@ export async function PATCH(
                 req,
             });
 
+            await notifyUserOfProviderRequestApproval({
+                userEmail: request.email,
+                userName: (request.userId as unknown as { firstName?: string }).firstName || "there",
+                role: request.role,
+            });
+
             return NextResponse.json({ success: true, message: `Account approved as ${request.role}` });
         }
 
@@ -98,9 +105,10 @@ export async function PATCH(
             return NextResponse.json({ success: true, message: "Account rejected and email blacklisted" });
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
         return NextResponse.json(
-            { error: "Failed to process request", details: error.message },
+            { error: "Failed to process request", details: message },
             { status: 500 }
         );
     }

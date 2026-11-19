@@ -68,7 +68,9 @@ const EventSchema = new mongoose.Schema(
             {
                 name: { type: String, required: true },
                 price: { type: Number, required: true, default: 0 },
-                max: { type: Number, default: 0 } // Optional max capacity per type
+                max: { type: Number, default: 0 }, // Optional max capacity per type
+                isCombo: { type: Boolean, default: false },
+                comboSize: { type: Number, default: 1, min: 1, max: 15 }
             }
         ],
         // --- Application / Registration Feature ---
